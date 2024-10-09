@@ -19,6 +19,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Map;
 
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.presentation.impl.NextActionSupport;
 import org.onebusaway.users.client.model.UserBean;
 import org.onebusaway.users.services.CurrentUserService;
@@ -47,6 +48,9 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
   
   @Autowired
   protected CurrentUserService _currentUserService;
+
+  @Autowired
+  private ConfigurationService _configurationService;
   
   public boolean isAdminUser() {
 	return _currentUserService.isCurrentUserAdmin();
@@ -105,6 +109,26 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
     if (user == null)
       user = _currentUserService.getAnonymousUser();
     return user;
+  }
+
+  public String getSurveyText() {
+    return _configurationService.getConfigurationValueAsString(
+            "display.surveyTextMobile", "Take a brief survey to help us improve your ride");
+  }
+
+  public String getSurveyLinkText() {
+    return _configurationService.getConfigurationValueAsString(
+            "display.surveyLinkTextMobile", "mta.info/csurvey");
+  }
+
+  public String getSurveyLinkUrl() {
+    return _configurationService.getConfigurationValueAsString(
+            "display.surveyLinkUrlMobile", "https://mta.info/csurvey");
+  }
+
+  public Boolean getShowSurvey() {
+    return _configurationService.getConfigurationValueAsBoolean(
+            "display.showSurveyMobile", false);
   }
 
 }

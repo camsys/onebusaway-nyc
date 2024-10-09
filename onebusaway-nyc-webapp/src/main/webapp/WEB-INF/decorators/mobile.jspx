@@ -60,8 +60,17 @@
 	</div>
 
 	<decorator:body />
-	
+
 	<div id="footer">
+		<s:if test="%{getShowSurvey() &amp;&amp; getSurveyText() != null &amp;&amp; !getSurveyText().isEmpty()
+			&amp;&amp; getSurveyLinkText() != null &amp;&amp; !getSurveyLinkText().isEmpty()
+			&amp;&amp; getSurveyLinkUrl() != null &amp;&amp; !getSurveyLinkUrl().isEmpty()}">
+			<div id="mobile-survey">
+				<p>
+					${surveyText} <a href="${surveyLinkUrl}">${surveyLinkText}</a>
+				</p>
+			</div>
+		</s:if>
     	<p>
 			<s:url var="mobileHelpUrl" namespace="/m/wiki" action="Help/Index"/>	
     		<a href="${mobileHelpUrl}">Help</a> | 
