@@ -106,6 +106,32 @@
           <artifactId>json</artifactId>
           <version>20231013</version>
       </dependency>
+      <!-- AWS S3 integration -->
+      <dependency>
+          <groupId>com.amazonaws</groupId>
+          <artifactId>aws-java-sdk</artifactId>
+          <version>${aws.version}</version>
+          <exclusions>
+              <exclusion>
+                  <groupId>org.codehaus.jackson</groupId>
+                  <artifactId>jackson-core-asl</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.codehaus.jackson</groupId>
+                  <artifactId>jackson-mapper-asl</artifactId>
+              </exclusion>
+              <exclusion>
+                  <!-- but in old httpclient causes ssl issues -->
+                  <groupId>org.apache.httpcomponents</groupId>
+                  <artifactId>httpclient</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>commons-logging</groupId>
+                  <artifactId>commons-logging</artifactId>
+              </exclusion>
+          </exclusions>
+      </dependency>
+
 
   </dependencies>
   

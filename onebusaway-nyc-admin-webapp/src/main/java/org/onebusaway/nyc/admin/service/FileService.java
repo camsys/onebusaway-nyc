@@ -20,6 +20,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+
+/// todo: Consider refactoring to use S3 utility
 public interface FileService {
   void setup();
   void setS3User(String user);
