@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.transit_data_federation.impl.vtw;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -28,12 +29,14 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.stream.XMLStreamException;
 
-import com.amazonaws.util.json.JSONArray;
-import com.amazonaws.util.json.JSONException;
-import com.amazonaws.util.json.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.joda.time.DateTime;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.impl.util.TcipUtil;
@@ -58,14 +61,11 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
 
   private boolean _enabled;
 
+  private Integer _updateIntervalSecs;
+
+  private String _vehiclePipoUrl;
+
   private ObjectMapper _mapper;
-
-  private String dataPath;
-
-  private String s3Password;
-
-  private String s3Username;
-
 
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
@@ -73,6 +73,8 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
   private ConfigurationService _configurationService;
 
   private TcipUtil _tcipUtil;
+
+  private S3Utility s3Utility;
 
   private Map<AgencyAndId, SCHPullInOutInfo> _vehicleIdToPullouts = new ConcurrentHashMap<>(10000);
 
@@ -84,29 +86,16 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
   @Autowired
   public void setConfigurationService(ConfigurationService configurationService) {
     this._configurationService = configurationService;
-    configChanged();
-  }
-
-  public void setDataPath(String dataPath){
-    this.dataPath = dataPath;
-  }
-
-  public String getDataPath(){
-    return dataPath;
   }
 
   public URL getUrl() {
     try {
-      return new URL(dataPath);
+      return new URL(_vehiclePipoUrl);
     } catch (MalformedURLException e) {
-      _log.error("Unable to reach vehicle pipo service URL {}", dataPath, e);
+      _log.error("Unable to reach vehicle pipo service URL {}", _vehiclePipoUrl, e);
       _enabled = false;
       return null;
     }
-  }
-
-  public String getS3Path() {
-    return dataPath;
   }
 
   public boolean getEnabled(){
@@ -122,27 +111,43 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
   }
 
   @PostConstruct
-  public void setup(){
+  public void setup() throws IOException {
+    setVehiclePipoValues();
+    setupS3Utility();
     startUpdateProcess();
   }
 
+  private void setVehiclePipoValues() {
+    _vehiclePipoUrl = _configurationService.getConfigurationValueAsString("tdm.vehiclePipoUrl", null);
+    _updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("tdm.vehiclePipoRefreshInterval", null);
+    _enabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("tdm.vehiclePipoServiceEnabled", "false"));
+
+  }
+
+  private void setupS3Utility() throws IOException {
+    if (S3Utility.isS3Path(_vehiclePipoUrl)) {
+      String s3Username = System.getProperty("YardTrek.pipoAccessKey");
+      if (s3Username == null) {
+        s3Username = System.getenv("YardTrek.pipoAccessKey");
+      }
+      String s3Password = System.getProperty("YardTrek.pipoSecretKey");
+      if (s3Password == null) {
+        s3Password = System.getenv("YardTrek.pipoSecretKey");
+      }
+      s3Utility = new S3Utility(s3Username, s3Password);
+    }
+  }
+
+
   @Refreshable(dependsOn = {"tdm.vehiclePipoRefreshInterval", "tdm.vehiclePipoServiceEnabled", "tdm.vehiclePipoUrl"})
   private void configChanged() {
-    String url = _configurationService.getConfigurationValueAsString("tdm.vehiclePipoUrl", null);
-    Integer updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("tdm.vehiclePipoRefreshInterval", null);
-    _enabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("tdm.vehiclePipoServiceEnabled", "false"));
-    setDataPath(url);
-    s3Username = System.getProperty("YardTrek.pipoAccessKey");
-    if(s3Username==null){
-      s3Username = System.getenv("YardTrek.pipoAccessKey");
-    }
-    s3Password = System.getProperty("YardTrek.pipoSecretKey");
-    if(s3Password==null){
-      s3Password = System.getenv("YardTrek.pipoSecretKey");
-    }
+    setVehiclePipoValues();
+    setUpdateFrequency();
+  }
 
-    if (updateIntervalSecs != null) {
-      setUpdateFrequency(updateIntervalSecs);
+  private void setUpdateFrequency() {
+    if (_updateIntervalSecs != null) {
+      setUpdateFrequency(_updateIntervalSecs);
     } else {
       cancelTask();
     }
@@ -155,9 +160,8 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
   }
 
   private void startUpdateProcess() {
-    Integer updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("tdm.vehiclePipoRefreshInterval", 60);
     if (_updateTask==null) {
-      setUpdateFrequency(updateIntervalSecs);
+      setUpdateFrequency(_updateIntervalSecs);
     }
   }
 
@@ -181,9 +185,18 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     }
   }
 
+
+  public void getAndRefreshData() throws Exception {
+    if(S3Utility.isS3Path(_vehiclePipoUrl)){
+      refreshDataFromJson(getDataFromS3());
+    }
+    else{
+      refreshDataFromXml(getDataFromHttp());
+    }
+  }
+
   public String getDataFromS3() {
-    S3Utility s3Utility = new S3Utility(s3Username,s3Password,S3Utility.getBucketFromS3Path(getDataPath()));
-    String json = new BufferedReader(new InputStreamReader(s3Utility.get(S3Utility.getKeyFromS3Path(getS3Path()))))
+    String json = new BufferedReader(new InputStreamReader(s3Utility.getObject(_vehiclePipoUrl)))
             .lines().collect(Collectors.joining("\n"));
     StringBuilder builder = new StringBuilder();
     builder.append("{\"data\":");
@@ -232,22 +245,20 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     _vehicleIdToPullouts = updatedVehicleIdToPullouts;
   }
 
-  public void getAndRefreshData() throws Exception {
-    if(S3Utility.isS3Path(getDataPath())){
-      refreshDataFromJson(getDataFromS3());
-    }
-    else{
-      String xml = UrlUtility.readAsString(getUrl());
-      ObaSchPullOutList schPulloutList = _tcipUtil.getFromXml(xml);
-      try {
-        processVehiclePipoList(schPulloutList);
-      } catch (Exception e) {
-        _log.error("Unable to process vehicle pipo information", e);
-        throw e;
-      }
-    }
 
+  private String getDataFromHttp() throws IOException {
+    return UrlUtility.readAsString(getUrl());
+  }
 
+  private void refreshDataFromXml(String xml) throws XMLStreamException, JAXBException {
+
+    ObaSchPullOutList schPulloutList = _tcipUtil.getFromXml(xml);
+    try {
+      processVehiclePipoList(schPulloutList);
+    } catch (Exception e) {
+      _log.error("Unable to process vehicle pipo information", e);
+      throw e;
+    }
   }
 
   public void processVehiclePipoList(ObaSchPullOutList schPulloutList){
