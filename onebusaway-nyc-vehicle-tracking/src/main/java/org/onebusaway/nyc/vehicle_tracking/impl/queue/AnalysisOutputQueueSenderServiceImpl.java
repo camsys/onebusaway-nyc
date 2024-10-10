@@ -15,32 +15,34 @@
  */
 
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
-
 import org.springframework.beans.factory.annotation.Value;
 
 public class AnalysisOutputQueueSenderServiceImpl extends OutputQueueSenderServiceImpl {
 
-    @Value("${inference-engine.outputQueueHost}")
-    private String inputQueueHost;
+    @Value("${IE_OUTPUT_QUEUE_HOST}")
+    private String queueHost;
 
-    @Value("${inference-engine.outputQueueName}")
-    private String inputQueueName;
+    @Value("${IE_OUTPUT_QUEUE_NAME}")
+    private String queueName;
 
-    @Value("${inference-engine.outputQueuePort}")
-    private Integer inputQueuePort;
+    @Value("${IE_OUTPUT_QUEUE_PORT:5566}")
+    private Integer queuePort;
 
     @Override
     public String getQueueHost() {
-        return inputQueueHost;
+        System.out.println("OUTPUT QUEUE HOST: " + queueHost);
+        return this.queueHost;
     }
 
     @Override
     public String getQueueName() {
-        return inputQueueName;
+        System.out.println("OUTPUT QUEUE NAME: " + queueName);
+        return this.queueName;
     }
 
     @Override
     public Integer getQueuePort() {
-        return inputQueuePort;
+        System.out.println("OUTPUT QUEUE PORT: " +  queuePort);
+        return queuePort;
     }
 }

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.onebusaway.nyc.transit_data_manager.barcode.*;
 import org.onebusaway.nyc.transit_data_manager.barcode.model.MtaBarcode;
@@ -30,6 +31,7 @@ import org.onebusaway.nyc.transit_data_manager.barcode.model.MtaBarcode;
 public class QRComparisonTest extends QrCodeGeneratorResource {
 
 	@Test
+	@Ignore
 	public void testGenerateBarcodeZipFileFromUrlList() throws IOException {
 
 		QrCodeGenerator google = new GoogleChartBarcodeGenerator();

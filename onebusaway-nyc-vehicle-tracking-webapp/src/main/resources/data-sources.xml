@@ -22,13 +22,6 @@
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
-        <property name="location">
-            <value>classpath:application.properties</value>
-        </property>
-    </bean>
-
-
     <!-- Bundle Manager Configuration -->
     <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
         <property name="order" value="-2" />
