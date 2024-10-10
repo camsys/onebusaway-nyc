@@ -240,6 +240,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         priorProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(context));
         priorProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(context));
         priorProb.addResultAsAnd(_motionModel.blockLikelihood.likelihood(context));
+        priorProb.addResultAsAnd(_motionModel.blockLikelihood.likelihood(context));
 
         newSample = new Particle(timestamp, null, 0.0, nullState);
         newSample.setResult(priorProb);
