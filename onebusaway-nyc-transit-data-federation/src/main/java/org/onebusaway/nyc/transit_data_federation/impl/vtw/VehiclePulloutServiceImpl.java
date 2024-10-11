@@ -120,8 +120,8 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
   private void setVehiclePipoValues() {
     _vehiclePipoUrl = _configurationService.getConfigurationValueAsString("tdm.vehiclePipoUrl", null);
     _updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("tdm.vehiclePipoRefreshInterval", null);
-    _enabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("tdm.vehiclePipoServiceEnabled", "false"));
-
+//    _enabled = Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("tdm.vehiclePipoServiceEnabled", "false"));
+    _enabled = false;
   }
 
   private void setupS3Utility() throws IOException {
