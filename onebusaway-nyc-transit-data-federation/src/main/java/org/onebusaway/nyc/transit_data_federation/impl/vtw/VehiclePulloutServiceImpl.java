@@ -207,42 +207,39 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
   }
 
   public void refreshDataFromJson(String json) throws JSONException {
-    Map<AgencyAndId, SCHPullInOutInfo> updatedVehicleIdToPullouts = new ConcurrentHashMap<>(10000);
+    Set<AgencyAndId> latestKeys = new HashSet<>();
+
     JSONObject jsonObject = new JSONObject(json);
     ObaSchPullOutList pullOutList = new ObaSchPullOutList();
     SchPullOutList.PullOuts pullOuts = new SchPullOutList.PullOuts();
     pullOutList.setPullOuts(pullOuts);
+
     JSONArray dataList = jsonObject.getJSONArray("data");
     for(int i =0; i< dataList.length(); i++){
       JSONObject datum = dataList.getJSONObject(i);
-      SCHPullInOutInfo info = new SCHPullInOutInfo();
+      SCHPullInOutInfo newPullInOutInfo = new SCHPullInOutInfo();
       SCHBlockIden block = new SCHBlockIden();
       block.setId(datum.getString("blockID"));
-      info.setBlock(block);
+      newPullInOutInfo.setBlock(block);
       CPTTransitFacilityIden garage = new CPTTransitFacilityIden();
       garage.setAgdesig(datum.getString("authid"));
-      info.setGarage(garage);
+      newPullInOutInfo.setGarage(garage);
       CPTVehicleIden vehicle = new CPTVehicleIden();
       vehicle.setId(datum.getString("busnumber"));
-      info.setVehicle(vehicle);
+      newPullInOutInfo.setVehicle(vehicle);
 
       SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SXXX");
 //      info.setTime(simpleDateFormat.format(datum.getString("timestamp")));
-      info.setTime(DateTime.parse(datum.getString("schedpo")));
+      newPullInOutInfo.setTime(DateTime.parse(datum.getString("schedpo")));
 
+      String agencyId = newPullInOutInfo.getGarage().getAgdesig();
+      String vehicleId = newPullInOutInfo.getVehicle().getId();
+      AgencyAndId key = new AgencyAndId(agencyId, vehicleId);
 
-
-      String agencyId = info.getGarage().getAgdesig();
-      String vehicleId = info.getVehicle().getId();
-      if(updatedVehicleIdToPullouts.get(new AgencyAndId(agencyId, vehicleId))!=null){
-        SCHPullInOutInfo otherInfo = updatedVehicleIdToPullouts.get(new AgencyAndId(agencyId, vehicleId));
-        if(otherInfo.getTime().isAfter(info.getTime())){
-          continue;
-        }
-      }
-      updatedVehicleIdToPullouts.put(new AgencyAndId(agencyId, vehicleId),info);
+      _vehicleIdToPullouts.putIfAbsent(key, newPullInOutInfo);
+      latestKeys.add(key);
     }
-    _vehicleIdToPullouts = updatedVehicleIdToPullouts;
+    _vehicleIdToPullouts.keySet().removeIf(key -> !latestKeys.contains(key));
   }
 
 
@@ -265,7 +262,8 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
     if(!_enabled){
       return;
     }
-    Map<AgencyAndId, SCHPullInOutInfo> updatedVehicleIdToPullouts = new ConcurrentHashMap<>(10000);
+    Set<AgencyAndId> latestKeys = new HashSet<>();
+
     String errorCode = schPulloutList.getErrorCode();
     if (errorCode != null && !errorCode.equals("0")){
       if (errorCode.equalsIgnoreCase("1")) {
@@ -284,9 +282,11 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
         _log.warn("Unable to add pipo info, missing agencyId {} or vehicleId {}", agencyId, vehicleId);
         continue;
       }
-      updatedVehicleIdToPullouts.put(new AgencyAndId(agencyId, vehicleId), pullInOutInfo);
+      AgencyAndId key = new AgencyAndId(agencyId, vehicleId);
+      _vehicleIdToPullouts.putIfAbsent(key, pullInOutInfo);
+      latestKeys.add(key);
     }
-    _vehicleIdToPullouts = updatedVehicleIdToPullouts;
+    _vehicleIdToPullouts.keySet().removeIf(key -> !latestKeys.contains(key));
   }
 
   @Override
