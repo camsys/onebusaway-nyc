@@ -112,6 +112,7 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
 
   @PostConstruct
   public void setup() throws IOException {
+    _log.info("Setting Up Vehicle Pullout Service");
     setVehiclePipoValues();
     setupS3Utility();
     startUpdateProcess();
@@ -126,6 +127,7 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
 
   private void setupS3Utility() throws IOException {
     if (S3Utility.isS3Path(_vehiclePipoUrl)) {
+      _log.info("Vehicle Pullout Serivce detected as S3 Path");
       String s3Username = System.getProperty("YardTrek.pipoAccessKey");
       if (s3Username == null) {
         s3Username = System.getenv("YardTrek.pipoAccessKey");
