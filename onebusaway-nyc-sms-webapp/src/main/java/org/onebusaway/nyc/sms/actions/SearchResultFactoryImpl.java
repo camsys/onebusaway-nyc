@@ -17,11 +17,8 @@ package org.onebusaway.nyc.sms.actions;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
@@ -105,8 +102,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
 				// service alerts for this route + direction
 				List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
-				List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
-				populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, HTMLIZE_NEWLINES);
+				Set<ServiceAlertBean> serviceAlertBeans = new HashSet<>();
+				serviceAlertBeans.addAll(_realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId()));
+				serviceAlertBeans.addAll(_realtimeService.getServiceAlertsForRoute(routeBean.getId()));
+
+				populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans.stream().collect(Collectors.toList()), HTMLIZE_NEWLINES);
 
 				directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, null, serviceAlertDescriptions));
 			}
