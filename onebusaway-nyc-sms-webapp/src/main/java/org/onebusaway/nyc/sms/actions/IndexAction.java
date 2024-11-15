@@ -47,6 +47,8 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dmurph.tracking.AnalyticsConfigData;
@@ -55,6 +57,8 @@ import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 public class IndexAction extends SessionedIndexAction {
+
+  Logger _log = LoggerFactory.getLogger(IndexAction.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -79,6 +83,8 @@ public class IndexAction extends SessionedIndexAction {
   private JGoogleAnalyticsTracker _googleAnalytics = null;
 
   private String _response = null;
+
+  private String failureMessage = "request not filled";
 
   @Override
   public void initializeSession(String sessionId) {
@@ -180,7 +186,13 @@ public class IndexAction extends SessionedIndexAction {
 
             // route schedule status
           }else {
-            _response = routeResponse(route);
+            try{
+              _response = routeResponse(route);
+            }
+            catch (Exception e) {
+              _log.error("Encountered error getting results for route response.", e);
+              _response = errorResponse("can't get " + route.getShortName());
+            }
             break;
           }
 
@@ -526,7 +538,7 @@ public class IndexAction extends SessionedIndexAction {
 
     String footer = "\nSend:\n";
     footer += "STOPCODE or INTERSECTION\n";
-    footer += "Add '" + result.getShortName() + "' for best results\n";
+    footer += "Best: Also add '" + result.getShortName() + "'\n";
 
     RouteDirection aDirectionWithServiceAlerts = (RouteDirection)CollectionUtils.find(result.getDirections(), new Predicate() {
 
@@ -599,11 +611,13 @@ public class IndexAction extends SessionedIndexAction {
       }
 
       routeDirectionTruncationLength--;
+      if(routeDirectionTruncationLength <= 3) {
+        // any fewer than three and we trigger an error in abreviating, and also, the names become meaningless
+        throw new Exception("Couldn't fit any route names!?");
+      }
     }
 
-    if(routeDirectionTruncationLength <= 0) {
-      throw new Exception("Couldn't fit any route names!?");
-    }
+
 
     if(_googleAnalytics != null) {
       try {
@@ -1015,7 +1029,11 @@ public class IndexAction extends SessionedIndexAction {
 
     if(message != null) {
       if(staticStuff.length() + 1 + message.length() > MAX_SMS_CHARACTER_COUNT) {
-        throw new Exception("Error message text is too long.");
+        _log.error("Error message text is too long.",message);
+        if(message.equals(failureMessage)){
+          return staticStuff;
+        }
+        return errorResponse(failureMessage);
       }
 
       return message + " " + staticStuff;
