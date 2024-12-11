@@ -7,7 +7,7 @@
   </parent>
   <properties>
     <spring.version>5.2.20.RELEASE</spring.version>
-    <struts.version>2.5.30</struts.version>
+    <struts.version>6.4.0</struts.version>
   </properties>
   <artifactId>onebusaway-nyc-ops-api-webapp</artifactId>
   <packaging>war</packaging>
