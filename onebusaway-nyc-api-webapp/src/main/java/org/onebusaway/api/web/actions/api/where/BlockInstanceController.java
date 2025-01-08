@@ -48,12 +48,6 @@ public class BlockInstanceController extends ApiActionSupport {
   @Autowired
   private NycDateConverterWrapper _formatter;
 
-
-  public BlockInstanceController() {
-    super(V2);
-  }
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("blockId") String id,
                                            @RequestParam(name ="ServiceDate", required = false) String serviceDateString

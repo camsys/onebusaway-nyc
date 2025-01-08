@@ -53,10 +53,6 @@ public class RoutesForLocationController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  public RoutesForLocationController() {
-    super(V1);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> index(@RequestParam(name ="Lat", required = false)Double lat,
                                             @RequestParam(name ="Lon", required = false) Double lon,

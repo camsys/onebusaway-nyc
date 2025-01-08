@@ -45,11 +45,6 @@ public class VehicleLocationRecordsController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  public VehicleLocationRecordsController() {
-    super(V2);
-  }
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> index(VehicleLocationRecordQueryBean query) throws IOException, ServiceException {
 

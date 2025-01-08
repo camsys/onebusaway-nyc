@@ -45,11 +45,6 @@ public class TripsForRouteController extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-
-  public TripsForRouteController() {
-    super(V2);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("routeId") String id,
                                            @RequestParam(name ="Time", required = false) Long time,

@@ -41,10 +41,6 @@ public class VehiclesForAgencyController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  public VehiclesForAgencyController() {
-    super(V2);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id,
                                            @RequestParam(name ="Time", required = false, defaultValue = "-1") Long time) throws IOException, ServiceException {

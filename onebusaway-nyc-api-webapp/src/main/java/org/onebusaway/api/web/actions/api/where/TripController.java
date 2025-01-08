@@ -41,10 +41,6 @@ public class TripController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  public TripController() {
-    super(V2);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("tripId") String id) throws ServiceException {
 

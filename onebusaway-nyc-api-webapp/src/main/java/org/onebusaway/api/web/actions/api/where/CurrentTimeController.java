@@ -34,10 +34,6 @@ public class CurrentTimeController extends ApiActionSupport {
 
   private static final int V1 = 1;
 
-  public CurrentTimeController() {
-    super(V1);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> index() {
     

@@ -40,13 +40,6 @@ public class ShapeController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-
-
-  public ShapeController() {
-    super(V2);
-  }
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("shapeId") String id) {
 

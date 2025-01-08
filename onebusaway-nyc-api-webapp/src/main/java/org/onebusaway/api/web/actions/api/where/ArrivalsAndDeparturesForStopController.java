@@ -55,10 +55,6 @@ public class ArrivalsAndDeparturesForStopController extends ApiActionSupport {
   
 //  private ArrivalsAndDeparturesQueryBean _query = new ArrivalsAndDeparturesQueryBean();
 
-  public ArrivalsAndDeparturesForStopController() {
-    super(V1);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> getTripsByBlockId(@PathVariable("stopId") String id,
                                                         ArrivalsAndDeparturesQueryBean query) {

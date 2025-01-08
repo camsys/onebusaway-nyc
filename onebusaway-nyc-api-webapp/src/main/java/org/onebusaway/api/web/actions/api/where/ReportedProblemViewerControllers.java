@@ -28,10 +28,6 @@ public class ReportedProblemViewerControllers extends ApiActionSupport {
     @Autowired
     private TransitDataService _service;
 
-    public ReportedProblemViewerControllers() {
-        super(V2);
-    }
-
     @Value("${reportedProblemViewerControllers.enabled:false}")
     private boolean enabled;
 

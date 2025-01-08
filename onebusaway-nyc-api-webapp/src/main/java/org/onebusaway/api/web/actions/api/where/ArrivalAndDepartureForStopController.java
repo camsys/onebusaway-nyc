@@ -41,12 +41,6 @@ public class ArrivalAndDepartureForStopController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-
-  public ArrivalAndDepartureForStopController() {
-    super(V2);
-  }
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String stopId,
                                            ArrivalAndDepartureForStopQueryBean _query) throws ServiceException {

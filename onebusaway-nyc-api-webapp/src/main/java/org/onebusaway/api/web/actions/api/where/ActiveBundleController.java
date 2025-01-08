@@ -36,10 +36,6 @@ public class ActiveBundleController extends ApiActionSupport {
     @Autowired
     private TransitDataService _service;
 
-    public ActiveBundleController() {
-        super(V1);
-    }
-
     @RequestMapping("/where/active-bundle")
     public ResponseEntity<ResponseBean> index() {
 

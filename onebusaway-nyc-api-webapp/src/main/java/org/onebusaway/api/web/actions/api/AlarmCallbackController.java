@@ -35,10 +35,6 @@ public class AlarmCallbackController extends ApiActionSupport {
   @Autowired
   private AlarmService _alarmService;
 
-  public AlarmCallbackController() {
-    super(V2);
-  }
-
   @RequestMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("id") String id) throws ServiceException {
 

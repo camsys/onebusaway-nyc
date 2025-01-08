@@ -47,21 +47,6 @@ public class BlockController extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-//  private String _id;
-
-  public BlockController() {
-    super(V2);
-  }
-//
-//  @PathVariable("blockId")
-//  public void setId(String id) {
-//    _id = id;
-//  }
-//
-//  public String getId() {
-//    return _id;
-//  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("blockId") String id) throws ServiceException {
 

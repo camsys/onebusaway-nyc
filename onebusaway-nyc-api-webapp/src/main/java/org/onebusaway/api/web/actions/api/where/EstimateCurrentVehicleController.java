@@ -48,11 +48,6 @@ public class EstimateCurrentVehicleController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  public EstimateCurrentVehicleController() {
-    super(V2);
-  }
-
-
 /**
  * Handles the API endpoint relating to current state of a vehicle.
  * This method requires data in the "Data" field, formatted as multiple entries.

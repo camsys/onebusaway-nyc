@@ -43,11 +43,6 @@ public class CancelAlarmsController extends ApiActionSupport {
   @Autowired
   private AlarmService _alarmService;
 
-  public CancelAlarmsController() {
-    super(V2);
-  }
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> index(@RequestParam(name ="Ids", required = false) List<String> ids) throws ServiceException {
 

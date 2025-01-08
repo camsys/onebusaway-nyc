@@ -39,12 +39,6 @@ public class ShapeIdsForAgencyController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-
-
-  public ShapeIdsForAgencyController() {
-    super(V2);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id) {
 

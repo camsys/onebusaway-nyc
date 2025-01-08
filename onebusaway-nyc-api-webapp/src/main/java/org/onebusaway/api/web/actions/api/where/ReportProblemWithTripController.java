@@ -38,10 +38,6 @@ public class ReportProblemWithTripController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  public ReportProblemWithTripController() {
-    super(2);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> create(TripProblemReportBean model) throws IOException, ServiceException {
 

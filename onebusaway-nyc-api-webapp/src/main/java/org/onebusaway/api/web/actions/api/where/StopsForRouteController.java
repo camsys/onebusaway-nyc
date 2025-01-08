@@ -40,12 +40,6 @@ public class StopsForRouteController extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-
-  public StopsForRouteController() {
-    super(V1);
-  }
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("routeId") String id,
                                            @RequestParam(name ="IncludePolylines", required = false, defaultValue = "true") boolean includePolylines) throws ServiceException {

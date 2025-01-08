@@ -39,12 +39,6 @@ public class SituationController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-
-
-  public SituationController() {
-    super(V2);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("id") String id) throws ServiceException {
 

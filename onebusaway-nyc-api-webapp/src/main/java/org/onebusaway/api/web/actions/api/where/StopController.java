@@ -41,12 +41,6 @@ public class StopController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-
-  public StopController() {
-    super(V1);
-  }
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String id) throws ServiceException {
 

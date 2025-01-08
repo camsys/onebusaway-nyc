@@ -52,11 +52,6 @@ public class TripsForLocationResponse extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-  public TripsForLocationResponse() {
-    super(V2);
-  }
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> index(SearchBoundsFactory searchBoundsFactory,
                                             @RequestParam(name ="Date", required = false) long time,

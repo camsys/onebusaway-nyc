@@ -52,11 +52,6 @@ public class RouteController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  public RouteController() {
-    super(V1);
-  }
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("routeId") String id) throws ServiceException {
 

@@ -55,12 +55,6 @@ public class StopsForLocationController extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-
-  public StopsForLocationController() {
-    super(V1);
-  }
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> index(@RequestParam(name ="Lat", required = false)Double lat,
                                             @RequestParam(name ="Lon", required = false) Double lon,

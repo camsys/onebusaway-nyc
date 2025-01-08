@@ -26,26 +26,28 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 
-public class ApiActionSupport extends OneBusAwayApiActionSupport{
+public class ApiActionSupport implements OneBusAwayApiActionSupport{
 
-  private static final long serialVersionUID = 1L;
+  static final long serialVersionUID = 1L;
 
-  private static final int NO_VERSION = -999;
+  static final int NO_VERSION = -999;
 
-  private int _defaultVersion;
+  int _defaultVersion = 0;
 
-  private ResponseBean _response;
+  ResponseBean _response = new ResponseBean();
 
-  private int _version = -999;
+  int _version = -999;
 
-  private String _key;
+  String _key = "";
 
-  private boolean _includeReferences = true;
+  boolean _includeReferences = true;
 
-  public ApiActionSupport(int defaultVersion) {
+  @Override
+  public void ApiActionSupport(int defaultVersion) {
     _defaultVersion = defaultVersion;
   }
 
+  @Override
   public void setVersion(int version) {
     _version = version;
   }

@@ -49,10 +49,6 @@ public class RegisterAlarmForArrivalAndDepartureAtStopController extends
 //
 //  private String _data;
 
-  public RegisterAlarmForArrivalAndDepartureAtStopController() {
-    super(V2);
-  }
-
 //  @RequiredFieldValidator(message = FieldErrorSupport.MISSING_REQUIRED_FIELD)
 //  public void setId(String id) {
 //    _query.setStopId(id);

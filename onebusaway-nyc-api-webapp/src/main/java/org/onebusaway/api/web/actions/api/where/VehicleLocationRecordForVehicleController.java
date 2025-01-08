@@ -37,12 +37,6 @@ public class VehicleLocationRecordForVehicleController extends ApiActionSupport 
   @Autowired
   private TransitDataService _service;
 
-//  private long _time = System.currentTimeMillis();
-
-  public VehicleLocationRecordForVehicleController() {
-    super(V2);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@RequestParam(value = "Id", required = false) String id,
                                            @RequestParam(name ="Time", required = false, defaultValue = "-1") Long time) throws IOException, ServiceException {

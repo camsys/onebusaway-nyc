@@ -43,12 +43,6 @@ public class TripForVehicleController extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-
-  public TripForVehicleController() {
-    super(V2);
-  }
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("vehicleId") String id,
                                            @RequestParam(name ="Time", required = false, defaultValue = "") Long timeLong,

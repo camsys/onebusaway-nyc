@@ -15,8 +15,19 @@
  */
 package org.onebusaway.api.web.actions;
 
-public class OneBusAwayApiActionSupport{
+import org.onebusaway.api.model.ResponseBean;
 
-  private static final long serialVersionUID = 1L;
+public interface OneBusAwayApiActionSupport{
+
+  void ApiActionSupport(int defaultVersion);
+
+  void setVersion(int version);
+
+  void setKey(String key);
+
+  void setIncludeReferences(boolean includeReferences);
+
+  ResponseBean getModel();
+
 
 }

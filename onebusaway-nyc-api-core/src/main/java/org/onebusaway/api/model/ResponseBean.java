@@ -40,6 +40,10 @@ public class ResponseBean implements Serializable {
     this.data = data;
   }
 
+  public ResponseBean() {
+
+  }
+
   public int getCode() {
     return code;
   }

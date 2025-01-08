@@ -53,12 +53,6 @@ public class AgenciesWithCoverageController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  public AgenciesWithCoverageController() {
-    super(V1);
-  }
-
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> index() throws IOException, ServiceException {
 

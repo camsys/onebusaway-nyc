@@ -40,10 +40,6 @@ public class StopIdsForAgencyController extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-  public StopIdsForAgencyController() {
-    super(V2);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id) {
 

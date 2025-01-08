@@ -21,7 +21,7 @@
 
 	<!-- 0 or more appender elements -->
 	<Appenders>
-		<RollingFile name="ROLL" fileName="/var/log/tomcat8/queue-realtime.log"
+		<RollingFile name="ROLL" fileName="/tmp/logs/queue-realtime.log"
 					 filePattern="/var/log/tomcat6/queue-realtime.%d{yyyy-MM-dd}-%i.log.gz">
 			<PatternLayout>
 				<Pattern>%d{ISO8601} %-5p [%F:%L] : %m%n</Pattern>

@@ -39,11 +39,6 @@ public class ReportProblemWithStopController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  public ReportProblemWithStopController() {
-    super(2);
-  }
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> create(StopProblemReportBean model) throws IOException, ServiceException {
 

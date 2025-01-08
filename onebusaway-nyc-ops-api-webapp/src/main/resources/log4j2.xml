@@ -21,8 +21,8 @@
 
 	<!-- 0 or more appender elements -->
 	<Appenders>
-		<RollingFile name="ROLL" fileName="/var/log/tomcat8/ops-api.log"
-					 filePattern="/var/log/tomcat8/ops-api.%d{yyyy-MM-dd}-%i.log.gz">
+		<RollingFile name="ROLL" fileName="/tmp/logs/ops-api.log"
+					 filePattern="/tmp/logs/ops-api.%d{yyyy-MM-dd}-%i.log.gz">
 			<PatternLayout>
 				<Pattern>%d{ISO8601} %-5p [%F:%L] : %m%n</Pattern>
 			</PatternLayout>

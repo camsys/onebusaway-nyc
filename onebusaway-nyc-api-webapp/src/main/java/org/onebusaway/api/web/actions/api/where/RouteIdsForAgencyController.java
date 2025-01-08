@@ -40,10 +40,6 @@ public class RouteIdsForAgencyController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  public RouteIdsForAgencyController() {
-    super(V2);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id) {
 

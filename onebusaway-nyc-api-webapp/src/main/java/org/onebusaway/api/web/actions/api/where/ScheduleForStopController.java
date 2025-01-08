@@ -39,10 +39,6 @@ public class ScheduleForStopController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  public ScheduleForStopController() {
-    super(V2);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String id,
                                            @RequestParam(name ="Date", required = false) Long time) throws ServiceException {

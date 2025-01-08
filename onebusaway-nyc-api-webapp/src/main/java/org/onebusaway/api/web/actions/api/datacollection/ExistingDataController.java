@@ -36,10 +36,6 @@ public class ExistingDataController extends ApiActionSupport {
 
   @Autowired
   private DataCollectionService _data;
-  
-  public ExistingDataController() {
-    super(V1);
-  }
 
   private static final long serialVersionUID = 1L;
 

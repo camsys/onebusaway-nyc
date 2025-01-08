@@ -52,12 +52,6 @@ public class AgencyController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  public AgencyController() {
-    super(V2);
-  }
-
-
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id) throws ServiceException {
 

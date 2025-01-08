@@ -45,10 +45,6 @@ public class TripDetailsController extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
-  public TripDetailsController() {
-    super(V2);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("tripId") String id,
                                            @RequestParam(name ="ServiceDate", required=false) Date date,

@@ -40,10 +40,6 @@ public class UploadDataController extends ApiActionSupport {
 
   private static final int V1 = 1;
 
-  public UploadDataController() {
-    super(V1);
-  }
-
   private static final long serialVersionUID = 1L;
 
   @Autowired

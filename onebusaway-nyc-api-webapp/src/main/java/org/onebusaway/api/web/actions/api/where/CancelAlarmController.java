@@ -55,10 +55,6 @@ public class CancelAlarmController extends ApiActionSupport {
   @Autowired
   private AlarmService _alarmService;
 
-  public CancelAlarmController() {
-    super(V2);
-  }
-
   @GetMapping
   public ResponseEntity<ResponseBean> show(@RequestParam(name ="Id", required = false) String id) throws ServiceException {
 
