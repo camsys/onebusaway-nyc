@@ -45,6 +45,9 @@ public class UploadDataController extends ApiActionSupport {
   @Autowired
   private DataCollectionService _data;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @PostMapping("/upload-data")
   public ResponseEntity<ResponseBean> update(@RequestParam(name ="Id", required = false) String id,
                                              @RequestParam(name ="Data", required = false) MultipartFile data) throws IOException {
@@ -59,7 +62,7 @@ public class UploadDataController extends ApiActionSupport {
     }
 
     if(fes.hasErrors()){
-      return getValidationErrorsResponseBean(fes.getErrors());
+      return _support.getValidationErrorsResponseBean(fes.getErrors());
     }
 
     File target = new File(_data.getDataDirectory(), id);
@@ -73,7 +76,7 @@ public class UploadDataController extends ApiActionSupport {
         to.write(buffer, 0, bytesRead);
       }
     } catch (IOException e) {
-      return getExceptionResponse("File processing error");
+      return _support.getExceptionResponse("File processing error");
     }
 
     return getOkResponseBean("File uploaded successfully");

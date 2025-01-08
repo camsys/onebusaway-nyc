@@ -71,26 +71,26 @@ public class ApiActionSupport implements OneBusAwayApiActionSupport{
    * @return
    */
 
-  protected boolean isVersion(int version) {
+  public boolean isVersion(int version) {
     if (_version == NO_VERSION)
       return version == _defaultVersion;
     else
       return version == _version;
   }
 
-  protected BeanFactoryV2 getBeanFactoryV2() {
+  public BeanFactoryV2 getBeanFactoryV2() {
     BeanFactoryV2 factory = new BeanFactoryV2(_includeReferences);
     factory.setApplicationKey(_key);
     return factory;
   }
 
-  protected BeanFactoryV2 getBeanFactoryV2(MaxCountSupport maxCount) {
+  public BeanFactoryV2 getBeanFactoryV2(MaxCountSupport maxCount) {
     BeanFactoryV2 factory = getBeanFactoryV2();
     factory.setMaxCount(maxCount);
     return factory;
   }
-  
-  protected BeanFactoryV2 getBeanFactoryV2(NycTransitDataService service) {
+
+  public BeanFactoryV2 getBeanFactoryV2(NycTransitDataService service) {
     BeanFactoryV2 factory = getBeanFactoryV2();
     factory.setTransitDataService(service);
     return factory;
@@ -100,49 +100,43 @@ public class ApiActionSupport implements OneBusAwayApiActionSupport{
    * Response Bean Generation Methods
    ****************************************************************************/
 
-  protected ResponseEntity<ResponseBean> getOkResponseBean(Object data) {
+  public ResponseEntity<ResponseBean> getOkResponseBean(Object data) {
     return new ResponseEntity<>(new ResponseBean(getReturnVersion(), ResponseCodes.RESPONSE_OK,
             "OK", data),HttpStatus.valueOf(ResponseCodes.RESPONSE_OK));
   }
 
 
-//  protected ResponseBean getValidationErrorsResponseBean() {
-//    ValidationErrorBean bean = new ValidationErrorBean(new ArrayList<String>(
-//            getActionErrors()), getFieldErrors());
-//    return new ResponseBean(getReturnVersion(),
-//            ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean);
-//  }
-  protected ResponseEntity<ResponseBean> getValidationErrorsResponseBean(Map<String,List<String>> fieldErrors) {
+  public ResponseEntity<ResponseBean> getValidationErrorsResponseBean(Map<String, List<String>> fieldErrors) {
     ValidationErrorBean bean = new ValidationErrorBean(null, fieldErrors);
     return new ResponseEntity<>(new ResponseBean(getReturnVersion(),
             ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean),
             HttpStatus.valueOf(ResponseCodes.RESPONSE_INVALID_ARGUMENT));
   }
 
-  protected ResponseEntity<ResponseBean> getResourceNotFoundResponseBean() {
+  public ResponseEntity<ResponseBean> getResourceNotFoundResponseBean() {
     return new ResponseEntity<>(new ResponseBean(getReturnVersion(),
             ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND, "resource not found", null),
             HttpStatus.valueOf(ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND));
   }
 
-  protected ResponseEntity<ResponseBean> getExceptionResponse() {
+  public ResponseEntity<ResponseBean> getExceptionResponse() {
     return getExceptionResponse("internal error");
   }
 
-  protected ResponseEntity<ResponseBean> getExceptionResponse(String s) {
+  public ResponseEntity<ResponseBean> getExceptionResponse(String s) {
     return new ResponseEntity<>(new ResponseBean(getReturnVersion(),
             ResponseCodes.RESPONSE_SERVICE_EXCEPTION, s, null),
             HttpStatus.valueOf(ResponseCodes.RESPONSE_SERVICE_EXCEPTION));
   }
 
-  protected ResponseEntity<ResponseBean> getUnknownVersionResponseBean() {
+  public ResponseEntity<ResponseBean> getUnknownVersionResponseBean() {
     return new ResponseEntity<>(new ResponseBean(getReturnVersion(),
             ResponseCodes.RESPONSE_SERVICE_EXCEPTION, "unknown version: "
             + _version, null),
             HttpStatus.valueOf(ResponseCodes.RESPONSE_SERVICE_EXCEPTION));
   }
 
-  protected int getReturnVersion() {
+  int getReturnVersion() {
     if (_version == NO_VERSION)
       return _defaultVersion;
     return _version;

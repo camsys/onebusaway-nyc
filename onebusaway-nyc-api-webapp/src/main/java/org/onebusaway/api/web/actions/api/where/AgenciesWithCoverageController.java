@@ -53,18 +53,21 @@ public class AgenciesWithCoverageController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> index() throws IOException, ServiceException {
 
     List<AgencyWithCoverageBean> beans = _service.getAgenciesWithCoverage();
 
-    if (isVersion(V1)) {
-      return getOkResponseBean(beans);
+    if (_support.isVersion(V1)) {
+      return _support.getOkResponseBean(beans);
     } else if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
+      BeanFactoryV2 factory = _support.getBeanFactoryV2();
       return getOkResponseBean(factory.getResponse(beans));
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
   }
 }
