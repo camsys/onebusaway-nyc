@@ -30,7 +30,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/schedule-for-stop/{stopId}")
-public class ScheduleForStopController extends ApiActionSupport {
+public class ScheduleForStopController {
 
   private static final long serialVersionUID = 1L;
 
@@ -39,6 +39,9 @@ public class ScheduleForStopController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String id,
                                            @RequestParam(name ="Date", required = false) Long time) throws ServiceException {
@@ -46,14 +49,14 @@ public class ScheduleForStopController extends ApiActionSupport {
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(time,"Date");
     if (fieldErrors.hasErrors())
-      return getValidationErrorsResponseBean(fieldErrors.getErrors());
+      return _support.getValidationErrorsResponseBean(fieldErrors.getErrors());
 
-    time = longToTime(time);
+    time = _support.longToTime(time);
     Date date = new Date(time);
 
     StopScheduleBean stopSchedule = _service.getScheduleForStop(id, date);
 
-    BeanFactoryV2 factory = getBeanFactoryV2();
-    return getOkResponseBean(factory.getResponse(stopSchedule));
+    BeanFactoryV2 factory = _support.getBeanFactoryV2();
+    return _support.getOkResponseBean(factory.getResponse(stopSchedule));
   }
 }

@@ -24,8 +24,10 @@ import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 
+@Component
 public class ApiActionSupport implements OneBusAwayApiActionSupport{
 
   static final long serialVersionUID = 1L;

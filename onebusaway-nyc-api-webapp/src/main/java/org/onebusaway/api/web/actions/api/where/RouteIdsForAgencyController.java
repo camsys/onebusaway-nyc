@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/where/route-ids-for-agency/{agencyId}")
-public class RouteIdsForAgencyController extends ApiActionSupport {
+public class RouteIdsForAgencyController {
 
   private static final long serialVersionUID = 1L;
 
@@ -40,15 +40,18 @@ public class RouteIdsForAgencyController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id) {
 
-    if (!isVersion(V2))
-      return getUnknownVersionResponseBean();
+    if (!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
 
     ListBean<String> routeIds = _service.getRouteIdsForAgencyId(id);
 
-    BeanFactoryV2 factory = getBeanFactoryV2();
-    return getOkResponseBean(factory.getEntityIdsResponse(routeIds));
+    BeanFactoryV2 factory = _support.getBeanFactoryV2();
+    return _support.getOkResponseBean(factory.getEntityIdsResponse(routeIds));
   }
 }

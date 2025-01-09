@@ -32,7 +32,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/vehicles-for-agency/{agencyId}")
-public class VehiclesForAgencyController extends ApiActionSupport {
+public class VehiclesForAgencyController {
 
   private static final long serialVersionUID = 1L;
 
@@ -41,24 +41,27 @@ public class VehiclesForAgencyController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id,
                                            @RequestParam(name ="Time", required = false, defaultValue = "-1") Long time) throws IOException, ServiceException {
 
-    if (!isVersion(V2))
-      return getUnknownVersionResponseBean();
+    if (!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
 
 
-    time = longToTime(time);
+    time = _support.longToTime(time);
 
-    BeanFactoryV2 factory = getBeanFactoryV2();
+    BeanFactoryV2 factory = _support.getBeanFactoryV2();
 
     try {
       ListBean<VehicleStatusBean> vehicles = _service.getAllVehiclesForAgency(
           id, time);
-      return getOkResponseBean(factory.getVehicleStatusResponse(vehicles));
+      return _support.getOkResponseBean(factory.getVehicleStatusResponse(vehicles));
     } catch (OutOfServiceAreaServiceException ex) {
-      return getOkResponseBean(factory.getEmptyList(VehicleStatusV2Bean.class, true));
+      return _support.getOkResponseBean(factory.getEmptyList(VehicleStatusV2Bean.class, true));
     }
   }
 }

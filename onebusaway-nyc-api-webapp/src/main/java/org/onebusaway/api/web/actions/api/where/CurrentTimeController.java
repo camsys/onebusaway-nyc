@@ -20,6 +20,7 @@ import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.TimeBean;
 import org.onebusaway.utility.DateLibrary;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,21 +29,24 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/where/current-time")
-public class CurrentTimeController extends ApiActionSupport {
+public class CurrentTimeController {
 
   private static final long serialVersionUID = 1L;
 
   private static final int V1 = 1;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> index() {
     
-    if( ! isVersion(V1))
-      return getUnknownVersionResponseBean();
+    if( ! _support.isVersion(V1))
+      return _support.getUnknownVersionResponseBean();
     
     Date date = new Date();
     String readableTime = DateLibrary.getTimeAsIso8601String(date);
     TimeBean time = new TimeBean(date,readableTime);
-    return getOkResponseBean(time);
+    return _support.getOkResponseBean(time);
   }
 }

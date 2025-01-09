@@ -28,7 +28,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/vehicle-location-record-for-vehicle")
-public class VehicleLocationRecordForVehicleController extends ApiActionSupport {
+public class VehicleLocationRecordForVehicleController {
 
   private static final long serialVersionUID = 1L;
 
@@ -37,20 +37,23 @@ public class VehicleLocationRecordForVehicleController extends ApiActionSupport 
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@RequestParam(value = "Id", required = false) String id,
                                            @RequestParam(name ="Time", required = false, defaultValue = "-1") Long time) throws IOException, ServiceException {
 
-    time = longToTime(time);
-    if (!isVersion(V2))
-      return getUnknownVersionResponseBean();
+    time = _support.longToTime(time);
+    if (!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
 
-    BeanFactoryV2 factory = getBeanFactoryV2();
+    BeanFactoryV2 factory = _support.getBeanFactoryV2();
 
     VehicleLocationRecordBean record = _service.getVehicleLocationRecordForVehicleId(
         id, time);
     if (record == null)
-      return getResourceNotFoundResponseBean();
-    return getOkResponseBean(factory.entry(factory.getVehicleLocationRecord(record)));
+      return _support.getResourceNotFoundResponseBean();
+    return _support.getOkResponseBean(factory.entry(factory.getVehicleLocationRecord(record)));
   }
 }

@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/where/arrival-and-departure-for-stop/{stopId}")
-public class ArrivalAndDepartureForStopController extends ApiActionSupport {
+public class ArrivalAndDepartureForStopController{
 
   private static final long serialVersionUID = 1L;
 
@@ -40,6 +40,9 @@ public class ArrivalAndDepartureForStopController extends ApiActionSupport {
 
   @Autowired
   private TransitDataService _service;
+
+  @Autowired
+  private ApiActionSupport _support;
 
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String stopId,
@@ -49,7 +52,7 @@ public class ArrivalAndDepartureForStopController extends ApiActionSupport {
             .hasFieldError(stopId,"stopId").hasFieldError(_query.getTripId(),"tripId")
             .hasFieldError(_query.getServiceDate(),"serviceDate");
     if (fieldErrors.hasErrors())
-      return getValidationErrorsResponseBean(fieldErrors.getErrors());
+      return _support.getValidationErrorsResponseBean(fieldErrors.getErrors());
 
     _query.setStopId(stopId);
     if (_query.getTime() == 0)
@@ -59,13 +62,13 @@ public class ArrivalAndDepartureForStopController extends ApiActionSupport {
     ArrivalAndDepartureBean result = _service.getArrivalAndDepartureForStop(_query);
 
     if (result == null)
-      return getResourceNotFoundResponseBean();
+      return _support.getResourceNotFoundResponseBean();
 
-    if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
-      return getOkResponseBean(factory.getResponse(result));
+    if (_support.isVersion(V2)) {
+      BeanFactoryV2 factory = _support.getBeanFactoryV2();
+      return _support.getOkResponseBean(factory.getResponse(result));
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
   }
 }

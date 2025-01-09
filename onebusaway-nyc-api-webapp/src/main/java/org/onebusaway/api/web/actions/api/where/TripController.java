@@ -32,7 +32,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/trip/{tripId}")
-public class TripController extends ApiActionSupport {
+public class TripController {
 
   private static final long serialVersionUID = 1L;
 
@@ -41,19 +41,22 @@ public class TripController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("tripId") String id) throws ServiceException {
 
-    if (!isVersion(V2))
-      return getUnknownVersionResponseBean();
+    if (!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
 
     TripBean trip = _service.getTrip(id);
 
     if (trip == null)
-      return getResourceNotFoundResponseBean();
+      return _support.getResourceNotFoundResponseBean();
 
-    BeanFactoryV2 factory = getBeanFactoryV2();
+    BeanFactoryV2 factory = _support.getBeanFactoryV2();
     EntryWithReferencesBean<TripV2Bean> response = factory.getResponse(trip);
-    return getOkResponseBean(response);
+    return _support.getOkResponseBean(response);
   }
 }

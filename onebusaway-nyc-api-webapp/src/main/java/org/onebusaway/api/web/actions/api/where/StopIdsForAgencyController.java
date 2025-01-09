@@ -31,7 +31,7 @@ import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.ResponseBean;
 @RestController
 @RequestMapping("/where/stop-ids-for-agency/{agencyId}")
-public class StopIdsForAgencyController extends ApiActionSupport {
+public class StopIdsForAgencyController {
 
   private static final long serialVersionUID = 1L;
 
@@ -40,15 +40,18 @@ public class StopIdsForAgencyController extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id) {
 
-    if( ! isVersion(V2))
-      return getUnknownVersionResponseBean();
+    if(!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
     
     ListBean<String> stopIds = _service.getStopIdsForAgencyId(id);
-    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    BeanFactoryV2 factory = _support.getBeanFactoryV2(_service);
     factory.filterNonRevenueStopIds(id, stopIds.getList());
-    return getOkResponseBean(factory.getEntityIdsResponse(stopIds));
+    return _support.getOkResponseBean(factory.getEntityIdsResponse(stopIds));
   }
 }

@@ -30,8 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/where/register-alarm-for-arrival-and-departure-at-stop/{stopId}")
-public class RegisterAlarmForArrivalAndDepartureAtStopController extends
-    ApiActionSupport {
+public class RegisterAlarmForArrivalAndDepartureAtStopController {
 
   private static final long serialVersionUID = 1L;
 
@@ -43,40 +42,8 @@ public class RegisterAlarmForArrivalAndDepartureAtStopController extends
   @Autowired
   private AlarmService _alarmService;
 
-//  private ArrivalAndDepartureForStopQueryBean _query = new ArrivalAndDepartureForStopQueryBean();
-//
-//  private RegisterAlarmQueryBean _alarm = new RegisterAlarmQueryBean();
-//
-//  private String _data;
-
-//  @RequiredFieldValidator(message = FieldErrorSupport.MISSING_REQUIRED_FIELD)
-//  public void setId(String id) {
-//    _query.setStopId(id);
-//  }
-//
-//  public String getId() {
-//    return _query.getStopId();
-//  }
-//
-//  public ArrivalAndDepartureForStopQueryBean getQuery() {
-//    return _query;
-//  }
-//
-//  public void setQuery(ArrivalAndDepartureForStopQueryBean query) {
-//    _query = query;
-//  }
-//
-//  public RegisterAlarmQueryBean getAlarm() {
-//    return _alarm;
-//  }
-//
-//  public void setAlarm(RegisterAlarmQueryBean alarm) {
-//    _alarm = alarm;
-//  }
-//
-//  public void setData(String data) {
-//    _data = data;
-//  }
+  @Autowired
+  private ApiActionSupport _support;
 
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String id,
@@ -87,7 +54,7 @@ public class RegisterAlarmForArrivalAndDepartureAtStopController extends
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(query.getTripId(),"tripId");
     if (fieldErrors.hasErrors())
-      return getValidationErrorsResponseBean(fieldErrors.getErrors());
+      return _support.getValidationErrorsResponseBean(fieldErrors.getErrors());
 
     query.setStopId(id);
     if (query.getTime() == 0)
@@ -99,16 +66,16 @@ public class RegisterAlarmForArrivalAndDepartureAtStopController extends
         alarm);
 
     if (alarmId == null)
-      return getResourceNotFoundResponseBean();
+      return _support.getResourceNotFoundResponseBean();
     
     if( details != null) { 
       _alarmService.registerAlarm(alarmId, details);
     }
 
-    if (isVersion(V2)) {
-      return getOkResponseBean(alarmId);
+    if (_support.isVersion(V2)) {
+      return _support.getOkResponseBean(alarmId);
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
   }
 }

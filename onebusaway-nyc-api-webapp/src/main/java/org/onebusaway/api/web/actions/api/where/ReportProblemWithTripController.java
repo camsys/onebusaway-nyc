@@ -31,12 +31,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/where/report-problem-with-trip-resource")
-public class ReportProblemWithTripController extends ApiActionSupport {
+public class ReportProblemWithTripController {
 
   private static final long serialVersionUID = 1L;
 
   @Autowired
   private TransitDataService _service;
+
+  @Autowired
+  private ApiActionSupport _support;
 
   @GetMapping
   public ResponseEntity<ResponseBean> create(TripProblemReportBean model) throws IOException, ServiceException {
@@ -45,12 +48,12 @@ public class ReportProblemWithTripController extends ApiActionSupport {
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(model.getTripId(),"tripId");
     if (fieldErrors.hasErrors())
-      return getValidationErrorsResponseBean(fieldErrors.getErrors());
+      return _support.getValidationErrorsResponseBean(fieldErrors.getErrors());
 
     model.setTime(System.currentTimeMillis());
     model.setStatus(EProblemReportStatus.NEW);
     _service.reportProblemWithTrip(model);
 
-    return getOkResponseBean(new Object());
+    return _support.getOkResponseBean(new Object());
   }
 }

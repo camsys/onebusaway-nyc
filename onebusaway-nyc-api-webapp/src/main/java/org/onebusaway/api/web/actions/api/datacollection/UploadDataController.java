@@ -36,7 +36,7 @@ import java.io.OutputStream;
 
 @RestController
 @RequestMapping("/datacollection")
-public class UploadDataController extends ApiActionSupport {
+public class UploadDataController {
 
   private static final int V1 = 1;
 
@@ -79,6 +79,6 @@ public class UploadDataController extends ApiActionSupport {
       return _support.getExceptionResponse("File processing error");
     }
 
-    return getOkResponseBean("File uploaded successfully");
+    return _support.getOkResponseBean("File uploaded successfully");
   }
 }

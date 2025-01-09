@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.onebusaway.api.model.ResponseBean;
 @RestController
 @RequestMapping("/where/stop-response/{stopId}")
-public class StopController extends ApiActionSupport {
+public class StopController {
 
   private static final long serialVersionUID = 1L;
 
@@ -41,21 +41,24 @@ public class StopController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String id) throws ServiceException {
 
     StopBean stop = _service.getStop(id);
 
     if (stop == null)
-      return getResourceNotFoundResponseBean();
+      return _support.getResourceNotFoundResponseBean();
 
-    if (isVersion(V1)) {
-      return getOkResponseBean(stop);
-    } else if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
-      return getOkResponseBean(factory.getResponse(stop));
+    if (_support.isVersion(V1)) {
+      return _support.getOkResponseBean(stop);
+    } else if (_support.isVersion(V2)) {
+      BeanFactoryV2 factory = _support.getBeanFactoryV2();
+      return _support.getOkResponseBean(factory.getResponse(stop));
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
   }
 }

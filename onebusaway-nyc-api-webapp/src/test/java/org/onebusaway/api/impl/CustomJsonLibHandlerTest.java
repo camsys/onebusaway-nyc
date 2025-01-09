@@ -33,7 +33,6 @@ public class CustomJsonLibHandlerTest {
   private static final String callback = "jsonp1633469248802";
 
   @Test
-  @Ignore
   public void testFromObject() throws IOException {
     EntryWithReferencesBean<ArrivalAndDepartureV2Bean> response = new HandlerTestHelper().createTestObject();
     CustomJsonLibHandler jackson = new CustomJsonLibHandler();

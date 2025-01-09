@@ -32,12 +32,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/where/report-problem-with-stop-resource")
-public class ReportProblemWithStopController extends ApiActionSupport {
+public class ReportProblemWithStopController {
 
   private static final long serialVersionUID = 1L;
 
   @Autowired
   private TransitDataService _service;
+
+  @Autowired
+  private ApiActionSupport _support;
 
   @GetMapping
   public ResponseEntity<ResponseBean> create(StopProblemReportBean model) throws IOException, ServiceException {
@@ -45,12 +48,12 @@ public class ReportProblemWithStopController extends ApiActionSupport {
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(model.getStopId(),"stopId");
     if (fieldErrors.hasErrors())
-      return getValidationErrorsResponseBean(fieldErrors.getErrors());
+      return _support.getValidationErrorsResponseBean(fieldErrors.getErrors());
 
     model.setTime(System.currentTimeMillis());
     model.setStatus(EProblemReportStatus.NEW);
     _service.reportProblemWithStop(model);
 
-    return getOkResponseBean(new Object());
+    return _support.getOkResponseBean(new Object());
   }
 }

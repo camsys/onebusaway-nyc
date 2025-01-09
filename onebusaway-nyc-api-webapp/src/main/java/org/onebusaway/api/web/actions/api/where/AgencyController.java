@@ -41,7 +41,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/agency/{agencyId}")
-public class AgencyController extends ApiActionSupport {
+public class AgencyController {
 
   private static final long serialVersionUID = 1L;
 
@@ -52,21 +52,24 @@ public class AgencyController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id) throws ServiceException {
 
     AgencyBean agency = _service.getAgency(id);
 
     if (agency == null)
-      return getResourceNotFoundResponseBean();
+      return _support.getResourceNotFoundResponseBean();
 
-    if (isVersion(V1)) {
-      return getOkResponseBean(agency);
-    } else if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
-      return getOkResponseBean(factory.getResponse(agency));
+    if (_support.isVersion(V1)) {
+      return _support.getOkResponseBean(agency);
+    } else if (_support.isVersion(V2)) {
+      BeanFactoryV2 factory = _support.getBeanFactoryV2();
+      return _support.getOkResponseBean(factory.getResponse(agency));
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
   }
 }

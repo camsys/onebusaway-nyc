@@ -36,7 +36,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/vehicle-location-records")
-public class VehicleLocationRecordsController extends ApiActionSupport {
+public class VehicleLocationRecordsController {
 
   private static final long serialVersionUID = 1L;
 
@@ -45,19 +45,22 @@ public class VehicleLocationRecordsController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> index(VehicleLocationRecordQueryBean query) throws IOException, ServiceException {
 
-    if (!isVersion(V2))
-      return getUnknownVersionResponseBean();
+    if (!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
 
-    BeanFactoryV2 factory = getBeanFactoryV2();
+    BeanFactoryV2 factory = _support.getBeanFactoryV2();
 
     try {
       ListBean<VehicleLocationRecordBean> vehicles = _service.getVehicleLocationRecords(query);
-      return getOkResponseBean(factory.getVehicleLocationRecordResponse(vehicles));
+      return _support.getOkResponseBean(factory.getVehicleLocationRecordResponse(vehicles));
     } catch (OutOfServiceAreaServiceException ex) {
-      return getOkResponseBean(factory.getEmptyList(VehicleStatusV2Bean.class, true));
+      return _support.getOkResponseBean(factory.getEmptyList(VehicleStatusV2Bean.class, true));
     }
   }
 }

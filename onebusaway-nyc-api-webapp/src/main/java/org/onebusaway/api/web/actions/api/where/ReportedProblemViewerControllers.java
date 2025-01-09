@@ -18,7 +18,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/where/")
-public class ReportedProblemViewerControllers extends ApiActionSupport {
+public class ReportedProblemViewerControllers {
 
     private static final long serialVersionUID = 1L;
 
@@ -27,6 +27,9 @@ public class ReportedProblemViewerControllers extends ApiActionSupport {
 
     @Autowired
     private TransitDataService _service;
+
+    @Autowired
+    private ApiActionSupport _support;
 
     @Value("${reportedProblemViewerControllers.enabled:false}")
     private boolean enabled;
@@ -39,9 +42,9 @@ public class ReportedProblemViewerControllers extends ApiActionSupport {
         FieldErrorSupport fieldErrors = new FieldErrorSupport()
                 .hasFieldError(id, "stopId");
         if (fieldErrors.hasErrors())
-            return getValidationErrorsResponseBean(fieldErrors.getErrors());
+            return _support.getValidationErrorsResponseBean(fieldErrors.getErrors());
 
-        return getOkResponseBean(_service.getAllStopProblemReportsForStopId(id));
+        return _support.getOkResponseBean(_service.getAllStopProblemReportsForStopId(id));
     }
 
     @GetMapping("reported-problems-with-trip-viewer/{tripId}")
@@ -52,9 +55,9 @@ public class ReportedProblemViewerControllers extends ApiActionSupport {
         FieldErrorSupport fieldErrors = new FieldErrorSupport()
                 .hasFieldError(bean.getTripId(), "tripId");
         if (fieldErrors.hasErrors())
-            return getValidationErrorsResponseBean(fieldErrors.getErrors());
+            return _support.getValidationErrorsResponseBean(fieldErrors.getErrors());
 
-        return getOkResponseBean(_service.getTripProblemReports(bean));
+        return _support.getOkResponseBean(_service.getTripProblemReports(bean));
     }
 
 }

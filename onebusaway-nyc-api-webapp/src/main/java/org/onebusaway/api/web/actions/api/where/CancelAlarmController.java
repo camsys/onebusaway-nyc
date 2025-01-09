@@ -43,7 +43,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/cancel-alarm")
-public class CancelAlarmController extends ApiActionSupport {
+public class CancelAlarmController {
 
   private static final long serialVersionUID = 1L;
 
@@ -55,21 +55,24 @@ public class CancelAlarmController extends ApiActionSupport {
   @Autowired
   private AlarmService _alarmService;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@RequestParam(name ="Id", required = false) String id) throws ServiceException {
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(id,"Id");
     if (fieldErrors.hasErrors())
-      return getValidationErrorsResponseBean(fieldErrors.getErrors());
+      return _support.getValidationErrorsResponseBean(fieldErrors.getErrors());
 
     _service.cancelAlarmForArrivalAndDepartureAtStop(id);
     _alarmService.cancelAlarm(id);
 
-    if (isVersion(V2)) {
-      return getOkResponseBean("");
+    if (_support.isVersion(V2)) {
+      return _support.getOkResponseBean("");
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
   }
 }

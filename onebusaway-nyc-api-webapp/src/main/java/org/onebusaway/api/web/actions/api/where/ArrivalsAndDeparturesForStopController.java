@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/where/arrivals-and-departures-for-stop/{stopId}")
-public class ArrivalsAndDeparturesForStopController extends ApiActionSupport {
+public class ArrivalsAndDeparturesForStopController {
 
   private static final long serialVersionUID = 1L;
 
@@ -52,7 +52,9 @@ public class ArrivalsAndDeparturesForStopController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
-  
+  @Autowired
+  private ApiActionSupport _support;
+
 //  private ArrivalsAndDeparturesQueryBean _query = new ArrivalsAndDeparturesQueryBean();
 
   @GetMapping
@@ -64,7 +66,7 @@ public class ArrivalsAndDeparturesForStopController extends ApiActionSupport {
             id, query);
 
     if (result == null)
-      return getResourceNotFoundResponseBean();
+      return _support.getResourceNotFoundResponseBean();
 
     List<ArrivalAndDepartureBean> realTimeBeans = new LinkedList<ArrivalAndDepartureBean>();
     for (ArrivalAndDepartureBean bean : result.getArrivalsAndDepartures()){
@@ -74,17 +76,17 @@ public class ArrivalsAndDeparturesForStopController extends ApiActionSupport {
     }
     result.getArrivalsAndDepartures().removeAll(realTimeBeans);
 
-    if (isVersion(V1)) {
+    if (_support.isVersion(V1)) {
       // Convert data to v1 form
       List<ArrivalAndDepartureBeanV1> arrivals = getArrivalsAsV1(result);
       StopWithArrivalsAndDeparturesBeanV1 v1 = new StopWithArrivalsAndDeparturesBeanV1(
               result.getStop(), arrivals, result.getNearbyStops());
-      return getOkResponseBean(v1);
-    } else if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
-      return getOkResponseBean(factory.getResponse(result));
+      return _support.getOkResponseBean(v1);
+    } else if (_support.isVersion(V2)) {
+      BeanFactoryV2 factory = _support.getBeanFactoryV2();
+      return _support.getOkResponseBean(factory.getResponse(result));
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
 
   }

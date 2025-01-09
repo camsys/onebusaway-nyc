@@ -29,7 +29,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/stops-for-route/{routeId}")
-public class StopsForRouteController extends ApiActionSupport {
+public class StopsForRouteController {
 
   private static final long serialVersionUID = 1L;
 
@@ -40,6 +40,9 @@ public class StopsForRouteController extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("routeId") String id,
                                            @RequestParam(name ="IncludePolylines", required = false, defaultValue = "true") boolean includePolylines) throws ServiceException {
@@ -47,16 +50,16 @@ public class StopsForRouteController extends ApiActionSupport {
     StopsForRouteBean result = _service.getStopsForRoute(id);
 
     if (result == null)
-      return getResourceNotFoundResponseBean();
+      return _support.getResourceNotFoundResponseBean();
 
-    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    BeanFactoryV2 factory = _support.getBeanFactoryV2(_service);
     factory.filterNonRevenueStops(result);
-    if (isVersion(V1)) {
-      return getOkResponseBean(result);
-    } else if (isVersion(V2)) {
-      return getOkResponseBean(factory.getResponse(result,includePolylines));
+    if (_support.isVersion(V1)) {
+      return _support.getOkResponseBean(result);
+    } else if (_support.isVersion(V2)) {
+      return _support.getOkResponseBean(factory.getResponse(result,includePolylines));
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
   }
 }

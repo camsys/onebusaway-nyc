@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/where/block-instance/{blockId}")
-public class BlockInstanceController extends ApiActionSupport {
+public class BlockInstanceController {
 
   private static final long serialVersionUID = 1L;
 
@@ -48,12 +48,15 @@ public class BlockInstanceController extends ApiActionSupport {
   @Autowired
   private NycDateConverterWrapper _formatter;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("blockId") String id,
                                            @RequestParam(name ="ServiceDate", required = false) String serviceDateString
                            ) throws ServiceException {
-    if (!isVersion(V2))
-      return getUnknownVersionResponseBean();
+    if (!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
 
     Long serviceDate = null;
     try {
@@ -62,7 +65,7 @@ public class BlockInstanceController extends ApiActionSupport {
       FieldErrorSupport fieldErrors = new FieldErrorSupport()
               .invalidValue("ServiceDate");
       if (fieldErrors.hasErrors())
-        return getValidationErrorsResponseBean(fieldErrors.getErrors());
+        return _support.getValidationErrorsResponseBean(fieldErrors.getErrors());
     }
 
 
@@ -71,11 +74,11 @@ public class BlockInstanceController extends ApiActionSupport {
         serviceDate);
 
     if (blockInstance == null)
-      return getResourceNotFoundResponseBean();
+      return _support.getResourceNotFoundResponseBean();
 
-    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    BeanFactoryV2 factory = _support.getBeanFactoryV2(_service);
     BlockInstanceV2Bean bean = factory.getBlockInstance(blockInstance);
     EntryWithReferencesBean<BlockInstanceV2Bean> response = factory.entry(bean);
-    return getOkResponseBean(response);
+    return _support.getOkResponseBean(response);
   }
 }

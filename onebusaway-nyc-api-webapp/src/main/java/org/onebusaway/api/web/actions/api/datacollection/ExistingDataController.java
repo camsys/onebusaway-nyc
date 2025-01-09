@@ -30,7 +30,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/datacollection")
-public class ExistingDataController extends ApiActionSupport {
+public class ExistingDataController {
   
   private static final int V1 = 1;
 
@@ -38,6 +38,9 @@ public class ExistingDataController extends ApiActionSupport {
   private DataCollectionService _data;
 
   private static final long serialVersionUID = 1L;
+
+  @Autowired
+  private ApiActionSupport _support;
 
   @GetMapping("/existing-data")
   public ResponseEntity<ResponseBean> index() {
@@ -48,7 +51,7 @@ public class ExistingDataController extends ApiActionSupport {
       for( File file : files)
         values.add(file.getName());
     }
-    return getOkResponseBean(values);
+    return _support.getOkResponseBean(values);
   }
 
 }

@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-public class ActiveBundleController extends ApiActionSupport {
+public class ActiveBundleController {
 
     private static final long serialVersionUID = 1L;
 
@@ -36,12 +36,15 @@ public class ActiveBundleController extends ApiActionSupport {
     @Autowired
     private TransitDataService _service;
 
+    @Autowired
+    private ApiActionSupport _support;
+
     @RequestMapping("/where/active-bundle")
     public ResponseEntity<ResponseBean> index() {
 
         String activeBundleId = _service.getActiveBundleId();
         ActiveBundleBeanV1 activeBundleBean = new ActiveBundleBeanV1(activeBundleId);
 
-        return getOkResponseBean(activeBundleBean);
+        return _support.getOkResponseBean(activeBundleBean);
     }
 }

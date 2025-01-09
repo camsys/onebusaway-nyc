@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/where/estimate-current-vehicle")
-public class EstimateCurrentVehicleController extends ApiActionSupport {
+public class EstimateCurrentVehicleController{
 
   private static final long serialVersionUID = 1L;
 
@@ -47,6 +47,9 @@ public class EstimateCurrentVehicleController extends ApiActionSupport {
 
   @Autowired
   private TransitDataService _service;
+
+  @Autowired
+  private ApiActionSupport _support;
 
 /**
  * Handles the API endpoint relating to current state of a vehicle.
@@ -67,22 +70,22 @@ public class EstimateCurrentVehicleController extends ApiActionSupport {
   public ResponseEntity<ResponseBean> index(@RequestParam(name ="Data", required = false) String data,
                                             CurrentVehicleEstimateQueryBean query) throws IOException, ServiceException {
 
-    if (!isVersion(V2))
-      return getUnknownVersionResponseBean();
+    if (!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(data,"Data");
 
     fillInQuery(query,data, fieldErrors);
     if (fieldErrors.hasErrors())
-      return getValidationErrorsResponseBean(fieldErrors.getErrors());
+      return _support.getValidationErrorsResponseBean(fieldErrors.getErrors());
 //    if (hasErrors())
 //      return getValidationErrorsResponseBean();
 
-    BeanFactoryV2 factory = getBeanFactoryV2();
+    BeanFactoryV2 factory = _support.getBeanFactoryV2();
 
     ListBean<CurrentVehicleEstimateBean> estimates = _service.getCurrentVehicleEstimates(query);
-    return getOkResponseBean(factory.getCurrentVehicleEstimates(estimates));
+    return _support.getOkResponseBean(factory.getCurrentVehicleEstimates(estimates));
   }
 
   private void fillInQuery(CurrentVehicleEstimateQueryBean _query,String _data, FieldErrorSupport fieldErrors) {

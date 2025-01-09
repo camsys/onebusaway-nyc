@@ -38,7 +38,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/block/{blockId}")
-public class BlockController extends ApiActionSupport {
+public class BlockController {
 
   private static final long serialVersionUID = 1L;
 
@@ -47,19 +47,22 @@ public class BlockController extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("blockId") String id) throws ServiceException {
 
-    if (!isVersion(V2))
-      return getUnknownVersionResponseBean();
+    if (!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
 
     BlockBean block = _service.getBlockForId(id);
 
     if (block == null)
-      return getResourceNotFoundResponseBean();
+      return _support.getResourceNotFoundResponseBean();
 
-    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    BeanFactoryV2 factory = _support.getBeanFactoryV2(_service);
     EntryWithReferencesBean<BlockV2Bean> response = factory.getBlockResponse(block);
-    return getOkResponseBean(response);
+    return _support.getOkResponseBean(response);
   }
 }

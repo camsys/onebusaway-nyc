@@ -36,7 +36,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/where/trip-details/{tripId}")
-public class TripDetailsController extends ApiActionSupport {
+public class TripDetailsController {
 
   private static final long serialVersionUID = 1L;
 
@@ -44,6 +44,9 @@ public class TripDetailsController extends ApiActionSupport {
 
   @Autowired
   private NycTransitDataService _service;
+
+  @Autowired
+  private ApiActionSupport _support;
 
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("tripId") String id,
@@ -56,10 +59,10 @@ public class TripDetailsController extends ApiActionSupport {
                            ) throws ServiceException {
 
 //todo:confirm date is handled appropriately if no value is given
-    if (!isVersion(V2))
-      return getUnknownVersionResponseBean();
+    if (!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
 
-    time = longToTime(time);
+    time = _support.longToTime(time);
     TripDetailsQueryBean query = new TripDetailsQueryBean();
     query.setTripId(id);
     if( date != null)
@@ -75,12 +78,12 @@ public class TripDetailsController extends ApiActionSupport {
       TripDetailsBean tripDetails = _service.getSingleTripDetails(query);
 
     if (tripDetails == null)
-      return(getResourceNotFoundResponseBean());
+      return(_support.getResourceNotFoundResponseBean());
 //      throw new ResponseStatusException(HttpStatus.valueOf(ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND),getResourceNotFoundResponseBean().getText());
 
-    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    BeanFactoryV2 factory = _support.getBeanFactoryV2(_service);
     EntryWithReferencesBean<TripDetailsV2Bean> response = factory.getResponse(tripDetails);
-    return getOkResponseBean(response);
+    return _support.getOkResponseBean(response);
   }
 
 }

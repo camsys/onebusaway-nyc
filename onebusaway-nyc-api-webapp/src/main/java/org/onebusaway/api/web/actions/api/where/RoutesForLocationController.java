@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/where/routes-for-location")
-public class RoutesForLocationController extends ApiActionSupport {
+public class RoutesForLocationController {
 
   private static final long serialVersionUID = 1L;
 
@@ -52,6 +52,9 @@ public class RoutesForLocationController extends ApiActionSupport {
 
   @Autowired
   private TransitDataService _service;
+
+  @Autowired
+  private ApiActionSupport _support;
 
   @GetMapping
   public ResponseEntity<ResponseBean> index(@RequestParam(name ="Lat", required = false)Double lat,
@@ -70,7 +73,7 @@ public class RoutesForLocationController extends ApiActionSupport {
       errorSupport.addError("maxCount", "must be greater than zero");
 
     if (errorSupport.hasErrors())
-      return getValidationErrorsResponseBean(errorSupport.getErrors());
+      return _support.getValidationErrorsResponseBean(errorSupport.getErrors());
 
     MaxCountSupport _maxCount = new MaxCountSupport(10, 50);
     _maxCount.setMaxCount(maxCount.intValue());
@@ -95,24 +98,24 @@ public class RoutesForLocationController extends ApiActionSupport {
   }
 
   private ResponseEntity<ResponseBean> transformResult(RoutesBean result) {
-    if (isVersion(V1)) {
-      return getOkResponseBean(result);
-    } else if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
-      return getOkResponseBean(factory.getResponse(result));
+    if (_support.isVersion(V1)) {
+      return _support.getOkResponseBean(result);
+    } else if (_support.isVersion(V2)) {
+      BeanFactoryV2 factory = _support.getBeanFactoryV2();
+      return _support.getOkResponseBean(factory.getResponse(result));
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
   }
 
   private ResponseEntity<ResponseBean> transformOutOfRangeResult() {
-    if (isVersion(V1)) {
-      return getOkResponseBean(new RoutesBean());
-    } else if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
-      return getOkResponseBean(factory.getEmptyList(RouteV2Bean.class, true));
+    if (_support.isVersion(V1)) {
+      return _support.getOkResponseBean(new RoutesBean());
+    } else if (_support.isVersion(V2)) {
+      BeanFactoryV2 factory = _support.getBeanFactoryV2();
+      return _support.getOkResponseBean(factory.getEmptyList(RouteV2Bean.class, true));
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
   }
 

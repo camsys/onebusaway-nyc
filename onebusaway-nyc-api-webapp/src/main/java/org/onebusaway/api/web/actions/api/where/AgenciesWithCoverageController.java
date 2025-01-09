@@ -42,7 +42,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/agencies-with-coverage")
-public class AgenciesWithCoverageController extends ApiActionSupport {
+public class AgenciesWithCoverageController {
 
   private static final long serialVersionUID = 1L;
 
@@ -63,9 +63,9 @@ public class AgenciesWithCoverageController extends ApiActionSupport {
 
     if (_support.isVersion(V1)) {
       return _support.getOkResponseBean(beans);
-    } else if (isVersion(V2)) {
+    } else if (_support.isVersion(V2)) {
       BeanFactoryV2 factory = _support.getBeanFactoryV2();
-      return getOkResponseBean(factory.getResponse(beans));
+      return _support.getOkResponseBean(factory.getResponse(beans));
     } else {
       return _support.getUnknownVersionResponseBean();
     }

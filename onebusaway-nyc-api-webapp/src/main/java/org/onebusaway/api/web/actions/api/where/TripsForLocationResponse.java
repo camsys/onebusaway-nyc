@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/where/trips-for-location")
-public class TripsForLocationResponse extends ApiActionSupport {
+public class TripsForLocationResponse {
 
   private static final long serialVersionUID = 1L;
 
@@ -52,6 +52,9 @@ public class TripsForLocationResponse extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> index(SearchBoundsFactory searchBoundsFactory,
                                             @RequestParam(name ="Date", required = false) long time,
@@ -59,10 +62,10 @@ public class TripsForLocationResponse extends ApiActionSupport {
                                             @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeTrip,
                                             @RequestParam(name ="IncludeStatus", required = false, defaultValue = "false") boolean includeStatus,
                                             @RequestParam(name ="IncludeSchedule", required = false, defaultValue = "false") boolean includeSchedule) throws IOException, ServiceException {
-    MaxCountSupport maxCount = createMaxCountFromArg(maxCountArg);
-    time = longToTime(time);
-    if (!isVersion(V2))
-      return getUnknownVersionResponseBean();
+    MaxCountSupport maxCount = _support.createMaxCountFromArg(maxCountArg);
+    time = _support.longToTime(time);
+    if (!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
 
 
     if(searchBoundsFactory.getMaxSearchRadius()==0){
@@ -81,13 +84,13 @@ public class TripsForLocationResponse extends ApiActionSupport {
     inclusion.setIncludeTripSchedule(includeSchedule);
     inclusion.setIncludeTripStatus(includeStatus);
 
-    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    BeanFactoryV2 factory = _support.getBeanFactoryV2(_service);
 
     try {
       ListBean<TripDetailsBean> trips = _service.getTripsForBounds(query);
-      return getOkResponseBean(factory.getTripDetailsResponse(trips));
+      return _support.getOkResponseBean(factory.getTripDetailsResponse(trips));
     } catch (OutOfServiceAreaServiceException ex) {
-      return getOkResponseBean(factory.getEmptyList(TripDetailsV2Bean.class, true));
+      return _support.getOkResponseBean(factory.getEmptyList(TripDetailsV2Bean.class, true));
     }
   }
 }

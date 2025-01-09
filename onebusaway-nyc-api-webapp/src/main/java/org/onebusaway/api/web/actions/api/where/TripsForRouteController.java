@@ -36,7 +36,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/trips-for-route/{routeId}")
-public class TripsForRouteController extends ApiActionSupport {
+public class TripsForRouteController {
 
   private static final long serialVersionUID = 1L;
 
@@ -44,6 +44,9 @@ public class TripsForRouteController extends ApiActionSupport {
 
   @Autowired
   private NycTransitDataService _service;
+
+  @Autowired
+  private ApiActionSupport _support;
 
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("routeId") String id,
@@ -53,11 +56,11 @@ public class TripsForRouteController extends ApiActionSupport {
                                            @RequestParam(name ="IncludeStatus", required = false, defaultValue = "false") boolean includeStatus,
                                            @RequestParam(name ="IncludeSchedule", required = false, defaultValue = "false") boolean includeSchedule) throws IOException, ServiceException {
 //   todo: may have a DateTime conversion error which is visible here, review w/ comb
-    time = longToTime(time);
-    MaxCountSupport maxCount = createMaxCountFromArg(maxCountArg);
+    time = _support.longToTime(time);
+    MaxCountSupport maxCount = _support.createMaxCountFromArg(maxCountArg);
 
-    if (!isVersion(V2))
-      return getUnknownVersionResponseBean();
+    if (!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
 
 
     TripsForRouteQueryBean query = new TripsForRouteQueryBean();
@@ -70,13 +73,13 @@ public class TripsForRouteController extends ApiActionSupport {
     inclusion.setIncludeTripSchedule(includeSchedule);
     inclusion.setIncludeTripStatus(includeStatus);
 
-    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    BeanFactoryV2 factory = _support.getBeanFactoryV2(_service);
 
     try {
       ListBean<TripDetailsBean> trips = _service.getTripsForRoute(query);
-      return getOkResponseBean(factory.getTripDetailsResponse(trips));
+      return _support.getOkResponseBean(factory.getTripDetailsResponse(trips));
     } catch (OutOfServiceAreaServiceException ex) {
-      return getOkResponseBean(factory.getEmptyList(TripDetailsV2Bean.class, true));
+      return _support.getOkResponseBean(factory.getEmptyList(TripDetailsV2Bean.class, true));
     }
   }
 }

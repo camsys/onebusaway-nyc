@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.onebusaway.api.model.ResponseBean;
 @RestController
 @RequestMapping("/where/stops-for-location")
-public class StopsForLocationController extends ApiActionSupport {
+public class StopsForLocationController {
 
   private static final long serialVersionUID = 1L;
 
@@ -54,6 +54,9 @@ public class StopsForLocationController extends ApiActionSupport {
 
   @Autowired
   private NycTransitDataService _service;
+
+  @Autowired
+  private ApiActionSupport _support;
 
   @GetMapping
   public ResponseEntity<ResponseBean> index(@RequestParam(name ="Lat", required = false)Double lat,
@@ -73,7 +76,7 @@ public class StopsForLocationController extends ApiActionSupport {
 //    todo: add field errors for Lat,Lon,LatSpan,LonSpan,Radius
 
     if (errorSupport.hasErrors())
-      return getValidationErrorsResponseBean(errorSupport.getErrors());
+      return _support.getValidationErrorsResponseBean(errorSupport.getErrors());
 
     CoordinateBounds bounds = getSearchBounds(radius, lat, lon, latSpan, lonSpan, query);
 
@@ -95,25 +98,25 @@ public class StopsForLocationController extends ApiActionSupport {
   }
 
   private ResponseEntity<ResponseBean> transformResult(StopsBean result) {
-    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    BeanFactoryV2 factory = _support.getBeanFactoryV2(_service);
     factory.filterNonRevenueStops(result);
-    if (isVersion(V1)) {
-      return getOkResponseBean(result);
-    } else if (isVersion(V2)) {
-      return getOkResponseBean(factory.getResponse(result));
+    if (_support.isVersion(V1)) {
+      return _support.getOkResponseBean(result);
+    } else if (_support.isVersion(V2)) {
+      return _support.getOkResponseBean(factory.getResponse(result));
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
   }
 
   private ResponseEntity<ResponseBean> transformOutOfRangeResult() {
-    if (isVersion(V1)) {
-      return getOkResponseBean(new StopsBean());
-    } else if (isVersion(V2)) {
-      BeanFactoryV2 factory = getBeanFactoryV2();
-      return getOkResponseBean(factory.getEmptyList(StopV2Bean.class, true));
+    if (_support.isVersion(V1)) {
+      return _support.getOkResponseBean(new StopsBean());
+    } else if (_support.isVersion(V2)) {
+      BeanFactoryV2 factory = _support.getBeanFactoryV2();
+      return _support.getOkResponseBean(factory.getEmptyList(StopV2Bean.class, true));
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
   }
 

@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/where/cancel-alarms")
-public class CancelAlarmsController extends ApiActionSupport {
+public class CancelAlarmsController {
 
   private static final long serialVersionUID = 1L;
 
@@ -43,6 +43,9 @@ public class CancelAlarmsController extends ApiActionSupport {
   @Autowired
   private AlarmService _alarmService;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> index(@RequestParam(name ="Ids", required = false) List<String> ids) throws ServiceException {
 
@@ -53,10 +56,10 @@ public class CancelAlarmsController extends ApiActionSupport {
       }
     }
 
-    if (isVersion(V2)) {
-      return getOkResponseBean("");
+    if (_support.isVersion(V2)) {
+      return _support.getOkResponseBean("");
     } else {
-      return getUnknownVersionResponseBean();
+      return _support.getUnknownVersionResponseBean();
     }
   }
 }

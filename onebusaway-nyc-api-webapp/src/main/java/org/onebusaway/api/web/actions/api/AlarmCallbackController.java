@@ -24,9 +24,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 @RequestMapping("/alarm-callback/{id}")
-public class AlarmCallbackController extends ApiActionSupport {
+public class AlarmCallbackController {
 
   private static final long serialVersionUID = 1L;
 
@@ -35,11 +36,14 @@ public class AlarmCallbackController extends ApiActionSupport {
   @Autowired
   private AlarmService _alarmService;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @RequestMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("id") String id) throws ServiceException {
 
     _alarmService.fireAlarm(id);
 
-    return getOkResponseBean(null);
+    return _support.getOkResponseBean(null);
   }
 }

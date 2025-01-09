@@ -30,7 +30,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/shape-ids-for-agency/{agencyId}")
-public class ShapeIdsForAgencyController extends ApiActionSupport {
+public class ShapeIdsForAgencyController {
 
   private static final long serialVersionUID = 1L;
 
@@ -39,14 +39,17 @@ public class ShapeIdsForAgencyController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id) {
 
-    if( ! isVersion(V2))
-      return getUnknownVersionResponseBean();
+    if(!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
     
     ListBean<String> stopIds = _service.getShapeIdsForAgencyId(id);
-    BeanFactoryV2 factory = getBeanFactoryV2();
-    return getOkResponseBean(factory.getEntityIdsResponse(stopIds));
+    BeanFactoryV2 factory = _support.getBeanFactoryV2();
+    return _support.getOkResponseBean(factory.getEntityIdsResponse(stopIds));
   }
 }

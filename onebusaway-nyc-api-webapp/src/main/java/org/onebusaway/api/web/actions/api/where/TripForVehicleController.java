@@ -34,7 +34,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/trip-for-vehicle/{vehicleId}")
-public class TripForVehicleController extends ApiActionSupport {
+public class TripForVehicleController {
 
   private static final long serialVersionUID = 1L;
 
@@ -43,6 +43,9 @@ public class TripForVehicleController extends ApiActionSupport {
   @Autowired
   private NycTransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("vehicleId") String id,
                                            @RequestParam(name ="Time", required = false, defaultValue = "") Long timeLong,
@@ -50,8 +53,8 @@ public class TripForVehicleController extends ApiActionSupport {
                                            @RequestParam(name ="IncludeTrip", required = false, defaultValue = "true") boolean includeSchedule,
                                            @RequestParam(name ="IncludeStatus", required = false, defaultValue = "false")boolean includeStatus) throws ServiceException {
 // todo: time should be handled like a new date
-    if (!isVersion(V2))
-      return getUnknownVersionResponseBean();
+    if (!_support.isVersion(V2))
+      return _support.getUnknownVersionResponseBean();
 
     Date time = new Date(timeLong);
     TripForVehicleQueryBean query = new TripForVehicleQueryBean();
@@ -66,10 +69,10 @@ public class TripForVehicleController extends ApiActionSupport {
     TripDetailsBean trip = _service.getTripDetailsForVehicleAndTime(query);
 
     if (trip == null)
-      return getResourceNotFoundResponseBean();
+      return _support.getResourceNotFoundResponseBean();
 
-    BeanFactoryV2 factory = getBeanFactoryV2(_service);
+    BeanFactoryV2 factory = _support.getBeanFactoryV2(_service);
     EntryWithReferencesBean<TripDetailsV2Bean> response = factory.getResponse(trip);
-    return getOkResponseBean(response);
+    return _support.getOkResponseBean(response);
   }
 }

@@ -31,7 +31,7 @@ import org.onebusaway.api.model.ResponseBean;
 
 @RestController
 @RequestMapping("/where/shape/{shapeId}")
-public class ShapeController extends ApiActionSupport {
+public class ShapeController {
 
   private static final long serialVersionUID = 1L;
 
@@ -40,15 +40,18 @@ public class ShapeController extends ApiActionSupport {
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
+  private ApiActionSupport _support;
+
   @GetMapping
   public ResponseEntity<ResponseBean> show(@PathVariable("shapeId") String id) {
 
     EncodedPolylineBean shape = _service.getShapeForId(id);
 
     if (shape == null)
-      return getResourceNotFoundResponseBean();
+      return _support.getResourceNotFoundResponseBean();
 
-    BeanFactoryV2 factory = getBeanFactoryV2();
-    return getOkResponseBean(factory.getResponse(shape));
+    BeanFactoryV2 factory = _support.getBeanFactoryV2();
+    return _support.getOkResponseBean(factory.getResponse(shape));
   }
 }
