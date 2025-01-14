@@ -77,9 +77,9 @@ public class BustrekDataExtractorStifReader extends BasicStifReader {
     }
 
     public void runWithoutTrips(InputStream stream, File path) {
+        int lineNumber = 0;
         try {
             StifRecordReader reader = createStifRecordReader(stream);
-            int lineNumber = 0;
             StifRecord record = null;
             while (true) {
                 previousRecord = record;
@@ -112,7 +112,7 @@ public class BustrekDataExtractorStifReader extends BasicStifReader {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Caught error processing stif on line#"+lineNumber+" in file "+path.getAbsolutePath(), e);
         }
     }
 
