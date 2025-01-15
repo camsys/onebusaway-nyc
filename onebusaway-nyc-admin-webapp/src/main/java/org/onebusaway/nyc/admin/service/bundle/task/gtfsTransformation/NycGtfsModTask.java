@@ -248,10 +248,12 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
             CSVReader reader = new CSVReader(new FileReader(outputFolder.getAbsolutePath()+ "/stops.txt"));
             int stop_lat_collumn = -1;
             int stop_lon_collumn = -1;
+            int linecount = 0;
             String[] nextLine = reader.readNext();
             ArrayList<Float> latitudes = new ArrayList<Float>();
             ArrayList<Float> longitudes = new ArrayList<Float>();
             while (nextLine != null) {
+                linecount++;
                 if(stop_lat_collumn == -1 || stop_lon_collumn == -1){
                     stop_lat_collumn = Arrays.asList(nextLine).indexOf("stop_lat");
                     stop_lon_collumn = Arrays.asList(nextLine).indexOf("stop_lon");
@@ -259,6 +261,10 @@ public class NycGtfsModTask extends BaseModTask implements Runnable {
                     continue;
                 }
                 // nextLine[] is an array of values from the line
+                if(nextLine.length <= stop_lat_collumn || nextLine.length <= stop_lon_collumn){
+                    throw new IOException("Error reading stops.txt. Expected to find stop_lat and stop_lon columns on line# "
+                            +linecount+". Found: " + nextLine);
+                }
                 float lat = Float.parseFloat(nextLine[stop_lat_collumn]);
                 float lon = Float.parseFloat(nextLine[stop_lon_collumn]);
                 latitudes.add(lat);
