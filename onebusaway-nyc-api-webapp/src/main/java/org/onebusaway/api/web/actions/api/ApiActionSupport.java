@@ -25,6 +25,7 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.onebusaway.api.web.interceptors.GlobalExceptionHandler;
 
 
 @Component
@@ -110,6 +111,9 @@ public class ApiActionSupport implements OneBusAwayApiActionSupport{
 
   public ResponseEntity<ResponseBean> getValidationErrorsResponseBean(Map<String, List<String>> fieldErrors) {
     ValidationErrorBean bean = new ValidationErrorBean(null, fieldErrors);
+
+    GlobalExceptionHandler.handleValidationExceptions(fieldErrors);
+
     return new ResponseEntity<>(new ResponseBean(getReturnVersion(),
             ResponseCodes.RESPONSE_INVALID_ARGUMENT, "validation error", bean),
             HttpStatus.valueOf(ResponseCodes.RESPONSE_INVALID_ARGUMENT));
