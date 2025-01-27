@@ -37,6 +37,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/where/estimate-current-vehicle")
 public class EstimateCurrentVehicleController{
@@ -67,7 +69,7 @@ public class EstimateCurrentVehicleController{
  *         the request is invalid.
 **/
   @GetMapping
-  public ResponseEntity<ResponseBean> index(@RequestParam(name ="Data", required = false) String data,
+  public ResponseEntity<ResponseBean> index(@Valid @RequestParam(name ="Data", required = false) String data,
                                             CurrentVehicleEstimateQueryBean query) throws IOException, ServiceException {
 
     if (!_support.isVersion(V2))

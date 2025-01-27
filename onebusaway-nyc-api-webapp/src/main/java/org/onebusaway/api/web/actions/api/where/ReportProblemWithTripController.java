@@ -29,6 +29,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/where/report-problem-with-trip-resource")
 public class ReportProblemWithTripController {
@@ -42,7 +45,7 @@ public class ReportProblemWithTripController {
   private ApiActionSupport _support;
 
   @GetMapping
-  public ResponseEntity<ResponseBean> create(TripProblemReportBean model) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> create(@Valid TripProblemReportBean model) throws IOException, ServiceException {
 
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()

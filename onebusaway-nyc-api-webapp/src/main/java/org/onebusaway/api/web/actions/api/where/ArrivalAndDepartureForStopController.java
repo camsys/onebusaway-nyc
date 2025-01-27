@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/where/arrival-and-departure-for-stop/{stopId}")
 public class ArrivalAndDepartureForStopController{
@@ -45,8 +47,8 @@ public class ArrivalAndDepartureForStopController{
   private ApiActionSupport _support;
 
   @GetMapping
-  public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String stopId,
-                                           ArrivalAndDepartureForStopQueryBean _query) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@Valid @PathVariable("stopId") String stopId,
+                                           @Valid ArrivalAndDepartureForStopQueryBean _query) throws ServiceException {
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(stopId,"stopId").hasFieldError(_query.getTripId(),"tripId")

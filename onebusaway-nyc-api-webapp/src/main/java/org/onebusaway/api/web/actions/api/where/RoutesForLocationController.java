@@ -36,6 +36,9 @@ import org.onebusaway.api.model.ResponseBean;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/where/routes-for-location")
 public class RoutesForLocationController {
@@ -57,13 +60,13 @@ public class RoutesForLocationController {
   private ApiActionSupport _support;
 
   @GetMapping
-  public ResponseEntity<ResponseBean> index(@RequestParam(name ="Lat", required = false)Double lat,
-                                            @RequestParam(name ="Lon", required = false) Double lon,
-                                            @RequestParam(name ="LatSpan", required = false) Double latSpan,
-                                            @RequestParam(name ="LonSpan", required = false) Double lonSpan,
-                                            @RequestParam(name ="Radius", required = false) Double radius,
-                                            @RequestParam(name ="Query", required = false) String query,
-                                            @RequestParam(name ="MaxCount", required = false) Long maxCount) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> index(@Valid @RequestParam(name ="Lat", required = false)Double lat,
+                                            @Valid @RequestParam(name ="Lon", required = false) Double lon,
+                                            @Valid @RequestParam(name ="LatSpan", required = false) Double latSpan,
+                                            @Valid @RequestParam(name ="LonSpan", required = false) Double lonSpan,
+                                            @Valid @RequestParam(name ="Radius", required = false) Double radius,
+                                            @Valid @RequestParam(name ="Query", required = false) String query,
+                                            @Valid @RequestParam(name ="MaxCount", required = false) Long maxCount) throws IOException, ServiceException {
 
     FieldErrorSupport errorSupport = new FieldErrorSupport();
     if(maxCount==null){

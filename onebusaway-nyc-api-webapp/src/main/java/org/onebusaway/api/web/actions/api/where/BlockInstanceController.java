@@ -33,6 +33,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 
 @RestController
 @RequestMapping("/where/block-instance/{blockId}")
@@ -52,8 +54,8 @@ public class BlockInstanceController {
   private ApiActionSupport _support;
 
   @GetMapping
-  public ResponseEntity<ResponseBean> show(@PathVariable("blockId") String id,
-                                           @RequestParam(name ="ServiceDate", required = false) String serviceDateString
+  public ResponseEntity<ResponseBean> show(@Valid @PathVariable("blockId") String id,
+                                           @Valid @RequestParam(name ="ServiceDate", required = false) String serviceDateString
                            ) throws ServiceException {
     if (!_support.isVersion(V2))
       return _support.getUnknownVersionResponseBean();

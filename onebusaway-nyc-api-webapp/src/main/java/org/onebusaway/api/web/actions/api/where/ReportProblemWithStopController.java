@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/where/report-problem-with-stop-resource")
 public class ReportProblemWithStopController {
@@ -43,7 +45,7 @@ public class ReportProblemWithStopController {
   private ApiActionSupport _support;
 
   @GetMapping
-  public ResponseEntity<ResponseBean> create(StopProblemReportBean model) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> create(@Valid StopProblemReportBean model) throws IOException, ServiceException {
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(model.getStopId(),"stopId");

@@ -21,9 +21,9 @@ import java.util.Objects;
 public class GlobalExceptionHandler {
     static final int NO_VERSION = -999;
 
-    int _defaultVersion = 0;
+    static int _defaultVersion = 0;
 
-    int _version = -999;
+    static int _version = -999;
     public boolean isVersion(int version) {
         if (_version == NO_VERSION)
             return version == _defaultVersion;
@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
             return version == _version;
     }
 
-    int getReturnVersion() {
+    static int getReturnVersion() {
         if (_version == NO_VERSION)
             return _defaultVersion;
         return _version;
@@ -40,15 +40,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public static ResponseEntity<ResponseBean> handleValidationExceptions(Map<String, List<String>> fieldErrors) {
-        Map<String, String> errors = new HashMap<>();
-        fieldErrors.forEach((error) -> {
-            String fieldName = (FieldError) error.getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
 
        return new ResponseEntity<>(new ResponseBean(getReturnVersion(), ResponseCodes.RESPONSE_INVALID_ARGUMENT,
-                "validation exception", errors),HttpStatus.valueOf(ResponseCodes.RESPONSE_INVALID_ARGUMENT));
+                "validation exception", fieldErrors),HttpStatus.valueOf(ResponseCodes.RESPONSE_INVALID_ARGUMENT));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

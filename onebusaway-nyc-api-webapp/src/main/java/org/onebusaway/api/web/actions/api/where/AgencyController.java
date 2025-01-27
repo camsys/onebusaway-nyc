@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
+import javax.validation.Valid;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -56,7 +57,7 @@ public class AgencyController {
   private ApiActionSupport _support;
 
   @GetMapping
-  public ResponseEntity<ResponseBean> show(@PathVariable("agencyId") String id) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@Valid @PathVariable("agencyId") String id) throws ServiceException {
 
     AgencyBean agency = _service.getAgency(id);
 

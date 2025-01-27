@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/where/register-alarm-for-arrival-and-departure-at-stop/{stopId}")
 public class RegisterAlarmForArrivalAndDepartureAtStopController {
@@ -46,10 +48,10 @@ public class RegisterAlarmForArrivalAndDepartureAtStopController {
   private ApiActionSupport _support;
 
   @GetMapping
-  public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String id,
-                                           ArrivalAndDepartureForStopQueryBean query,
-                                           RegisterAlarmQueryBean alarm,
-                                           @RequestParam(name ="Data", required = false) String data) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@Valid @PathVariable("stopId") String id,
+                                           @Valid ArrivalAndDepartureForStopQueryBean query,
+                                           @Valid RegisterAlarmQueryBean alarm,
+                                           @Valid @RequestParam(name ="Data", required = false) String data) throws ServiceException {
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(query.getTripId(),"tripId");

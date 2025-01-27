@@ -41,6 +41,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.ResponseBean;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/where/cancel-alarm")
 public class CancelAlarmController {
@@ -59,7 +61,7 @@ public class CancelAlarmController {
   private ApiActionSupport _support;
 
   @GetMapping
-  public ResponseEntity<ResponseBean> show(@RequestParam(name ="Id", required = false) String id) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@Valid @RequestParam(name ="Id", required = false) String id) throws ServiceException {
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(id,"Id");

@@ -38,6 +38,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.onebusaway.api.model.ResponseBean;
+
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/where/stops-for-location")
 public class StopsForLocationController {
@@ -59,13 +62,13 @@ public class StopsForLocationController {
   private ApiActionSupport _support;
 
   @GetMapping
-  public ResponseEntity<ResponseBean> index(@RequestParam(name ="Lat", required = false)Double lat,
-                                            @RequestParam(name ="Lon", required = false) Double lon,
-                                            @RequestParam(name ="LatSpan", required = false) Double latSpan,
-                                            @RequestParam(name ="LonSpan", required = false) Double lonSpan,
-                                            @RequestParam(name ="Radius", required = false) Double radius,
-                                            @RequestParam(name ="Query", required = false) String query,
-                                            @RequestParam(name ="MaxCount", required = false) Long maxCountArg) throws IOException, ServiceException {
+  public ResponseEntity<ResponseBean> index(@Valid @RequestParam(name ="Lat", required = false)Double lat,
+                                            @Valid @RequestParam(name ="Lon", required = false) Double lon,
+                                            @Valid @RequestParam(name ="LatSpan", required = false) Double latSpan,
+                                            @Valid @RequestParam(name ="LonSpan", required = false) Double lonSpan,
+                                            @Valid @RequestParam(name ="Radius", required = false) Double radius,
+                                            @Valid @RequestParam(name ="Query", required = false) String query,
+                                            @Valid @RequestParam(name ="MaxCount", required = false) Long maxCountArg) throws IOException, ServiceException {
     MaxCountSupport _maxCount = new MaxCountSupport(100, 250);
     if(maxCountArg!=-1) _maxCount.setMaxCount(maxCountArg.intValue());
     int maxCount = _maxCount.getMaxCount();

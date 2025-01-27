@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.io.IOException;
 
 @RestController
@@ -35,7 +36,7 @@ public class ReportedProblemViewerControllers {
     private boolean enabled;
 
     @GetMapping("reported-problems-with-stop-viewer/{id}")
-    public ResponseEntity<ResponseBean> viewReportedStopProblems(@PathVariable("id") String id) throws IOException, ServiceException {
+    public ResponseEntity<ResponseBean> viewReportedStopProblems(@Valid @PathVariable("id") String id) throws IOException, ServiceException {
         if(enabled==false){
             return null;
         }
@@ -48,7 +49,7 @@ public class ReportedProblemViewerControllers {
     }
 
     @GetMapping("reported-problems-with-trip-viewer/{tripId}")
-    public ResponseEntity<ResponseBean> viewReportedTripProblems(TripProblemReportQueryBean bean) throws IOException, ServiceException {
+    public ResponseEntity<ResponseBean> viewReportedTripProblems(@Valid TripProblemReportQueryBean bean) throws IOException, ServiceException {
         if(enabled==false){
             return null;
         }

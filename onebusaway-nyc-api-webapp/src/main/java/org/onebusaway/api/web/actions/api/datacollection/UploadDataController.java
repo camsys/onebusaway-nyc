@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.Valid;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,8 +51,8 @@ public class UploadDataController {
   private ApiActionSupport _support;
 
   @PostMapping("/upload-data")
-  public ResponseEntity<ResponseBean> update(@RequestParam(name ="Id", required = false) String id,
-                                             @RequestParam(name ="Data", required = false) MultipartFile data) throws IOException {
+  public ResponseEntity<ResponseBean> update(@Valid @RequestParam(name ="Id", required = false) String id,
+                                             @Valid @RequestParam(name ="Data", required = false) MultipartFile data) throws IOException {
 
     FieldErrorSupport fes = new FieldErrorSupport();
     if (id == null || id.isEmpty()) {

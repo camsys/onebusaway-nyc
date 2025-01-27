@@ -28,6 +28,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.onebusaway.api.model.ResponseBean;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/where/schedule-for-stop/{stopId}")
 public class ScheduleForStopController {
@@ -43,8 +45,8 @@ public class ScheduleForStopController {
   private ApiActionSupport _support;
 
   @GetMapping
-  public ResponseEntity<ResponseBean> show(@PathVariable("stopId") String id,
-                                           @RequestParam(name ="Date", required = false) Long time) throws ServiceException {
+  public ResponseEntity<ResponseBean> show(@Valid @PathVariable("stopId") String id,
+                                           @Valid @RequestParam(name ="Date", required = false) Long time) throws ServiceException {
 
     FieldErrorSupport fieldErrors = new FieldErrorSupport()
             .hasFieldError(time,"Date");
