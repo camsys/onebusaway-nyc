@@ -113,22 +113,22 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
 
   public String getSurveyText() {
     return _configurationService.getConfigurationValueAsString(
-            "display.surveyTextMobile", "Take a brief survey to help us improve your ride");
+            "display.surveyText", "Take a brief survey to help us improve your ride");
   }
 
   public String getSurveyLinkText() {
     return _configurationService.getConfigurationValueAsString(
-            "display.surveyLinkTextMobile", "mta.info/csurvey");
+            "display.surveyLinkText", "mta.info/csurvey");
   }
 
   public String getSurveyLinkUrl() {
     return _configurationService.getConfigurationValueAsString(
-            "display.surveyLinkUrlMobile", "https://mta.info/csurvey");
+            "display.surveyLinkUrl", "https://mta.info/csurvey");
   }
 
   public Boolean getShowSurvey() {
     return _configurationService.getConfigurationValueAsBoolean(
-            "display.showSurveyMobile", false);
+            "display.showSurvey", false);
   }
 
 }
