@@ -1,31 +1,20 @@
 package org.onebusaway.nyc.ops.util;
 
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionInvocation;
-import com.opensymphony.xwork2.interceptor.AbstractInterceptor;
 import org.onebusaway.nyc.api.lib.services.ApiKeyThrottledService;
 import org.onebusaway.nyc.api.lib.services.ApiKeyUsageMonitor;
 import org.onebusaway.nyc.api.lib.services.ApiKeyWithRolesPermissionService;
-import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.users.services.ApiKeyPermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import uk.org.siri.siri.*;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.ext.Provider;
 import java.io.IOException;
-import java.util.Date;
-
 
 public class ApiKeyInterceptor implements Filter {
 

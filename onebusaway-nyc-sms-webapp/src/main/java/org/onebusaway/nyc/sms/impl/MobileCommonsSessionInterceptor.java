@@ -1,102 +1,107 @@
-/**
- * Copyright (C) 2011 Brian Ferris <bdferris@onebusaway.org>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.onebusaway.nyc.sms.impl;
 
-import org.apache.struts2.dispatcher.HttpParameters;
-import org.apache.struts2.dispatcher.Parameter;
+import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.nyc.sms.services.GoogleAnalyticsSessionAware;
 import org.onebusaway.nyc.sms.services.SessionManager;
-import org.onebusaway.presentation.impl.users.XWorkRequestAttributes;
-
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionInvocation;
-import com.opensymphony.xwork2.interceptor.AbstractInterceptor;
-
-import org.apache.struts2.interceptor.SessionAware;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.Map;
 
-public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
-
-  private static final long serialVersionUID = 1L;
+@Component
+public class MobileCommonsSessionInterceptor implements HandlerInterceptor {
 
   private SessionManager _sessionManager;
 
   private String _sessionIdParameterName = "profile_id";
-
-  @Autowired
-  public void setSessionManager(SessionManager sessionManager) {
-    _sessionManager = sessionManager;
-  }
 
   public void setSessionIdParameterName(String sessionIdParameterName) {
     _sessionIdParameterName = sessionIdParameterName;
   }
 
   @Override
-  public String intercept(ActionInvocation invocation) throws Exception {
-    ActionContext context = invocation.getInvocationContext();
-    HttpParameters parameters = context.getParameters();
-    Parameter sessionParameter = parameters.get(_sessionIdParameterName);
-
-    if(!sessionParameter.isDefined()) {
-      return invocation.invoke();
+  public boolean preHandle(HttpServletRequest request,
+                           HttpServletResponse response,
+                           Object handler) throws Exception {
+    // Only process for handler methods
+    if (!(handler instanceof HandlerMethod)) {
+      return true;
     }
 
-    Object rawSessionId = sessionParameter.getObject();
-    if (rawSessionId == null)
-      return invocation.invoke();
-
-    if (rawSessionId instanceof String[]) {
-      String[] values = (String[]) rawSessionId;
-      if (values.length == 0)
-        return invocation.invoke();
-      rawSessionId = values[0];
+    String sessionId = request.getParameter(_sessionIdParameterName);
+    if (sessionId == null || sessionId.isEmpty()) {
+      return true;
     }
 
-    String sessionId = rawSessionId.toString();
     boolean sessionIsNew = !_sessionManager.contextExistsFor(sessionId);
     Map<String, Object> persistentSession = _sessionManager.getContext(sessionId);
 
-    Map<String, Object> originalSession = context.getSession();
-    context.setSession(persistentSession);
-
-    XWorkRequestAttributes attributes = new XWorkRequestAttributes(context, sessionId);
+    // Store original session and attributes
+    HttpSession originalSession = request.getSession();
     RequestAttributes originalAttributes = RequestContextHolder.getRequestAttributes();
+
+    // Create custom request attributes
+    ServletRequestAttributes attributes = new ServletRequestAttributes(request);
     RequestContextHolder.setRequestAttributes(attributes);
 
-    Object action = invocation.getAction();
-    if(action instanceof SessionAware) {
-      ((SessionAware)action).setSession(persistentSession);
+    // Get the handler method and target object
+    HandlerMethod handlerMethod = (HandlerMethod) handler;
+    Object targetObject = handlerMethod.getBean();
+
+    // Handle special session-aware interfaces if needed
+    if (targetObject instanceof SessionAware) {
+      ((SessionAware) targetObject).setSession(persistentSession);
     }
 
-    if(action instanceof GoogleAnalyticsSessionAware) {
-      if(sessionIsNew)
-        ((GoogleAnalyticsSessionAware)action).initializeSession(sessionId);
+    if (targetObject instanceof GoogleAnalyticsSessionAware && sessionIsNew) {
+      ((GoogleAnalyticsSessionAware) targetObject).initializeSession(sessionId);
     }
 
-    try {
-      return invocation.invoke();
-    } finally {
+    // Store persistent session and context for post-handle processing
+    request.setAttribute("_persistentSession", persistentSession);
+    request.setAttribute("_originalSession", originalSession);
+    request.setAttribute("_sessionId", sessionId);
+    request.setAttribute("_originalAttributes", originalAttributes);
+
+    return true;
+  }
+
+  @Override
+  public void postHandle(HttpServletRequest request,
+                         HttpServletResponse response,
+                         Object handler,
+                         ModelAndView modelAndView) throws Exception {
+    // Save session context if session ID exists
+    String sessionId = (String) request.getAttribute("_sessionId");
+    if (sessionId != null) {
       _sessionManager.saveContext(sessionId);
+    }
+  }
+
+  @Override
+  public void afterCompletion(HttpServletRequest request,
+                              HttpServletResponse response,
+                              Object handler,
+                              Exception ex) throws Exception {
+    // Restore original request attributes and close session
+    String sessionId = (String) request.getAttribute("_sessionId");
+    if (sessionId != null) {
+      RequestAttributes originalAttributes =
+              (RequestAttributes) request.getAttribute("_originalAttributes");
       RequestContextHolder.setRequestAttributes(originalAttributes);
-      context.setSession(originalSession);
+
+      HttpSession originalSession =
+              (HttpSession) request.getAttribute("_originalSession");
+
       _sessionManager.close();
     }
   }

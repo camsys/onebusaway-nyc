@@ -15,11 +15,10 @@
  */
 
 package org.onebusaway.nyc.sms.actions.api;
-
-import org.apache.struts2.ServletActionContext;
-
 import com.google.gson.JsonObject;
 import com.opensymphony.xwork2.ActionSupport;
+
+import java.io.IOException;
 
 public class PingAction extends ActionSupport {
   
@@ -29,16 +28,12 @@ private static final long serialVersionUID = 1L;
 private String _response = null;
 
 
-@Override
-  public String execute() throws Exception {
+  @Override
+  public String execute() throws IOException {
     JsonObject jsonObject = new JsonObject();
     jsonObject.addProperty("success", "true");
-    
-    _response = jsonObject.toString();
-    
-    ServletActionContext.getResponse().getWriter().write(_response);
-    
-    return null;
+
+    return jsonObject.toString();
   }
   
 }

@@ -26,7 +26,6 @@ import org.onebusaway.users.services.UserPropertiesService;
 import org.onebusaway.users.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.validator.annotations.RequiredStringValidator;
 
 /**
  * Creates API key for the user. Also authorizes the user to use API. 

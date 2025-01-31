@@ -21,22 +21,23 @@ import org.onebusaway.presentation.impl.NextActionSupport;
 
 import com.dmurph.tracking.VisitorData;
 
-import org.apache.struts2.convention.annotation.InterceptorRef;
-import org.apache.struts2.convention.annotation.InterceptorRefs;
-import org.apache.struts2.interceptor.SessionAware;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
-@InterceptorRefs({@InterceptorRef("onebusaway-nyc-sms-webapp-stack")})
+@RequestMapping("onebusaway-nyc-sms-webapp-stack")
 public abstract class SessionedIndexAction extends NextActionSupport 
-  implements SessionAware, GoogleAnalyticsSessionAware {
+  implements GoogleAnalyticsSessionAware {
+
+  @Autowired
+  private HttpSession _session;
     
   private static final long serialVersionUID = 1L;
   
   private static final int SESSION_RESET_WINDOW_IN_SECONDS = 60 * 20; // 20m
-  
-  private Map<String, Object> _session;
-    
+
   protected SearchResultCollection _searchResults = null;
 
   protected Integer _searchResultsCursor = null;
@@ -58,16 +59,16 @@ public abstract class SessionedIndexAction extends NextActionSupport
     _needsGlobalAlert = true;
   }
   
-  public void setSession(Map<String, Object> session) {
-    this._session = session;
-    
-    if(session != null) {
-      _searchResults = (SearchResultCollection)session.get("searchResults");
-      _searchResultsCursor = (Integer)session.get("searchResultsCursor");
-      _lastQuery = (String)session.get("lastQuery");
-      _visitorCookie = (VisitorData)session.get("visitorData");
-      _needsGlobalAlert = (Boolean)session.get("needsGlobalAlert");
-      _lastCommandString = (String) session.get("lastCommandString");
+  public void setSession(HttpServletRequest session) {
+    this._session = session.getSession();
+
+    if(session.getSession() != null) {
+      _searchResults = (SearchResultCollection)session.getAttribute("searchResults");
+      _searchResultsCursor = (Integer)session.getAttribute("searchResultsCursor");
+      _lastQuery = (String)session.getAttribute("lastQuery");
+      _visitorCookie = (VisitorData)session.getAttribute("visitorData");
+      _needsGlobalAlert = (Boolean)session.getAttribute("needsGlobalAlert");
+      _lastCommandString = (String) session.getAttribute("lastCommandString");
 
       // if another request comes in before SESSION_RESET_WINDOW_IN_SECONDS, 
       // count it as another request in the same session--otherwise a new session from
@@ -83,12 +84,12 @@ public abstract class SessionedIndexAction extends NextActionSupport
   }
   
   public void syncSession() {
-    _session.put("searchResults", _searchResults);
-    _session.put("searchResultsCursor", _searchResultsCursor);
-    _session.put("lastQuery", _lastQuery);
-    _session.put("visitorData", _visitorCookie);
-    _session.put("needsGlobalAlert", _needsGlobalAlert);
-    _session.put("lastCommandString", _lastCommandString);
+    _session.putValue("searchResults", _searchResults);
+    _session.putValue("searchResultsCursor", _searchResultsCursor);
+    _session.putValue("lastQuery", _lastQuery);
+    _session.putValue("visitorData", _visitorCookie);
+    _session.putValue("needsGlobalAlert", _needsGlobalAlert);
+    _session.putValue("lastCommandString", _lastCommandString);
   }
   
   // user input/query
