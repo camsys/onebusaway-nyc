@@ -2,17 +2,22 @@ package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import org.onebusaway.nyc.transit_data_federation.impl.queue.HTTPListenerTask;
 import org.onebusaway.nyc.util.impl.S3Utility;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
-import java.io.*;
 import java.util.*;
 
 /**
@@ -29,31 +34,41 @@ import java.util.*;
  *
  */
 public class NycRouteTypeService {
-
-    private static final String EXPRESS_ROUTES_FILE = "express_routes.csv";
+    protected static Logger _log = LoggerFactory.getLogger(NycRouteTypeService.class);
 
     private Map<String, RouteType> _routesToNycType = new HashMap<String, RouteType>();
 
     private long _updateInterval = 60 * 1000;
 
-    private AmazonS3 _s3 = new AmazonS3Client();
+
 
     @Autowired
-    ConfigurationServiceImpl _configurationService;
+    private ThreadPoolTaskScheduler _taskScheduler;
+
+
+    @PostConstruct
+    public void setup() throws IOException {
+        if(_taskScheduler != null) {
+            UpdateThread updateThread = new UpdateThread(this);
+            _taskScheduler.scheduleWithFixedDelay(updateThread, _updateInterval);
+        } else {
+            _log.warn("Unable to create thread to regularly update nycRouteType, task scheduler unavailable");
+            updateNycRouteTypeData(getDataFromS3());
+        }
+    }
 
     String TYPE_COLUMN_IDENTIFIER = "type";
     String ROUTE_ID_IDENTIFIER = "route_id";
 
-    public NycRouteTypeService() throws IOException {
-        updateExpressRoutes(getDataFromS3());
+    public NycRouteTypeService(){
     }
 
     public NycRouteTypeService(InputStream data) throws IOException {
-        updateExpressRoutes(data);
+        updateNycRouteTypeData(data);
     }
 
     // method to pull in the csv from s3
-    private InputStream getDataFromS3() {
+    public InputStream getDataFromS3() {
         String s3Username = System.getProperty("s3.username");
         String s3Password = System.getProperty("s3.password");
         String path = System.getProperty("s3.suplimentalRouteTypesPath");
@@ -62,8 +77,8 @@ public class NycRouteTypeService {
     }
 
     // method to read in data from s3
-    private void updateExpressRoutes(InputStream data) throws IOException {
-        _routesToNycType.clear();
+    public void updateNycRouteTypeData(InputStream data) throws IOException {
+        Map<String, RouteType> routesToNycType = new HashMap<String, RouteType>();
 
         // find which collumn is the route id, and which is the type then read it into the hashmap
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(data))) {
@@ -87,9 +102,10 @@ public class NycRouteTypeService {
 
                 if (!routeId.isEmpty()) {
                     RouteType routeType = RouteType.fromString(typeValue);
-                    _routesToNycType.put(routeId, routeType);
+                    routesToNycType.put(routeId, routeType);
                 }
             }
+            _routesToNycType = routesToNycType;
         } catch (IOException e) {
             System.err.println("Error reading CSV: " + e.getMessage());
         } catch (IllegalArgumentException e) {
@@ -119,6 +135,25 @@ public class NycRouteTypeService {
                 return RouteType.valueOf(value.toUpperCase());
             } catch (IllegalArgumentException e) {
                 return UNIDENTIFIED;
+            }
+        }
+    }
+
+
+    public static class UpdateThread implements Runnable {
+
+        private NycRouteTypeService resource;
+
+        public UpdateThread(NycRouteTypeService resource) {
+            this.resource = resource;
+        }
+
+        @Override
+        public void run() {
+            try {
+                resource.updateNycRouteTypeData(resource.getDataFromS3());
+            } catch (IOException e) {
+                _log.error("Error updating nyc supplemental route types: " + e.getMessage());
             }
         }
     }
