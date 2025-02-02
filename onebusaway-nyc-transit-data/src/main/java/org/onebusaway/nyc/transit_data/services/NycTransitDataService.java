@@ -77,4 +77,11 @@ public interface NycTransitDataService extends TransitDataService {
 	public boolean isVehicleStroller(AgencyAndId vehicleId);
 	public Set<AgencyAndId> getAllStrollerVehicles();
 	public void overrideStrollerVehicles(List<AgencyAndId> busIds);
+
+	/**
+	 * set of methods to check if route is of type express
+	 */
+	public boolean isRouteExpress(String routeId);
+
+	public Set<String> getExpressRoutes();
 }

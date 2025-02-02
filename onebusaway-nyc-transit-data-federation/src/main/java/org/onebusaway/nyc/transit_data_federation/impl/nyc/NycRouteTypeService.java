@@ -40,7 +40,7 @@ public class NycRouteTypeService {
 
     private long _updateInterval = 60 * 1000;
 
-
+    Set<String> _expressRoutes;
 
     @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
@@ -106,6 +106,7 @@ public class NycRouteTypeService {
                 }
             }
             _routesToNycType = routesToNycType;
+            _expressRoutes = null;
         } catch (IOException e) {
             System.err.println("Error reading CSV: " + e.getMessage());
         } catch (IllegalArgumentException e) {
@@ -117,6 +118,18 @@ public class NycRouteTypeService {
 
     public boolean isRouteExpress(String routeId) {
         return _routesToNycType.get(routeId).equals(RouteType.EXPRESS);
+    }
+
+    public Set<String> getExpressRoutes() {
+        if(_expressRoutes==null) {
+            _expressRoutes = new HashSet<String>();
+            for (Map.Entry<String, RouteType> entry : _routesToNycType.entrySet()) {
+                if (entry.getValue().equals(RouteType.EXPRESS)) {
+                    _expressRoutes.add(entry.getKey());
+                }
+            }
+        }
+        return new HashSet<>(_expressRoutes);
     }
 
 

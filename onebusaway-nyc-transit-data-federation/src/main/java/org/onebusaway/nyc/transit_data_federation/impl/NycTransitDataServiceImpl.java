@@ -796,4 +796,12 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 		}
 		return false;
 	}
+
+	@Override
+	public Set<String> getExpressRoutes(){
+		if (_nycRouteTypeService != null) {
+			return _nycRouteTypeService.getExpressRoutes();
+		}
+		return new HashSet<>();
+	}
 }
