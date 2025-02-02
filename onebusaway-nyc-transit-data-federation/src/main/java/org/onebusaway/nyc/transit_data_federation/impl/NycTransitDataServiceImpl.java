@@ -27,6 +27,7 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifExtract.model.BustrekDatum;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifExtract.model.Remark;
 import org.onebusaway.nyc.transit_data_federation.impl.nyc.BundleSearchServiceImpl;
+import org.onebusaway.nyc.transit_data_federation.impl.nyc.NycRouteTypeService;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BusTrekDataService;
@@ -89,9 +90,13 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	@Autowired(required=false)
 	private StrollerVehicleService _strollerVehicleService;
 
+	@Autowired(required = false)
+	private NycRouteTypeService _nycRouteTypeService;
+
 	@Autowired
 	@Qualifier("NycBundleSearchService")
 	private BundleSearchServiceImpl _bundleSearchService;
+
 
 	/*@Autowired(required = false)
 	private GtfsSometimesHandler _gtfsSometimesHandler;*/
@@ -782,5 +787,13 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 			}
 			_strollerVehicleService.updateStrollerVehicles(strollerVehicleCache);
 		}
+	}
+
+	@Override
+	public boolean isRouteExpress(String routeId) {
+		if (_nycRouteTypeService != null) {
+			return _nycRouteTypeService.isRouteExpress(routeId);
+		}
+		return false;
 	}
 }
