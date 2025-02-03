@@ -1,9 +1,7 @@
 package org.onebusaway.nyc.sms.impl;
 
-import org.apache.struts2.interceptor.SessionAware;
 import org.onebusaway.nyc.sms.services.GoogleAnalyticsSessionAware;
 import org.onebusaway.nyc.sms.services.SessionManager;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -56,11 +54,6 @@ public class MobileCommonsSessionInterceptor implements HandlerInterceptor {
     // Get the handler method and target object
     HandlerMethod handlerMethod = (HandlerMethod) handler;
     Object targetObject = handlerMethod.getBean();
-
-    // Handle special session-aware interfaces if needed
-    if (targetObject instanceof SessionAware) {
-      ((SessionAware) targetObject).setSession(persistentSession);
-    }
 
     if (targetObject instanceof GoogleAnalyticsSessionAware && sessionIsNew) {
       ((GoogleAnalyticsSessionAware) targetObject).initializeSession(sessionId);
