@@ -147,6 +147,16 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
+    public boolean isRouteExpress(String routeId) {
+        return false;
+    }
+
+    @Override
+    public Set<String> getExpressRoutes() {
+        return null;
+    }
+
+    @Override
     public List<StopBean> getAllRevenueStops(AgencyWithCoverageBean agencyWithCoverageBean) {
         return null;
     }
