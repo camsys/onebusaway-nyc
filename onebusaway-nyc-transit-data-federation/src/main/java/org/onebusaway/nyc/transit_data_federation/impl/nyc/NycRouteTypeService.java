@@ -33,12 +33,13 @@ import java.util.*;
  *
  *
  */
+@Component
 public class NycRouteTypeService {
     protected static Logger _log = LoggerFactory.getLogger(NycRouteTypeService.class);
 
     private Map<String, RouteType> _routesToNycType = new HashMap<String, RouteType>();
 
-    private long _updateInterval = 60 * 1000;
+    private long _updateInterval = 10* 60 * 1000;
 
     Set<String> _expressRoutes;
 
