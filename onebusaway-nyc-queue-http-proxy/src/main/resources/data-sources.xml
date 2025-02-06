@@ -43,5 +43,6 @@ limitations under the License.
 
     <bean id="publishing_manager" class="org.onebusaway.nyc.queue_http_proxy.impl.PublishingManagerImpl">
         <property name="highFrequencyVehiclesList" value="" />
+        <property name="bypassHighFrequencyVehiclesList" value="" />
     </bean>
 </beans>

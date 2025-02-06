@@ -45,6 +45,10 @@ public class PublishingManagerImpl implements PublishingManager{
 
     private Set<String> highFrequencyVehicles;
 
+    private String bypassHighFrequencyVehiclesList;
+
+    private Set<String> bypassHighFrequencyVehicles;
+
     @Autowired
     @Qualifier("publisher")
     private IPublisher publisher;
@@ -66,10 +70,20 @@ public class PublishingManagerImpl implements PublishingManager{
 
     @PostConstruct
     public void setup(){
-        String[] vehiclesList = highFrequencyVehiclesList.split("\\s*,\\s*");
-        highFrequencyVehicles = new HashSet<>(Arrays.asList(vehiclesList));
+        setupHighFreqVehicles();
+        setupBypassHighFreqVehicles();
         startDNSCheckThread();
 
+    }
+
+    private void setupHighFreqVehicles(){
+        String[] vehiclesList = highFrequencyVehiclesList.split("\\s*,\\s*");
+        highFrequencyVehicles = new HashSet<>(Arrays.asList(vehiclesList));
+    }
+
+    private void setupBypassHighFreqVehicles(){
+        String[] vehiclesList = bypassHighFrequencyVehiclesList.split("\\s*,\\s*");
+        bypassHighFrequencyVehicles = new HashSet<>(Arrays.asList(vehiclesList));
     }
 
     public synchronized Date parseDate(String date) throws ParseException {
@@ -88,12 +102,21 @@ public class PublishingManagerImpl implements PublishingManager{
         this.highFrequencyVehiclesList = highFrequencyVehiclesList;
     }
 
+    public void setBypassHighFrequencyVehiclesList(String bypassHighFrequencyVehiclesList) {
+        this.bypassHighFrequencyVehiclesList = bypassHighFrequencyVehiclesList;
+    }
+
+    public void setBypassHighFrequencyVehicles(Set<String> bypassHighFrequencyVehicles) {
+        this.bypassHighFrequencyVehicles = bypassHighFrequencyVehicles;
+    }
+
     @Override
     public void send(JsonNode message) throws ExecutionException, ParseException {
         JsonNode ccLocationReport = message.get("CcLocationReport");
         String vehicleId = getVehicleId(ccLocationReport);
 
-        if(highFrequencyVehicles.contains(vehicleId) || highFrequencyVehicles.contains("*")){
+        if(!bypassHighFrequencyVehicles.contains(vehicleId) &&
+                (highFrequencyVehicles.contains(vehicleId) || highFrequencyVehicles.contains("*"))){
             Date vehicleTimestamp = getVehicleTimestamp(ccLocationReport);
             processMessage(vehicleId, vehicleTimestamp, message.toString());
         } else {
