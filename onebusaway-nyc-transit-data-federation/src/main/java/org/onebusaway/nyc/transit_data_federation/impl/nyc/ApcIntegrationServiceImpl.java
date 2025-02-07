@@ -298,11 +298,13 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
             BlockLocation blockLocation = blockLocationService.getLocationForVehicleAndTime(
                     vehicleAgencyAndId, target);
 
+            AgencyAndId routeId = null;
             if (blockLocation != null) {
                 if (blockLocation.getActiveTrip() != null) {
                     TripEntry trip = blockLocation.getActiveTrip().getTrip();
                     if (trip.getRoute() != null) {
                         // fully qualified
+                        routeId = trip.getRoute().getId();
                         vor.setRouteId(AgencyAndIdLibrary.convertToString(trip.getRoute().getId()));
                         vor.setDirectionId(trip.getDirectionId());
                     }
@@ -312,7 +314,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
             vor.setTimestamp(new Date(data.getTimestamp()));
             vor.setCapacity(data.getEstCapacityAsInt());
             vor.setRawCount(data.getEstLoadAsInt());
-            vor.setOccupancyStatus(calculator.toOccupancyStatus(data));
+            vor.setOccupancyStatus(calculator.toOccupancyStatus(data, routeId));
             return vor;
         }
 
