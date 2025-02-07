@@ -147,12 +147,12 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
-    public boolean isRouteExpress(String routeId) {
+    public boolean isRouteExpress(AgencyAndId routeId) {
         return false;
     }
 
     @Override
-    public Set<String> getExpressRoutes() {
+    public Set<AgencyAndId> getExpressRoutes() {
         return null;
     }
 

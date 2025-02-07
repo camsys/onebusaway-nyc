@@ -19,13 +19,9 @@ import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.transit_data.model.StopsForRouteBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
-
 import java.util.Set;
 
 public class GetExpressRoutesAction extends ApiActionSupport {
@@ -46,7 +42,7 @@ public class GetExpressRoutesAction extends ApiActionSupport {
         if (hasErrors())
             return setValidationErrorsResponse();
 
-        Set<String> result = _service.getExpressRoutes();
+        Set<AgencyAndId> result = _service.getExpressRoutes();
 
         return setOkResponse(result);
     }

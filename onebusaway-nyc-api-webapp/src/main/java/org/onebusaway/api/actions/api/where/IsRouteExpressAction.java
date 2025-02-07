@@ -22,6 +22,7 @@ import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.util.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
@@ -54,7 +55,7 @@ public class IsRouteExpressAction extends ApiActionSupport {
         if (hasErrors())
             return setValidationErrorsResponse();
 
-        boolean result = _service.isRouteExpress(_id);
+        boolean result = _service.isRouteExpress(AgencyAndIdLibrary.convertFromString(_id));
 
         return setOkResponse(result);
     }
