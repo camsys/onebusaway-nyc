@@ -20,10 +20,14 @@ import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.util.AgencyAndIdLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 
 @Component
 /**
@@ -31,6 +35,7 @@ import javax.annotation.PostConstruct;
  * configuration.
  */
 public class ApcLoadLevelCalculator {
+  protected static Logger _log = LoggerFactory.getLogger(ApcLoadLevelCalculator.class);
 
   // threshold between MANY_SEATS AVAILABLE and FEW_SEATS_AVAILABLE
   private static final float DEFAULT_X_FACTOR = 0.35f;
@@ -82,14 +87,29 @@ public class ApcLoadLevelCalculator {
   @Autowired
   private NycRouteTypeService _nycRouteTypeService;
 
+  @Autowired
+  private ThreadPoolTaskScheduler _taskScheduler;
+
+  private long _updateInterval = 60 * 1000;
+
   @PostConstruct
     public void setup() {
-        xFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.xFactor", Float.toString(DEFAULT_X_FACTOR)));
-        yFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.yFactor", Float.toString(DEFAULT_Y_FACTOR)));
-        zFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.zFactor", Float.toString(DEFAULT_Z_FACTOR)));
-        xExpressFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.xExpressFactor", Float.toString(DEFAULT_EXPRESS_X_FACTOR)));
-        yExpressFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.yExpressFactor", Float.toString(DEFAULT_EXPRESS_Y_FACTOR)));
-        zExpressFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.zExpressFactor", Float.toString(DEFAULT_EXPRESS_Z_FACTOR)));
+      if(_taskScheduler != null) {
+        UpdateThread updateThread = new UpdateThread(this);
+        _taskScheduler.scheduleWithFixedDelay(updateThread, _updateInterval);
+      } else {
+        _log.warn("Unable to create thread to regularly update ApcLoadLevelCalculator, task scheduler unavailable");
+        updateApcLoadLevelCalculatorConfigs();
+      }
+    }
+
+    public void updateApcLoadLevelCalculatorConfigs() {
+      xFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.xFactor", Float.toString(DEFAULT_X_FACTOR)));
+      yFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.yFactor", Float.toString(DEFAULT_Y_FACTOR)));
+      zFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.zFactor", Float.toString(DEFAULT_Z_FACTOR)));
+      xExpressFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.xExpressFactor", Float.toString(DEFAULT_EXPRESS_X_FACTOR)));
+      yExpressFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.yExpressFactor", Float.toString(DEFAULT_EXPRESS_Y_FACTOR)));
+      zExpressFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.zExpressFactor", Float.toString(DEFAULT_EXPRESS_Z_FACTOR)));
     }
 
 
@@ -152,5 +172,20 @@ public class ApcLoadLevelCalculator {
       }
     }
     return null;
+  }
+
+
+  public static class UpdateThread implements Runnable {
+
+    private ApcLoadLevelCalculator resource;
+
+    public UpdateThread(ApcLoadLevelCalculator resource) {
+      this.resource = resource;
+    }
+
+    @Override
+    public void run() {
+        resource.updateApcLoadLevelCalculatorConfigs();
+    }
   }
 }
