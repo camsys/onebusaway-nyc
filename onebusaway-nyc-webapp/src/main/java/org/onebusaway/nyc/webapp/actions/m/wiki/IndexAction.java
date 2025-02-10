@@ -21,15 +21,13 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 
-import org.apache.struts2.interceptor.ServletRequestAware;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.wiki.model.NycWikiPageWrapper;
 import org.onebusaway.wiki.api.WikiDocumentService;
 import org.onebusaway.wiki.api.WikiRenderingService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class IndexAction extends OneBusAwayNYCActionSupport implements
-		ServletRequestAware {
+public class IndexAction extends OneBusAwayNYCActionSupport{
 
 	private static final long serialVersionUID = 1L;
 
@@ -90,11 +88,6 @@ public class IndexAction extends OneBusAwayNYCActionSupport implements
 		}
 
 		return SUCCESS;
-	}
-
-	@Override
-	public void setServletRequest(HttpServletRequest httpServletRequest) {
-		this.httpServletRequest = httpServletRequest;
 	}
 
 	public String getNamespace() {

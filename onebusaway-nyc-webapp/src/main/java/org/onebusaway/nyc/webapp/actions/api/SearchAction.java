@@ -15,8 +15,6 @@
  */
 package org.onebusaway.nyc.webapp.actions.api;
 
-import org.apache.struts2.convention.annotation.ParentPackage;
-import org.apache.struts2.convention.annotation.Result;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
@@ -24,10 +22,9 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Controller;
 
-@ParentPackage("json-default")
-//@Result(type="json")
-@Result(type="json", params={"callbackParameter", "callback"})
+@Controller
 public class SearchAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;

@@ -16,6 +16,7 @@
 
 package org.onebusaway.nyc.webapp.actions.api;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.model.StopOnRoute;
@@ -26,17 +27,17 @@ import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
-import org.apache.struts2.convention.annotation.ParentPackage;
-import org.apache.struts2.convention.annotation.Result;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@ParentPackage("json-default")
-@Result(type="json", params={"callbackParameter", "callback"})
+@Controller
 public class StopsOnRouteForDirectionAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -59,6 +60,8 @@ public class StopsOnRouteForDirectionAction extends OneBusAwayNYCActionSupport {
   }
 
   @Override
+  @ResponseBody
+  @JsonView
   public String execute() {    
     if(_routeId == null) {
       return SUCCESS;

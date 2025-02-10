@@ -36,9 +36,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts2.convention.annotation.ParentPackage;
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
+
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
@@ -66,9 +64,7 @@ import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleMonitoringDeliveryStructure;
 
-@ParentPackage("onebusaway-webapp-api")
-public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
-        implements ServletRequestAware, ServletResponseAware {
+public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
   protected static Logger _log = LoggerFactory.getLogger(VehicleMonitoringAction.class);
@@ -381,12 +377,10 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     }
   }
 
-  @Override
   public void setServletRequest(HttpServletRequest request) {
     this._request = request;
   }
 
-  @Override
   public void setServletResponse(HttpServletResponse servletResponse) {
     this._servletResponse = servletResponse;
   }

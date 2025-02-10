@@ -24,9 +24,9 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.struts2.ServletActionContext;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -64,16 +64,19 @@ public class PingAction extends OneBusAwayNYCActionSupport {
   
   @Autowired
   private ConfigurationService _config;
+
+  @Autowired
+  private HttpServletResponse _servletResponse;
   
   @Override
   public String execute() throws Exception {
     String pingStatus = null;
     try {
       pingStatus = getPing();
-      ServletActionContext.getResponse().setContentType("application/json");
-      ServletActionContext.getResponse().getWriter().write(pingStatus);
+        _servletResponse.setContentType("application/json");
+        _servletResponse.getWriter().write(pingStatus);
     } catch (Throwable t) {
-      ServletActionContext.getResponse().setStatus(500);
+        _servletResponse.setStatus(500);
     }
     return null;
   }

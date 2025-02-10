@@ -16,15 +16,20 @@
 
 package org.onebusaway.nyc.webapp.actions.api;
 
-import org.apache.struts2.ServletActionContext;
 import org.json.JSONObject;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 public class ActiveBundleAction extends OneBusAwayNYCActionSupport {
 
     private TransitDataService _tds;
+
+    @Autowired
+    HttpServletResponse servletResponse;
 
     @Autowired
     public void setTransitDataService(TransitDataService tds) {
@@ -36,10 +41,10 @@ public class ActiveBundleAction extends OneBusAwayNYCActionSupport {
         try {
             JSONObject json = new JSONObject();
             json.put("bundleid", _tds.getActiveBundleId());
-            ServletActionContext.getResponse().setContentType("application/json");
-            ServletActionContext.getResponse().getWriter().write(json.toString());
+            servletResponse.setContentType("application/json");
+            servletResponse.getWriter().write(json.toString());
         } catch (Throwable t) {
-            ServletActionContext.getResponse().setStatus(500);
+            servletResponse.setStatus(500);
         }
         return null;
     }

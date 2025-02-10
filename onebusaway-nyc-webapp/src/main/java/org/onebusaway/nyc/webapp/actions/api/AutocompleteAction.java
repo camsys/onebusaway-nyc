@@ -18,18 +18,17 @@ package org.onebusaway.nyc.webapp.actions.api;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.struts2.convention.annotation.ParentPackage;
-import org.apache.struts2.convention.annotation.Result;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.model.AutocompleteItem;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-@ParentPackage("json-default")
-//@Result(type="json", params={"root", "suggestions"})
-@Result(type="json", params={"callbackParameter", "callback", "root", "suggestions"})
+@Controller
 public class AutocompleteAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -51,6 +50,8 @@ public class AutocompleteAction extends OneBusAwayNYCActionSupport {
   }
 
   @Override
+  @ResponseBody
+  @JsonView
   public String execute() {
     if (_term == null || _term.isEmpty() )
       return SUCCESS;

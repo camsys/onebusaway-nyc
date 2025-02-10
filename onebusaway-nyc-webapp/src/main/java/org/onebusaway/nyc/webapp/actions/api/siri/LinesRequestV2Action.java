@@ -28,8 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
@@ -54,8 +52,7 @@ import uk.org.siri.siri_2.OtherErrorStructure;
 import uk.org.siri.siri_2.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri_2.Siri;
 
-public class LinesRequestV2Action extends MonitoringActionBase implements
-		ServletRequestAware, ServletResponseAware {
+public class LinesRequestV2Action extends MonitoringActionBase {
 	private static final long serialVersionUID = 1L;
 
 	private static final String LINES_DETAIL_LEVEL = "LinesDetailLevel";
@@ -283,12 +280,10 @@ public class LinesRequestV2Action extends MonitoringActionBase implements
 		}
 	}
 
-	@Override
 	public void setServletRequest(HttpServletRequest request) {
 		this._request = request;
 	}
 
-	@Override
 	public void setServletResponse(HttpServletResponse servletResponse) {
 		this._servletResponse = servletResponse;
 	}

@@ -22,27 +22,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts2.convention.annotation.ParentPackage;
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
-import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
-import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
-import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.ServiceAlertsHelperV2;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
-import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.util.AgencyAndIdLibrary;
@@ -62,9 +50,7 @@ import uk.org.siri.siri_2.Siri;
 import uk.org.siri.siri_2.VehicleActivityStructure;
 import uk.org.siri.siri_2.VehicleMonitoringDeliveryStructure;
 
-@ParentPackage("onebusaway-webapp-api")
-public class VehicleMonitoringV2Action extends MonitoringActionBase
-    implements ServletRequestAware, ServletResponseAware {
+public class VehicleMonitoringV2Action extends MonitoringActionBase{
 
   private static final long serialVersionUID = 1L;
   protected static Logger _log = LoggerFactory.getLogger(VehicleMonitoringV2Action.class);
@@ -333,13 +319,6 @@ public class VehicleMonitoringV2Action extends MonitoringActionBase
       return e.getMessage();
     }
   }
-
-  @Override
-  public void setServletRequest(HttpServletRequest request) {
-    this._request = request;
-  }
-
-  @Override
   public void setServletResponse(HttpServletResponse servletResponse) {
     this._servletResponse = servletResponse;
   }

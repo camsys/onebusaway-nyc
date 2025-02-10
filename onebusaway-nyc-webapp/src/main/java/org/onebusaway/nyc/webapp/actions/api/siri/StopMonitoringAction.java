@@ -28,10 +28,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang.StringUtils;
-import org.apache.struts2.convention.annotation.ParentPackage;
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
@@ -45,11 +43,12 @@ import org.onebusaway.util.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ResponseBody;
 import uk.org.siri.siri.*;
 
-@ParentPackage("onebusaway-webapp-api")
-public class StopMonitoringAction extends OneBusAwayNYCActionSupport 
-  implements ServletRequestAware, ServletResponseAware {
+@Controller
+public class StopMonitoringAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
   
@@ -83,6 +82,8 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   }
   
   @Override
+  @ResponseBody
+  @JsonView
   public String execute() {
   
 	long responseTimestamp = getTime();
@@ -376,12 +377,10 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     }
   }
 
-  @Override
   public void setServletRequest(HttpServletRequest request) {
     this._request = request;
   }
 
-  @Override
   public void setServletResponse(HttpServletResponse servletResponse) {
     this._servletResponse = servletResponse;
   }

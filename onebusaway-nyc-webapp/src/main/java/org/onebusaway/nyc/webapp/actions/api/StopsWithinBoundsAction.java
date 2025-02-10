@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.webapp.actions.api;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import org.onebusaway.exceptions.OutOfServiceAreaServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -25,17 +26,17 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
-import org.apache.struts2.convention.annotation.ParentPackage;
-import org.apache.struts2.convention.annotation.Result;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@ParentPackage("json-default")
-@Result(type="json", params={"callbackParameter", "callback"})
+@Controller
 public class StopsWithinBoundsAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
@@ -61,6 +62,8 @@ public class StopsWithinBoundsAction extends OneBusAwayNYCActionSupport {
   }
   
   @Override
+  @ResponseBody
+  @JsonView
   public String execute() {    
     if(_bounds == null) {
       return SUCCESS;

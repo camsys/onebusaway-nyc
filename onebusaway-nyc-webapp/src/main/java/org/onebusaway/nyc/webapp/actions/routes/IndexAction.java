@@ -25,6 +25,8 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * Action for route index page
  *
@@ -39,6 +41,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
     @Autowired
     private ConfigurationService _configurationService;
+
+    @Autowired
+    private HttpServletRequest httpServletRequest;
     
     public boolean getShowAgencyNames() {
         return _routeListService.getShowAgencyNames();

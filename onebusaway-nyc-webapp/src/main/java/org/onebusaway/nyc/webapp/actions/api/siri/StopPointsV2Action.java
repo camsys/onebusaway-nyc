@@ -28,8 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -54,16 +52,17 @@ import uk.org.siri.siri_2.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri_2.Siri;
 import uk.org.siri.siri_2.StopPointsDeliveryStructure;
 
-public class StopPointsV2Action extends MonitoringActionBase implements
-		ServletRequestAware, ServletResponseAware {
+public class StopPointsV2Action extends MonitoringActionBase {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String STOP_POINTS_DETAIL_LEVEL = "StopPointsDetailLevel";
 
 	private Siri _response;
 
+	@Autowired
 	private HttpServletRequest _request;
 
+	@Autowired
 	private HttpServletResponse _servletResponse;
 
 	// See urlrewrite.xml as to how this is set. Which means this action doesn't
@@ -285,12 +284,10 @@ public class StopPointsV2Action extends MonitoringActionBase implements
 	}
 
 	
-	@Override
 	public void setServletRequest(HttpServletRequest request) {
 		this._request = request;
 	}
 
-	@Override
 	public void setServletResponse(HttpServletResponse servletResponse) {
 		this._servletResponse = servletResponse;
 	}

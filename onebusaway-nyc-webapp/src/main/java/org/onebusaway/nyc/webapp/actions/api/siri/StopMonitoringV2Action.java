@@ -28,9 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.struts2.convention.annotation.ParentPackage;
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.ServiceAlertsHelperV2;
@@ -38,6 +35,7 @@ import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2;
 import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
 import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
 import uk.org.siri.siri_2.MonitoredStopVisitStructure;
 import uk.org.siri.siri_2.OtherErrorStructure;
@@ -46,9 +44,7 @@ import uk.org.siri.siri_2.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri_2.Siri;
 import uk.org.siri.siri_2.StopMonitoringDeliveryStructure;
 
-@ParentPackage("onebusaway-webapp-api")
-public class StopMonitoringV2Action extends MonitoringActionBase
-		implements ServletRequestAware, ServletResponseAware {
+public class StopMonitoringV2Action extends MonitoringActionBase {
 
 	private static final long serialVersionUID = 1L;
 
@@ -56,8 +52,10 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 
 	private ServiceAlertsHelperV2 _serviceAlertsHelper = new ServiceAlertsHelperV2();
 
+	@Autowired
 	private HttpServletRequest _request;
 
+	@Autowired
 	private HttpServletResponse _servletResponse;
 
 	// See urlrewrite.xml as to how this is set. Which means this action doesn't
@@ -255,12 +253,10 @@ public class StopMonitoringV2Action extends MonitoringActionBase
 		}
 	}
 
-	@Override
 	public void setServletRequest(HttpServletRequest request) {
 		this._request = request;
 	}
 
-	@Override
 	public void setServletResponse(HttpServletResponse servletResponse) {
 		this._servletResponse = servletResponse;
 	}

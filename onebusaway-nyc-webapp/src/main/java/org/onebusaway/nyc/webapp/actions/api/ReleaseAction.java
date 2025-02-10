@@ -24,6 +24,8 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * Action for release (status) page
  * 
