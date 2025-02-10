@@ -244,7 +244,10 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 	}
 
 	private VehicleResult.OccupancyConfig getOccupancyConfig() {
-		String config = _configurationService.getConfigurationValueAsString("display.apcMode", "PASSENGERCOUNT");
+		String config = _configurationService.getConfigurationValueAsString("siri.apcMode", "null");
+		if(config==null || config.equals("null") || config.equals("")) {
+			config = _configurationService.getConfigurationValueAsString("display.apcMode", "PASSENGERCOUNT");
+		}
 		if ("NONE".equals(config)) {
 			return VehicleResult.OccupancyConfig.NONE;
 		} else if ("OCCUPANCY".equals(config)) {
