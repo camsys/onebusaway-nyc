@@ -790,7 +790,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public boolean isRouteExpress(String routeId) {
+	public boolean isRouteExpress(AgencyAndId routeId) {
 		if (_nycRouteTypeService != null) {
 			return _nycRouteTypeService.isRouteExpress(routeId);
 		}
@@ -798,7 +798,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public Set<String> getExpressRoutes(){
+	public Set<AgencyAndId> getExpressRoutes(){
 		if (_nycRouteTypeService != null) {
 			return _nycRouteTypeService.getExpressRoutes();
 		}
