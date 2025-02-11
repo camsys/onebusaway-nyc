@@ -296,11 +296,7 @@ public class SearchResultFactoryImplTest {
 
 		SituationAffectsBean situationAffectsBean = new SituationAffectsBean();
 		situationAffectsBean.setRouteId("route id");
-
-		List situationAffects = Arrays.asList(situationAffectsBean);
-		situationAffects.add(situationAffectsBean);
-
-		saBean.setAllAffects(situationAffects);
+		saBean.setAllAffects(List.of(situationAffectsBean));
 
 		serviceAlerts.add(saBean);
 		if (descriptions.length > 0)
