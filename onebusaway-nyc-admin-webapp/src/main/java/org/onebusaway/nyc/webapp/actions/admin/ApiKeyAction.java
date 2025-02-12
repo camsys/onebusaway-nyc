@@ -16,8 +16,6 @@
 
 package org.onebusaway.nyc.webapp.actions.admin;
 
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.presentation.impl.NextActionSupport;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserIndexKey;
@@ -25,6 +23,7 @@ import org.onebusaway.users.services.UserIndexTypes;
 import org.onebusaway.users.services.UserPropertiesService;
 import org.onebusaway.users.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 
 /**
@@ -32,8 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author abelsare
  *
  */
-@Results({@Result(type = "redirectAction", name = "redirect", params = {
-	     "actionName", "api-key"})})
+@Controller
 public class ApiKeyAction extends NextActionSupport{
 
 	private static final long serialVersionUID = 1L;

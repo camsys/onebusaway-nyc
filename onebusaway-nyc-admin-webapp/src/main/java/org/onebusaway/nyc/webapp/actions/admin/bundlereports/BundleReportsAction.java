@@ -15,26 +15,19 @@
  */
 package org.onebusaway.nyc.webapp.actions.admin.bundlereports;
 
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
+
 import org.onebusaway.nyc.admin.model.ui.ExistingDirectory;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.*;
 
-@Results({
-        @Result(
-                name="success", location ="fixed-route-comparison.jspx"
-        ),
-        @Result(name="existingBuildList", type="json",
-                params={"root", "existingBuildList"})
-})
-
+@Component
 public class BundleReportsAction extends OneBusAwayNYCAdminActionSupport {
     private static Logger _log = LoggerFactory.getLogger(BundleReportsAction.class);
     private static final long serialVersionUID = 1L;

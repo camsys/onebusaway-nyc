@@ -16,23 +16,20 @@
 
 package org.onebusaway.nyc.webapp.actions.admin.usermanagement;
 
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.ui.UserDetail;
 import org.onebusaway.nyc.admin.service.UserManagementService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.Gson;
+import org.springframework.stereotype.Component;
 
 /**
  * Action class for user management operations
  * @author abelsare
  *
  */
-@Results({
-	@Result(name="updateUser", type="json", params= {"root","updateUserMessage"})
-})
+@Component
 public class ManageUsersAction extends OneBusAwayNYCAdminActionSupport {
 
 	private static final long serialVersionUID = 1L;

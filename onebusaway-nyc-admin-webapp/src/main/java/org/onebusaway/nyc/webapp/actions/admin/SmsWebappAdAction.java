@@ -25,11 +25,10 @@
 
 package org.onebusaway.nyc.webapp.actions.admin;
 
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.ParametersResponse;
 import org.onebusaway.nyc.admin.service.ParametersService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 
 import java.util.HashMap;
@@ -41,9 +40,7 @@ import java.util.Map;
  *
  */
 
-@Results({
-        @Result(name="parameters", type="json", params= {"root","sms-webapp-ad"})
-})
+@Component
 public class SmsWebappAdAction extends ParametersAction{
 
     private static final long serialVersionUID = 1L;

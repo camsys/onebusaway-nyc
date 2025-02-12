@@ -32,9 +32,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.struts2.convention.annotation.Namespace;
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.LocalDate;
 import org.onebusaway.nyc.admin.model.ui.DataValidationDirectionCts;
@@ -54,16 +51,13 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Action class used by Transit Data Bundle Utility to compare two bundles.
  *
  */
-@Namespace(value="/admin/bundles")
-@Results({
-        @Result(name="diffResult", type="json",
-                params={"root", "combinedDiffs"})
-})
+@Component
 public class CompareBundlesAction extends OneBusAwayNYCAdminActionSupport {
     private static Logger _log = LoggerFactory.getLogger(CompareBundlesAction.class);
     private static final long serialVersionUID = 1L;

@@ -15,15 +15,13 @@
  */
 package org.onebusaway.nyc.webapp.actions.admin.bundles;
 
-import org.apache.struts2.convention.annotation.Namespace;
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.ui.DataValidationMode;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -34,13 +32,7 @@ import java.util.stream.Collectors;
  * Action class used by Transit Data Bundle Utility to import files from a previous build for a new one
  *
  */
-@Namespace(value="/admin/bundles")
-@Results({
-        @Result(name="filePaths", type="json",
-                params={"root", "filePaths"}),
-        @Result(name="returnMessage", type="json",
-                params={"root", "returnMessage"})
-})
+@Component
 public class ImportFilesForBundleAction extends OneBusAwayNYCAdminActionSupport {
     private static Logger _log = LoggerFactory.getLogger(ImportFilesForBundleAction.class);
 

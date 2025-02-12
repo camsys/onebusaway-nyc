@@ -15,15 +15,13 @@
  */
 package org.onebusaway.nyc.webapp.actions.admin.bundles;
 
-import org.apache.struts2.convention.annotation.Namespace;
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.ui.DataValidationMode;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,15 +33,7 @@ import java.util.*;
  * Action class used by Transit Data Bundle Utility to compare two bundles.
  *
  */
-@Namespace(value="/admin/bundles")
-@Results({
-        @Result(name="zones", type="json",
-                params={"root", "listOfZones"}),
-        @Result(name="zoneData", type="json",
-                params={"root", "tripCountByDate"}),
-        @Result(name="diffResult", type="json",
-                params={"root", "combinedDiffs"})
-})
+@Component
 public class AnalyzeBundleAction extends OneBusAwayNYCAdminActionSupport {
     private static Logger _log = LoggerFactory.getLogger(AnalyzeBundleAction.class);
     private static final int MAX_RESULTS = -1;

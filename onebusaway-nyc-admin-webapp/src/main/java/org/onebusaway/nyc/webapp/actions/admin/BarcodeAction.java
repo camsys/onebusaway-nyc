@@ -19,23 +19,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
+
 import org.onebusaway.nyc.admin.service.BarcodeService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-@Results({
-	@Result(type = "redirectAction", name = "redirect", params = {
-     "actionName", "barcode"}),
-    @Result(name = "downloadZip", type = "stream", 
-    params = {"contentType", "application/zip",
-    		  "inputName", "qrBatchStream",
-    		  "contentDisposition", "attachment;fileName=\"qrBatch.zip\"",
-    		  "bufferSize", "1024"}) 
-})
+@Component
 public class BarcodeAction extends OneBusAwayNYCAdminActionSupport {
 	private static Logger _log = LoggerFactory.getLogger(BarcodeAction.class);
 	private static final long serialVersionUID = 1L;

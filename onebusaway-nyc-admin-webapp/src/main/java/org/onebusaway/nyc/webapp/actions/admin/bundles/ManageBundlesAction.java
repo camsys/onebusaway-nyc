@@ -28,10 +28,6 @@ import java.util.TreeMap;
 
 import javax.servlet.ServletContext;
 
-import org.apache.struts2.convention.annotation.AllowedMethods;
-import org.apache.struts2.convention.annotation.Namespace;
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.model.ui.DirectoryStatus;
@@ -43,6 +39,7 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.ServletContextAware;
 
 
@@ -52,34 +49,7 @@ import org.springframework.web.context.ServletContextAware;
  * @author sheldonabrown
  *
  */
-@Namespace(value="/admin/bundles")
-@Results({
-    @Result(type = "redirectAction", name = "redirect", params = {
-    "actionName", "manage-bundles"}),
-    @Result(name="selectDirectory", type="json", 
-  params={"root", "directoryStatus"}),
-    @Result(name="validationResponse", type="json", 
-  params={"root", "bundleResponse"}),
-    @Result(name="buildResponse", type="json", 
-  params={"root", "bundleBuildResponse"}),
-		@Result(name="existingBuildList", type="json",
-				params={"root", "existingBuildList"}),
-    @Result(name="fileList", type="json", 
-  params={"root", "fileList"}),
-  	@Result(name="downloadZip", type="stream", 
-  params={"contentType", "application/zip", 
-          "inputName", "downloadInputStream",
-          "contentDisposition", "attachment;filename=\"output.zip\"",
-          "bufferSize", "1024"}),
-    @Result(name="download", type="stream", 
-  params={"contentType", "text/html", 
-        "inputName", "downloadInputStream",
-        "contentDisposition", "attachment;filename=\"${downloadFilename}\"",
-        "bufferSize", "1024"})
-})
-@AllowedMethods({"selectDirectory", "copyDirectory", "deleteDirectory", "createDirectory",
-		"fileList", "updateBundleComments", "existingBuildList", "download", "buildList",
-		"buildOutputZip", "downloadOutputFile", "downloadBundle", "downloadValidateFile"})
+@Component
 public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport implements ServletContextAware {
   private static Logger _log = LoggerFactory.getLogger(ManageBundlesAction.class);
 	private static final long serialVersionUID = 1L;

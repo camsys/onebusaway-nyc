@@ -23,9 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.struts2.convention.annotation.Namespace;
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.VehicleGridResponse;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatistics;
 import org.onebusaway.nyc.admin.model.ui.VehicleStatus;
@@ -36,6 +33,7 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -43,12 +41,7 @@ import org.slf4j.LoggerFactory;
  * @author abelsare
  *
  */
-@Namespace(value="/admin/vehiclestatus")
-@Results({
-	@Result(name="vehicles", type="json", params= {"root","vehicleGridResponse"}),
-	@Result(name="statistics", type="json", params= {"root", "vehicleStatistics"})
-}
-)
+@Component
 public class VehicleStatusAction extends OneBusAwayNYCAdminActionSupport {
 
   private static Logger _log = LoggerFactory.getLogger(VehicleStatusAction.class);	

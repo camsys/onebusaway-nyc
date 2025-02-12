@@ -16,14 +16,12 @@
 
 package org.onebusaway.nyc.webapp.actions.admin.bundles;
 
-import org.apache.struts2.convention.annotation.Namespace;
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
@@ -31,13 +29,7 @@ import java.util.*;
  * Action class used by Transit Data Bundle Utility to prepare S3 files for deployment.
  *
  */
-@Namespace(value="/admin/bundles")
-@Results({
-        @Result(name="bundleModifiedDate", type="json",
-                params={"root", "bundleDate"}),
-        @Result(name="prepDeploymentCompletionMessage", type="json",
-                params={"root", "deploymentPrepBundleDetailsMessages"})
-})
+@Component
 public class PrepDeployBundleAction extends OneBusAwayNYCAdminActionSupport {
     private static Logger _log = LoggerFactory.getLogger(PrepDeployBundleAction.class);
     private int dataset_build_id;

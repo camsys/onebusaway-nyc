@@ -19,21 +19,18 @@ package org.onebusaway.nyc.webapp.actions.admin;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.ParametersResponse;
 import org.onebusaway.nyc.admin.service.ParametersService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Action class for parameters UI
  * @author abelsare
  *
  */
-@Results({
-	@Result(name="parameters", type="json", params= {"root","parametersResponse"})
-})
+@Component
 public class ParametersAction extends OneBusAwayNYCAdminActionSupport {
 
 	private static final long serialVersionUID = 1L;

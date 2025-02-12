@@ -19,11 +19,12 @@ package org.onebusaway.nyc.webapp.actions.admin;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.struts2.convention.annotation.Action;
 import org.onebusaway.nyc.util.model.PublicServiceAnnouncement;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.onebusaway.util.service.psa.PsaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 public class EditPsaAction extends OneBusAwayNYCAdminActionSupport {
   private static final long serialVersionUID = 1L;
@@ -51,8 +52,8 @@ public class EditPsaAction extends OneBusAwayNYCAdminActionSupport {
       return SUCCESS;
     }
   }
-  
-  @Action("add")
+
+  @RequestMapping(value = "/add", method = {RequestMethod.GET, RequestMethod.POST})
   public String add() {
     _psas.removeAll(Collections.singletonList(null));
     _psas.add(new PublicServiceAnnouncement());
