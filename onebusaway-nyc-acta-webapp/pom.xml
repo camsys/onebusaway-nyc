@@ -145,11 +145,6 @@
 				</dependency>
 				<dependency>
 					<groupId>org.onebusaway</groupId>
-					<artifactId>onebusaway-wiki-integration-xwiki-struts-macros</artifactId>
-					<version>${xwiki.integration.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.onebusaway</groupId>
 					<artifactId>onebusaway-wiki-integration-xwiki-macros</artifactId>
 					<version>${xwiki.integration.version}</version>
 				</dependency>

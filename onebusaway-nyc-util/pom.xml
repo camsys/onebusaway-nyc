@@ -124,7 +124,7 @@
         <profile>
             <id>local-front-end</id>
             <properties>
-                <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <tdm.host>tdm.qa.obanyc.com</tdm.host>
                 <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>
@@ -132,21 +132,21 @@
             <!-- don't run both the vtw and the tdf in the same instance -->
             <id>local-single-port</id>
             <properties>
-                <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <tdm.host>tdm.qa.obanyc.com</tdm.host>
                 <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>
         <profile>
             <id>local-ie</id>
             <properties>
-                <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <tdm.host>tdm.qa.obanyc.com</tdm.host>
                 <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>
         <profile>
             <id>local-multi-port</id>
             <properties>
-                <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <tdm.host>tdm.qa.obanyc.com</tdm.host>
                 <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>

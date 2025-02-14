@@ -7,7 +7,6 @@
   </parent>
   <properties>
     <spring.version>5.2.20.RELEASE</spring.version>
-    <struts.version>2.5.30</struts.version>
   </properties>
   <artifactId>onebusaway-nyc-ops-api-webapp</artifactId>
   <packaging>war</packaging>
@@ -68,43 +67,6 @@
       <version>1.9.0-rc1</version>
     </dependency>
 
-
-    <!-- struts dependencies -->
-    <dependency>
-      <groupId>org.apache.struts</groupId>
-      <artifactId>struts2-core</artifactId>
-      <version>${struts.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.struts</groupId>
-      <artifactId>struts2-spring-plugin</artifactId>
-      <version>${struts.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.struts</groupId>
-      <artifactId>struts2-convention-plugin</artifactId>
-      <version>${struts.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.struts</groupId>
-      <artifactId>struts2-rest-plugin</artifactId>
-      <version>${struts.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.struts</groupId>
-      <artifactId>struts2-sitemesh-plugin</artifactId>
-      <version>${struts.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.struts</groupId>
-      <artifactId>struts2-json-plugin</artifactId>
-      <version>${struts.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.struts</groupId>
-      <artifactId>struts2-config-browser-plugin</artifactId>
-      <version>2.3.20</version>
-    </dependency>
 
 
     <!-- jersey dependency -->
@@ -188,7 +150,7 @@
       <id>local-front-end</id>
       <properties>
         <jetty.port>8082</jetty.port>
-        <tdm.host>tdm.dev.obanyc.com</tdm.host>
+        <tdm.host>tdm.qa.obanyc.com</tdm.host>
         <ops.host>opslb.dev.obanyc.com</ops.host>
         <ops.port>80</ops.port>
         <ops.path>/api/record/</ops.path>
@@ -208,7 +170,7 @@
       <!-- aka staging, production -->
       <properties>
         <jetty.port>8085</jetty.port>
-        <tdm.host>tdm.dev.obanyc.com</tdm.host>
+        <tdm.host>tdm.qa.obanyc.com</tdm.host>
         <ops.host>opslb.dev.obanyc.com</ops.host>
         <ops.port>80</ops.port>
         <ops.path>/api/record/</ops.path>
@@ -225,7 +187,7 @@
       <!-- aka services-vtw-as-tds -->
       <!-- single port, aka development -->
       <properties>
-        <tdm.host>tdm.dev.obanyc.com</tdm.host>
+        <tdm.host>tdm.qa.obanyc.com</tdm.host>
         <ops.host>opslb.dev.obanyc.com</ops.host>
         <ops.port>80</ops.port>
         <ops.path>/api/record/</ops.path>

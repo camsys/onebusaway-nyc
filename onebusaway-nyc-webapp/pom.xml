@@ -83,11 +83,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.onebusaway</groupId>
-			<artifactId>onebusaway-wiki-integration-xwiki-struts-macros</artifactId>
-			<version>${xwiki.integration.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-wiki-integration-xwiki-macros</artifactId>
 			<version>${xwiki.integration.version}</version>
 		</dependency>
@@ -166,8 +161,12 @@
 		    <artifactId>spymemcached</artifactId>
 		    <version>2.11.7</version>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
 	<profiles>
 		<profile>
@@ -198,7 +197,7 @@
 				<vtms.path>http://app.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
 				<config.path>http://app.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
 				<archive.path>http://archive.dev.obanyc.com/onebusaway-nyc-report-archive</archive.path>
-				<tdm.host>tdm.dev.obanyc.com</tdm.host>
+				<tdm.host>tdm.qa.obanyc.com</tdm.host>
 				<webapp.api.url />
 				<log4j.appender>stdout</log4j.appender>
 				<create-apikey>true</create-apikey>
