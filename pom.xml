@@ -42,7 +42,6 @@
         <protobuf.version>3.17.3</protobuf.version>
         <spring.version>5.2.20.RELEASE</spring.version>
         <spring.security.version>5.2.1.RELEASE</spring.security.version>
-        <struts.version>2.5.30</struts.version>
         <xwiki.integration.version>1.0.1</xwiki.integration.version>
         <xwiki.version>2.3.1</xwiki.version>
     </properties>
@@ -539,37 +538,6 @@
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-config</artifactId>
                 <version>${spring.security.version}</version>
-            </dependency>
-      <!-- struts dependencies -->
-            <dependency>
-                <groupId>org.apache.struts</groupId>
-                <artifactId>struts2-core</artifactId>
-                <version>${struts.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.struts</groupId>
-                <artifactId>struts2-spring-plugin</artifactId>
-                <version>${struts.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.struts</groupId>
-                <artifactId>struts2-convention-plugin</artifactId>
-                <version>${struts.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.struts</groupId>
-                <artifactId>struts2-rest-plugin</artifactId>
-                <version>${struts.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.struts</groupId>
-                <artifactId>struts2-sitemesh-plugin</artifactId>
-                <version>${struts.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.struts</groupId>
-                <artifactId>struts2-json-plugin</artifactId>
-                <version>${struts.version}</version>
             </dependency>
 
             <dependency>
