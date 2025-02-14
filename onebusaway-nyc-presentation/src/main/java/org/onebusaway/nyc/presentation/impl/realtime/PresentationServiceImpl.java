@@ -284,8 +284,8 @@ public class PresentationServiceImpl implements PresentationService {
         SiriApcExtension apcExtension = new SiriApcExtension();
         apcExtension.setPassengerCapacity(vor.getCapacity());
         apcExtension.setPassengerCount(vor.getRawCount());
-        if(vor.getLoadDescription() != null)
-            apcExtension.setOccupancyLoadFactor(vor.getLoadDescription().toString());
+        if(vor.getOccupancyStatus() != null)
+            apcExtension.setOccupancyLoadFactor(vor.getOccupancyStatus().toString());
         return apcExtension;
     }
 
