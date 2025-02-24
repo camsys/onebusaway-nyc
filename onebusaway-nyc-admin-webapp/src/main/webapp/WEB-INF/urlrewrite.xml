@@ -27,12 +27,12 @@
 	<!-- Redirect root to /login -->
 	<rule>
 		<from>^/$</from>
-		<to>/login.action</to>
+		<to>/login</to>
 	</rule>
 	
 	<rule>
 		<from>^/admin$</from>
-		<to>/admin/index.action</to>
+		<to>/admin/index</to>
 	</rule>
 	
 	<!-- rule>

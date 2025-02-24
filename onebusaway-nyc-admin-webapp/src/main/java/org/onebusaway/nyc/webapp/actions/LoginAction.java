@@ -15,7 +15,12 @@
  */
 package org.onebusaway.nyc.webapp.actions;
 
-public class LoginAction extends OneBusAwayNYCAdminActionSupport {
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/login")
+public class LoginAction {
 
   private static final long serialVersionUID = 1L;
 

@@ -94,20 +94,8 @@
 		<dispatcher>REQUEST</dispatcher>
 	</filter-mapping>
 	<filter-mapping>
-		<filter-name>action2-cleanup</filter-name>
-		<url-pattern>*.action</url-pattern>
-		<dispatcher>FORWARD</dispatcher>
-		<dispatcher>REQUEST</dispatcher>
-	</filter-mapping>
-	<filter-mapping>
 		<filter-name>sitemesh</filter-name>
 		<url-pattern>/*</url-pattern>
-		<dispatcher>FORWARD</dispatcher>
-		<dispatcher>REQUEST</dispatcher>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>action2</filter-name>
-		<url-pattern>*.action</url-pattern>
 		<dispatcher>FORWARD</dispatcher>
 		<dispatcher>REQUEST</dispatcher>
 	</filter-mapping>
@@ -122,7 +110,7 @@
 
 	<!-- Welcome file lists -->
 	<welcome-file-list>
-		<welcome-file>index.action</welcome-file>
+		<welcome-file>index</welcome-file>
 	</welcome-file-list>
 
 	<!-- MIME types -->

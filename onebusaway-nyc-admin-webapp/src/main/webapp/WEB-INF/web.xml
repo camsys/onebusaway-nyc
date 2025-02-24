@@ -70,23 +70,12 @@
     <dispatcher>REQUEST</dispatcher>
   </filter-mapping>
   <filter-mapping>
-    <filter-name>action2-cleanup</filter-name>
-    <url-pattern>*.action</url-pattern>
-    <dispatcher>FORWARD</dispatcher>
-    <dispatcher>REQUEST</dispatcher>
-  </filter-mapping>
-  <filter-mapping>
     <filter-name>sitemesh</filter-name>
     <url-pattern>/*</url-pattern>
     <dispatcher>FORWARD</dispatcher>
     <dispatcher>REQUEST</dispatcher>
   </filter-mapping>
-  <filter-mapping>
-    <filter-name>action2</filter-name>
-    <url-pattern>*.action</url-pattern>
-    <dispatcher>FORWARD</dispatcher>
-    <dispatcher>REQUEST</dispatcher>
-  </filter-mapping>
+
 	
 	<!-- Listeners -->
   <listener>
@@ -130,15 +119,15 @@
   
   <error-page>
     <error-code>404</error-code>
-    <location>/redirect?uri=/error/404.action</location>
+    <location>/redirect?uri=/error/404</location>
   </error-page> 
   <error-page>
     <exception-type>org.springframework.transaction.CannotCreateTransactionException</exception-type>
-    <location>/redirect?uri=/down.action</location>
+    <location>/redirect?uri=/down</location>
   </error-page>
   <error-page>
     <exception-type>java.lang.RuntimeException</exception-type>
-    <location>/redirect?uri=/error.action</location>
+    <location>/redirect?uri=/error</location>
   </error-page>
   
 </web-app>

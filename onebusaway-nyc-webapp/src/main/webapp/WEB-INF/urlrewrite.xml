@@ -36,7 +36,7 @@
 		
 		</note>
 		<from>^/S/([0-9]+)$</from>
-		<to last="true">/m/index.action?q=$1</to>
+		<to last="true">/m/index?q=$1</to>
 	</rule>
 
 	<!--
@@ -54,19 +54,19 @@
 	-->	
     <rule>
         <from>^/wiki/([0-9A-Za-z]*)/([0-9A-Za-z]*)/?(?:\;jsessionid=[^\?#]*)?$</from>
-        <to last="true">/wiki/index.action?namespace=$1&amp;name=$2</to>
+        <to last="true">/wiki/index?namespace=$1&amp;name=$2</to>
     </rule>
     <rule>
         <from>^/wiki/([0-9A-Za-z]*)/?(?:\;jsessionid=[^\?#]*)?$</from>
-        <to last="true">/wiki/index.action?name=$1</to>
+        <to last="true">/wiki/index?name=$1</to>
     </rule>
     <rule>
         <from>^/m/wiki/([0-9A-Za-z]*)/([0-9A-Za-z]*)/?(?:\;jsessionid=[^\?#]*)?$</from>
-        <to last="true">/m/wiki/index.action?namespace=$1Mobile&amp;name=$2</to>
+        <to last="true">/m/wiki/index?namespace=$1Mobile&amp;name=$2</to>
     </rule>
     <rule>
         <from>^/m/wiki/([0-9A-Za-z]*)/?(?:\;jsessionid=[^\?#]*)?$</from>
-        <to last="true">/m/wiki/index.action?name=$1</to>
+        <to last="true">/m/wiki/index?name=$1</to>
     </rule>
         
     <!-- 
@@ -75,21 +75,21 @@
     <rule>
     	<condition type="parameter" name="version">2</condition>
         <from>^/api/siri/([^.]*)\.(xml|json)$</from>
-        <to last="true">/api/siri/$1-v2.action?type=$2</to>
+        <to last="true">/api/siri/$1-v2?type=$2</to>
     </rule> 
     <rule>
         <from>^/api/siri/([^.]*)\.(xml|json)$</from>
-        <to last="true">/api/siri/$1.action?type=$2</to>
+        <to last="true">/api/siri/$1?type=$2</to>
     </rule>
 
     <rule>
         <condition type="parameter" name="version">2</condition>
         <from>^/api/2/siri/([^.]*)\.(xml|json)$</from>
-        <to last="true">/api/siri/$1-v2.action?type=$2&amp;showCancelled=true</to>
+        <to last="true">/api/siri/$1-v2?type=$2&amp;showCancelled=true</to>
     </rule>
     <rule>
         <from>^/api/2/siri/([^.]*)\.(xml|json)$</from>
-        <to last="true">/api/siri/$1.action?type=$2&amp;showCancelled=true</to>
+        <to last="true">/api/siri/$1?type=$2&amp;showCancelled=true</to>
     </rule>
 
 
@@ -102,9 +102,9 @@
         <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-.*-webapp){0,1}/img/.*$</condition>
         <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-.*-webapp){0,1}/css/.*$</condition>
         <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-.*-webapp){0,1}/js/.*$</condition>
-        <condition type="request-uri" operator="notequal">^.*\.action$</condition>
+        <condition type="request-uri" operator="notequal">^.*\$</condition>
         <from>^(.*?)(?:\;jsessionid=[^\?#]*)$</from>
-        <to last="true">$1.action</to>
+        <to last="true">$1</to>
     </rule>
     <rule>
         <condition type="request-uri" operator="notequal">^.*_login$</condition>
@@ -112,19 +112,19 @@
         <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-.*-webapp){0,1}/img/.*$</condition>
         <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-.*-webapp){0,1}/css/.*$</condition>
         <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-.*-webapp){0,1}/js/.*$</condition>
-        <condition type="request-uri" operator="notequal">^.*\.action\?(.*)$</condition>
+        <condition type="request-uri" operator="notequal">^.*\?(.*)$</condition>
         <from>^(.*?)(?:\;jsessionid=[^\?#]*)?(\?[^#]*)?(#.*)?$</from>
-        <to last="true">$1.action$2$3</to>
+        <to last="true">$1$2$3</to>
     </rule>
     <!-- 
     	Outbound Rules
      -->
     <outbound-rule>
-    	<from>^(.*)\.action\?(.*)$</from>
+    	<from>^(.*)\?(.*)$</from>
     	<to>$1?$2</to>
     </outbound-rule>
     <outbound-rule>
-    	<from>^(.*)\.action$</from>
+    	<from>^(.*)\</from>
     	<to>$1</to>
     </outbound-rule>
 </urlrewrite>

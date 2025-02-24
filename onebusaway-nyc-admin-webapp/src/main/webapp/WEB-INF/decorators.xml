@@ -21,9 +21,9 @@
 	<excludes>
         <pattern>/js/*</pattern>
         <pattern>/css/*</pattern>
-        <pattern>/admin/bundles/manage-bundles!downloadOutputFile.action*</pattern>
-        <pattern>/admin/bundles/manage-bundles!buildOutputZip.action*</pattern>
-        <pattern>/admin/bundles/manage-bundles!downloadValidateFile.action*</pattern>
+        <pattern>/admin/bundles/manage-bundles!downloadOutputFile*</pattern>
+        <pattern>/admin/bundles/manage-bundles!buildOutputZip*</pattern>
+        <pattern>/admin/bundles/manage-bundles!downloadValidateFile*</pattern>
         <pattern>/admin/vehiclestatus/popup*</pattern>
         <pattern>/api/*</pattern>
 	</excludes>
