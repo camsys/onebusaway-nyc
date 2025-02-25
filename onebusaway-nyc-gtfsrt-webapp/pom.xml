@@ -132,7 +132,7 @@
 		<profile>
 			<id>local-ie</id>
 			<properties>
-				<tdm.host>tdm.qa.obanyc.com</tdm.host>
+				<tdm.host>tdm.dev.obanyc.com</tdm.host>
 				<tdm.port>80</tdm.port>
 				<tdm.url>/api/</tdm.url>
 				<bundle.location>/tmp/oba-bundle</bundle.location>

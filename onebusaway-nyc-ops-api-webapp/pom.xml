@@ -150,7 +150,7 @@
       <id>local-front-end</id>
       <properties>
         <jetty.port>8082</jetty.port>
-        <tdm.host>tdm.qa.obanyc.com</tdm.host>
+        <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <ops.host>opslb.dev.obanyc.com</ops.host>
         <ops.port>80</ops.port>
         <ops.path>/api/record/</ops.path>
@@ -170,7 +170,7 @@
       <!-- aka staging, production -->
       <properties>
         <jetty.port>8085</jetty.port>
-        <tdm.host>tdm.qa.obanyc.com</tdm.host>
+        <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <ops.host>opslb.dev.obanyc.com</ops.host>
         <ops.port>80</ops.port>
         <ops.path>/api/record/</ops.path>
@@ -187,7 +187,7 @@
       <!-- aka services-vtw-as-tds -->
       <!-- single port, aka development -->
       <properties>
-        <tdm.host>tdm.qa.obanyc.com</tdm.host>
+        <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <ops.host>opslb.dev.obanyc.com</ops.host>
         <ops.port>80</ops.port>
         <ops.path>/api/record/</ops.path>

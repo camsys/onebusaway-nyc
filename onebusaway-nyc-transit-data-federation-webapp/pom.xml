@@ -112,7 +112,7 @@
             <!-- don't run both the vtw and the tdf in the same instance -->
             <id>local-single-port</id>
             <properties>
-                <tdm.host>tdm.qa.obanyc.com</tdm.host>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <bundle.location>/var/lib/obanyc/oba-tds-bundle</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
 <!--

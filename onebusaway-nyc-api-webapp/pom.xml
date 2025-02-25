@@ -173,7 +173,7 @@
                 <config.path>http://app.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <dummy.permissions />
-                <tdm.host>tdm.qa.obanyc.com</tdm.host>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <log4j.appender>stdout</log4j.appender>
                 <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
                 <api.cache.disabled>true</api.cache.disabled>

@@ -115,7 +115,7 @@
         <config.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <archive.path>http://archive.dev.obanyc.com/onebusaway-nyc-report-archive</archive.path>
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
-        <tdm.host>tdm.qa.obanyc.com</tdm.host>
+        <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url>http://localhost:8080</webapp.api.url>
         <log4j.appender>stdout</log4j.appender>
         <sms.sessions.manager>org.onebusaway.nyc.sms.impl.SessionManagerImpl</sms.sessions.manager>

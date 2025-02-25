@@ -151,7 +151,7 @@
       <properties>
         <jetty.port>8082</jetty.port>
         <tds.path>http://tds.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-        <tdm.host>tdm.qa.obanyc.com</tdm.host>
+        <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <log4j.appender>stdout</log4j.appender>
         <log4j.hibernate.sql>OFF</log4j.hibernate.sql>
         <log4j.hibernate.type>OFF</log4j.hibernate.type>
