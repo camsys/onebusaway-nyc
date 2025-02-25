@@ -16,319 +16,381 @@
     limitations under the License.
 
 -->
-<html xmlns:jsp="http://java.sun.com/JSP/Page"
-	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
-	xmlns:wiki="/oba-wiki-tags">
-<jsp:directive.page contentType="text/html" />
-<head>
+<jsp:root version="2.0"
+          xmlns:jsp="http://java.sun.com/JSP/Page"
+          xmlns:c="http://java.sun.com/jsp/jstl/core"
+          xmlns:spring="http://www.springframework.org/tags">
+    <jsp:directive.page contentType="text/html;charset=UTF-8" language="java"/>
 
-<s:url var="url" value="/css/map/map.css">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+    <html>
+    <head>
+        <meta name="decorator" content="main.jspx"/>
+        <!-- CSS includes -->
+        <c:url var="url" value="/css/map/map.css">
+            <c:param name="v" value="${frontEndVersion}"/>
+        </c:url>
+        <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
-<s:url var="url" value="/css/map/leaflet.css">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+        <c:url var="url" value="/css/map/leaflet.css">
+            <c:param name="v" value="${frontEndVersion}"/>
+        </c:url>
+        <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
-<s:url var="url" value="/css/map/popup.css">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+        <c:url var="url" value="/css/map/popup.css">
+            <c:param name="v" value="${frontEndVersion}"/>
+        </c:url>
+        <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
-<s:url var="url" value="/css/map/wizard.css">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+        <c:url var="url" value="/css/map/wizard.css">
+            <c:param name="v" value="${frontEndVersion}"/>
+        </c:url>
+        <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
-<jsp:text>
-&lt;!--[if IE 6]&gt;
-</jsp:text>
-	<s:url var="url" value="/css/ie6.css">
-		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-	</s:url>
-	<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
-<jsp:text>
-&lt;![endif]--&gt;
-</jsp:text>
+        <!-- Google Maps API -->
+        <c:url var="url" value="https://maps.googleapis.com/maps/api/js">
+            <c:param name="v" value="3"/>
+            <c:param name="client" value="${googleMapsClientId}"/>
+            <c:param name="sensor" value="false"/>
+            <c:param name="key" value="${googleMapsApiKey}"/>
+            <c:param name="channel" value="${googleMapsChannel}"/>
+        </c:url>
+        <script src="${url}" type="text/javascript"></script>
 
-<s:url var="url" value="https://maps.googleapis.com/maps/api/js">				
-	<s:param name="v">3</s:param>
-	<s:param name="client"><s:property value="googleMapsClientId" /></s:param>
-	<s:param name="sensor">false</s:param>
-	<s:param name="key"><s:property value="googleMapsApiKey" /></s:param>
-	<s:param name="channel"><s:property value="googleMapsChannel" /></s:param>
-</s:url>
-<script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
+        <!-- JavaScript -->
+        <c:url var="url" value="/js/lib/leaflet.js"/>
+        <script src="${url}" type="text/javascript"></script>
 
-<s:url var="url" value="/js/lib/leaflet.js">
-</s:url>
-<script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
+        <c:url var="url" value="/js/lib/jquery.ui.js">
+            <c:param name="v" value="${frontEndVersion}"/>
+        </c:url>
+        <script src="${url}" type="text/javascript"></script>
 
-<s:url var="url" value="/js/lib/jquery.ui.js">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+        <c:url var="url" value="/js/lib/jquery.history.js">
+            <c:param name="v" value="${frontEndVersion}"/>
+        </c:url>
+        <script src="${url}" type="text/javascript"></script>
 
-<s:url var="url" value="/js/lib/jquery.history.js">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+        <c:url var="url" value="/js/lib/markerManager.js">
+            <c:param name="v" value="${frontEndVersion}"/>
+        </c:url>
+        <script src="${url}" type="text/javascript"></script>
 
-<s:url var="url" value="/js/lib/markerManager.js">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+        <c:url var="url" value="/js/lib/rgbcolor.js">
+            <c:param name="v" value="${frontEndVersion}"/>
+        </c:url>
+        <script src="${url}" type="text/javascript"></script>
 
-<s:url var="url" value="/js/lib/rgbcolor.js">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+        <c:url var="url" value="/js/lib/dateFormat.js">
+            <c:param name="v" value="${frontEndVersion}"/>
+        </c:url>
+        <script src="${url}" type="text/javascript"></script>
 
-<s:url var="url" value="/js/lib/dateFormat.js">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+        <c:url var="url" value="/js/lib/popover.js">
+            <c:param name="v" value="${frontEndVersion}"/>
+        </c:url>
+        <script src="${url}" type="text/javascript"></script>
 
-<s:url var="url" value="/js/lib/popover.js">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+        <c:url var="url" value="/js/oba/map/Wizard.js">
+            <c:param name="v" value="${frontEndVersion}"/>
+        </c:url>
+        <script src="${url}" type="text/javascript"></script>
 
-<s:url var="url" value="/js/oba/map/Wizard.js">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+        <c:url var="url" value="/api/config">
+            <c:param name="v" value="${cacheBreaker}"/>
+        </c:url>
+        <script src="${url}" type="text/javascript"></script>
 
-<s:url var="url" value="/api/config">
-	<s:param name="v"><s:property value="cacheBreaker" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+        <c:url var="url" value="/js/oba/Util.js">
+            <c:param name="v" value="${frontEndVersion}"/>
+        </c:url>
+        <script src="${url}" type="text/javascript"></script>
 
-<s:url var="url" value="/js/oba/Util.js">
-	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-</s:url>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+        <!-- Map JavaScript -->
+        <c:choose>
+            <c:when test="${mapInstance eq 'google'}">
+                <c:url var="url" value="/js/oba/map/GoogleMapWrapper.js">
+                    <c:param name="v" value="${frontEndVersion}"/>
+                </c:url>
+                <script src="${url}" type="text/javascript"></script>
 
-<!-- Google Maps Instance -->
-<s:if test="mapInstance.equals('google')">
-	<s:url var="url" value="/js/oba/map/GoogleMapWrapper.js">
-		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-	<s:url var="url" value="/js/oba/map/Popups.js">
-		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-		<s:url var="url" value="/js/oba/map/RouteMap.js">
-			<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-		</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-		<s:url var="url" value="/js/oba/map/Sidebar.js">
-			<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-		</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-</s:if>
-<s:else>
-	<!-- Leaflet Maps (Google) Instance -->
-	<s:if test="mapInstance.equals('leaflet-google')">
-		<s:url var="url" value="/js/lib/leaflet-google.js">
-		</s:url>
-	</s:if>
-	<!-- Leaflet Maps (Bing) Instance -->
-	<s:elseif test="mapInstance.equals('leaflet-bing')">
-		<s:url var="url" value="/js/lib/leaflet-bing.js">
-		</s:url>
-	</s:elseif>
-	<script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
-	<s:url var="url" value="/js/oba/map/LeafletMapWrapper.js">
-		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-	<s:url var="url" value="/js/oba/map/LeafletPopups.js">
-		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-	<s:url var="url" value="/js/oba/map/LeafletRouteMap.js">
-		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-	<s:url var="url" value="/js/oba/map/LeafletSidebar.js">
-		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-</s:else>
+                <c:url var="url" value="/js/oba/map/Popups.js">
+                    <c:param name="v" value="${frontEndVersion}"/>
+                </c:url>
+                <script src="${url}" type="text/javascript"></script>
 
-<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"><!-- jspx --></script>
+                <c:url var="url" value="/js/oba/map/RouteMap.js">
+                    <c:param name="v" value="${frontEndVersion}"/>
+                </c:url>
+                <script src="${url}" type="text/javascript"></script>
 
-</head>
-<body>
-<div id="content" class="map">
-    <div id="searchbar">
-    	<div class="sidebar">
-	    	<div id="map_header">
-			  	<div class="title">
-		   			<s:url var="url" value="/"></s:url>
-					<h1><a href="${url}"><s:property value="getText('main.title')" /></a></h1>
-		  		</div>	  	
-		  			
-		   	  	<ul>
-		   	  		<s:url var="url" namespace="/m" action="index"/>
-					<li id="link_mobile" aria-label="Text only version"><a href="${url}">Text / Mobile</a></li>
-		    	  	
-					<s:url var="url" namespace="/wiki" action="About"/>
-					<li id="link_about"><a href="${url}">About</a></li>
-		
-					<s:url var="url" namespace="/wiki" action="ContactUs"/>
-					<li id="link_contact"><a href="${url}">Contact</a></li>
-		 			    
-		 			<s:url var="url" namespace="/wiki/Developers" action="Index"/>
-		 			<li id="link_developers"><a href="${url}">Developers</a></li>
-		 			
-		 			<s:url var="url" namespace="/wiki/Help" action="Index"/>
-		 			<li id="link_help"><a href="${url}">Help</a></li>
-			   	</ul>
-		   </div>
-	    
-	       <form action="search.action">
-	         <input type="text" name="q" value=""/>
-	         <input type="submit" value="Find" class="submit"/>
-	         <p id="tip">TIP: Enter an intersection, bus route or bus stop code.</p>
-	       </form>
-	       
-	       <div id="matches">
-	       	 <h2>Results:</h2>
-	       	 <ul><!-- //prevent jspx minimization --></ul>
-		   </div>
-		   
-		   <div id="filtered-matches">
-		   	<h2>Other routes here:</h2>
-		   	<ul><!-- //prevent jspx minimization --></ul>
-		   </div>
-	
-	       <div id="suggestions">
-	       	 <h2>Did You Mean?</h2>
-	       	 <ul></ul>
-		   </div>
-		            
-		   <div id="no-results">&amp;nbsp;</div>
-	
-		   <div id="loading">
-			   	<div class="loading">
-			   		<span>Loading...</span>
-		   		</div>
-		   </div>
-	
-			<!-- Include the welcome div with example searches -->
-			<c:import url="includes/welcome.jspx" />
-		   
-			<s:url var="url" namespace="/" action="routes"/>
-			<div id="available-routes"><a href="${url}">Click here</a> for a list of available routes.</div>
-		   
-			<div id="cant-find">
-				<h2>Can't find your bus route?</h2>
-				<s:url var="url" namespace="/" action="routes" />
-				<p><s:property value="getText('main.cantfindroute.text')" /> <a href="${url}">Click here</a> to see which routes are currently available.</p>
-			</div>
-			
-			<s:if test="globalServiceAlerts!=null">
-			 <div id="global-alerts" class="global-alerts">
-				<s:iterator value="globalServiceAlerts">
-					<s:iterator value="descriptions">
-						<p class="global-alert-content"><strong>Service Notice: </strong><s:property value="value" /></p>
-					</s:iterator>
-				</s:iterator>
-			 </div>
-			</s:if>
-	
-			<!-- Include the Google ad -->
-			<c:import url="includes/ad.jspx" />
-			
-			<div id="psa_element">${psa}</div>
-		</div>
-		<div class="container clear"><!-- jspx --></div>
-		
-	  	<s:url var="url" value="/css/img/google_logo.png"></s:url>
-		<div id="google_translate_element">Google Translate <img id="icon" src="${url}" /></div>
+                <c:url var="url" value="/js/oba/map/Sidebar.js">
+                    <c:param name="v" value="${frontEndVersion}"/>
+                </c:url>
+                <script src="${url}" type="text/javascript"></script>
+            </c:when>
+            <c:otherwise>
+                <c:choose>
+                    <c:when test="${mapInstance eq 'leaflet-google'}">
+                        <c:url var="url" value="/js/lib/leaflet-google.js"/>
+                    </c:when>
+                    <c:when test="${mapInstance eq 'leaflet-bing'}">
+                        <c:url var="url" value="/js/lib/leaflet-bing.js"/>
+                    </c:when>
+                </c:choose>
+                <script src="${url}" type="text/javascript"></script>
+
+                <c:url var="url" value="/js/oba/map/LeafletMapWrapper.js">
+                    <c:param name="v" value="${frontEndVersion}"/>
+                </c:url>
+                <script src="${url}" type="text/javascript"></script>
+
+                <c:url var="url" value="/js/oba/map/LeafletPopups.js">
+                    <c:param name="v" value="${frontEndVersion}"/>
+                </c:url>
+                <script src="${url}" type="text/javascript"></script>
+
+                <c:url var="url" value="/js/oba/map/LeafletRouteMap.js">
+                    <c:param name="v" value="${frontEndVersion}"/>
+                </c:url>
+                <script src="${url}" type="text/javascript"></script>
+
+                <c:url var="url" value="/js/oba/map/LeafletSidebar.js">
+                    <c:param name="v" value="${frontEndVersion}"/>
+                </c:url>
+                <script src="${url}" type="text/javascript"></script>
+            </c:otherwise>
+        </c:choose>
+
+        <!-- Google Translate -->
+        <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" type="text/javascript"></script>
+
+    </head>
+    <body>
+    <div id="content" class="map">
+        <div id="searchbar">
+            <div class="sidebar">
+                <div id="map_header">
+                    <div class="title">
+                        <c:url var="url" value="/"/>
+                        <h1>
+                            <a href="${url}">
+                                <spring:message code="main.title"/>
+                            </a>
+                        </h1>
+                    </div>
+                    <ul>
+                        <c:url var="url" value="/m/index"/>
+                        <li id="link_mobile" aria-label="Text only version">
+                            <a href="${url}">Text / Mobile</a>
+                        </li>
+                        <c:url var="url" value="/wiki/About"/>
+                        <li id="link_about">
+                            <a href="${url}">About</a>
+                        </li>
+                        <c:url var="url" value="/wiki/ContactUs"/>
+                        <li id="link_contact">
+                            <a href="${url}">Contact</a>
+                        </li>
+                        <c:url var="url" value="/wiki/Developers/Index"/>
+                        <li id="link_developers">
+                            <a href="${url}">Developers</a>
+                        </li>
+                        <c:url var="url" value="/wiki/Help/Index"/>
+                        <li id="link_help">
+                            <a href="${url}">Help</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <form action="search.action">
+                    <input type="text" name="q" value=""/>
+                    <input type="submit" value="Find" class="submit"/>
+                    <p id="tip">TIP: Enter an intersection, bus route or bus stop code.</p>
+                </form>
+
+                <div id="matches">
+                    <h2>Results:</h2>
+                    <ul/>
+                </div>
+
+                <div id="filtered-matches">
+                    <h2>Other routes here:</h2>
+                    <ul/>
+                </div>
+
+                <div id="suggestions">
+                    <h2>Did You Mean?</h2>
+                    <ul/>
+                </div>
+
+                <div id="no-results">&amp;nbsp;</div>
+
+                <div id="loading">
+                    <div class="loading">
+                        <span>Loading...</span>
+                    </div>
+                </div>
+
+                <jsp:include page="includes/welcome.jspx"/>
+
+                <c:url var="url" value="/routes"/>
+                <div id="available-routes">
+                    <a href="${url}">Click here</a> for a list of available routes.
+                </div>
+
+                <div id="cant-find">
+                    <h2>Can't find your bus route?</h2>
+                    <c:url var="url" value="/routes"/>
+                    <p>
+                        <spring:message code="main.cantfindroute.text"/>
+                        <a href="${url}">Click here</a> to see which routes are currently available.
+                    </p>
+                </div>
+
+                <c:if test="${not empty globalServiceAlerts}">
+                    <div id="global-alerts" class="global-alerts">
+                        <c:forEach var="alert" items="${globalServiceAlerts}">
+                            <c:forEach var="desc" items="${alert.descriptions}">
+                                <p class="global-alert-content">
+                                    <strong>Service Notice: </strong>${desc.value}
+                                </p>
+                            </c:forEach>
+                        </c:forEach>
+                    </div>
+                </c:if>
+
+                <jsp:include page="includes/ad.jspx"/>
+
+                <div id="psa_element">${psa}</div>
+            </div>
+
+            <div class="container clear"/>
+
+            <c:url var="url" value="/css/img/google_logo.png"/>
+            <div id="google_translate_element">
+                Google Translate <img id="icon" src="${url}"/>
+            </div>
+        </div>
+
+        <div id="map"/>
+        <div id="legend"/>
+
+        <div id="wizard">
+            <div id="wizard_start">
+                <ul>
+                    <li id="wizard-col1">
+                        <a data-placement="right" class="wizard_panel" rel="popover">
+                            <div id="inner-col1">
+                                <h2>New to <spring:message code="main.application.name"/>?</h2>
+                                <p>Click here for instructions:</p>
+                                <p>Just a few easy steps!</p>
+                            </div>
+                        </a>
+                    </li>
+                    <li id="wizard-col2">
+                        <p>Also</p>
+                        <p>available</p>
+                        <p>using:</p>
+                    </li>
+                    <li id="wizard-col3">
+                        <c:url var="url" value="/wiki/Help/MobileSearching"/>
+                        <a href="${url}" target="_new">
+                            <p>Mobile Web</p>
+                            <a rel="popover">
+                                <div id="smartphone_img">&amp;nbsp;</div>
+                            </a>
+                        </a>
+                    </li>
+                    <li id="wizard-col4">
+                        <c:url var="url" value="/wiki/Help/TextIt"/>
+                        <a href="${url}" target="_new">
+                            <p>SMS</p>
+                            <a rel="popover">
+                                <div id="sms_img">&amp;nbsp;</div>
+                            </a>
+                        </a>
+                    </li>
+                </ul>
+                <a class="close"><span class="close_txt">Close</span> ×</a>
+            </div>
+
+            <div id="wizard_didyoumean">
+                <a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a>
+                <a class="close"><span class="close_txt">Close</span> ×</a>
+            </div>
+
+            <div id="wizard_inuse">
+                <a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a>
+                <span class="text_span">Follow the instructions above . . .</span>
+                <a class="close"><span class="close_txt">Close</span> ×</a>
+            </div>
+
+            <div id="wizard_finaltip">
+                <div>
+                    <p>
+                        <span style="font-weight: bold;">Tips:</span>
+                        <a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a>
+                        <spring:message code="main.application.name"/> is also available via
+                        <a id="wizard_mobile" rel="popover">Mobile Web</a> or
+                        <a id="wizard_sms" rel="popover">SMS/Text Message</a>.
+                    </p>
+                    <p>
+                        Remember your 6-digit Stopcode from the pop-ups or find it on a
+                        <a id="tips_code_popup" rel="popover" data-placement="above">bus stop pole box</a>.
+                    </p>
+                    <p id="sharelinks">
+                        <a id="wizard_share" rel="popover">Share</a> this link and tell others about
+                        <spring:message code="main.application.name"/>!
+
+                        <c:set var="link">
+                            <spring:message code="main.agency.twitter.link"/>
+                        </c:set>
+
+                        <a href="${link}" target="_new">
+                            <span class="ui-icon ui-icon-twitter">&amp;nbsp;</span>
+                        </a>
+
+                        <c:set var="link">
+                            <spring:message code="main.agency.facebook.link"/>
+                        </c:set>
+                        <a href="${link}" target="_new">
+                            <span class="ui-icon ui-icon-facebook">&amp;nbsp;</span>
+                        </a>
+
+                        <c:set var="link">
+                            <spring:message code="main.agency.youtube.link"/>
+                        </c:set>
+                        <a href="${link}" target="_new">
+                            <span class="ui-icon ui-icon-youtube">&amp;nbsp;</span>
+                        </a>
+
+                        <c:set var="link">
+                            <spring:message code="main.agency.flickr.link"/>
+                        </c:set>
+                        <a href="${link}" target="_new">
+                            <span class="ui-icon ui-icon-flickr">&amp;nbsp;</span>
+                        </a>
+                    </p>
+                </div>
+                <a class="close"><span class="close_txt">Close</span> ×</a>
+            </div>
+        </div>
+
+        <div id="map-global-alerts" class="global-alerts">
+            <div id="close-map-global-alerts">
+                <a href="#">[close]</a>
+            </div>
+            <div class="global-alerts-content">
+                <c:forEach var="alert" items="${globalServiceAlerts}">
+                    <c:forEach var="desc" items="${alert.descriptions}">
+                        <p class="global-alert-content">
+                            <strong>Service Notice: </strong>${desc.value}
+                        </p>
+                    </c:forEach>
+                </c:forEach>
+            </div>
+        </div>
     </div>
-
-	<div id="map"><!-- //prevent jspx minimization --></div>
-	<div id="legend"><!-- //prevent jspx minimization --></div>
-
-    <div id="wizard">
-	   	<div id="wizard_start">
-	   		<ul>
-	   			<li id="wizard-col1">
-	   				<a data-placement="right" class="wizard_panel" rel="popover">
-	    				<div id="inner-col1">
-	    					<h2>New to <s:property value="getText('main.application.name')" />?</h2>
-	    					<p>Click here for instructions:</p>
-	    					<p>Just a few easy steps!</p>
-	    				</div>
-	   				</a>
-			    </li>
-			    <li id="wizard-col2">
-			    	<p>Also</p>
-			    	<p>available</p>
-			    	<p>using:</p>
-			    </li>
-			    <li id="wizard-col3">
-			    	<s:url var="url" namespace="/wiki/Help" action="MobileSearching"/>
-			    	<a href="${url}" target="_new">
-			    		<p>Mobile Web</p>
-			    		<a rel="popover"><div id="smartphone_img">&amp;nbsp;</div></a>
-			    	</a>
-			    </li>
-			    <li id="wizard-col4">
-			    	<s:url var="url" namespace="/wiki/Help" action="TextIt"/>
-			    	<a href="${url}" target="_new">
-			    		<p>SMS</p>
-			    		<a rel="popover"><div id="sms_img">&amp;nbsp;</div></a>
-			    	</a>
-			    </li>
-			</ul>
-			<a class="close"><span class="close_txt">Close</span> ×</a>
-		</div>
-		<div id="wizard_didyoumean">
-			<a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a>
-			<a class="close"><span class="close_txt">Close</span> ×</a>
-		</div>
-		<div id="wizard_inuse">
-			<a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a>
-			<span class="text_span">Follow the instructions above . . .</span>
-			<a class="close"><span class="close_txt">Close</span> ×</a>
-		</div>
-		<div id="wizard_finaltip">
-			<div>
-				<p><span style="font-weight: bold;">Tips:</span> <a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a> <s:property value="getText('main.application.name')" /> is also available via <a id="wizard_mobile" rel="popover">Mobile Web</a> or <a id="wizard_sms" rel="popover">SMS/Text Message</a>.</p>
-				<p>Remember your 6-digit Stopcode from the pop-ups or find it on a <a id="tips_code_popup" rel="popover" data-placement="above">bus stop pole box</a>.</p>
-				<p id="sharelinks"><a id="wizard_share" rel="popover">Share</a> this link and tell others about <s:property value="getText('main.application.name')" />!
-					<s:set var="link" value="getText('main.agency.twitter.link')" />
-					<a href="${link}" target="_new"><span class="ui-icon ui-icon-twitter"> &amp;nbsp; </span></a>
-					<s:set var="link" value="getText('main.agency.facebook.link')" />
-					<a href="${link}" target="_new"><span class="ui-icon ui-icon-facebook"> &amp;nbsp; </span></a>
-					<s:set var="link" value="getText('main.agency.youtube.link')" />
-					<a href="${link}" target="_new"><span class="ui-icon ui-icon-youtube"> &amp;nbsp; </span></a>
-					<s:set var="link" value="getText('main.agency.flickr.link')" />
-					<a href="${link}" target="_new"><span class="ui-icon ui-icon-flickr"> &amp;nbsp; </span></a>
-				</p>
-			</div>
-			<a class="close"><span class="close_txt">Close</span> ×</a>
-		</div>
-	</div>
-
-	<div id="map-global-alerts" class="global-alerts">
-		<div id="close-map-global-alerts"><a href="#">[close]</a></div>
-		<div class="global-alerts-content">
-			<s:iterator value="globalServiceAlerts">
-				<s:iterator value="descriptions">
-					<p class="global-alert-content"><strong>Service Notice: </strong><s:property value="value" /></p>
-				</s:iterator>
-			</s:iterator>
-		</div>
-	</div>
-	    
-</div>
-</body>
-</html>
+    </body>
+    </html>
+</jsp:root>

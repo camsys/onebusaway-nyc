@@ -43,6 +43,7 @@
 	        <env-entry-type>java.lang.String</env-entry-type>
 	        <env-entry-value>https://xwiki.dev.obanyc.com/bin/download/%{namespace}/%{documentName}/%{attachmentName}</env-entry-value>
     </env-entry>
+
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
@@ -50,6 +51,22 @@
             classpath:org/onebusaway/nyc/webapp/application-context-webapp.xml
         </param-value>
 	</context-param>
+
+	<servlet>
+		<servlet-name>appServlet</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/spring-servlet.xml</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>appServlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+
 
 	<!-- Filters -->
 	<filter>
@@ -110,7 +127,7 @@
 
 	<!-- Welcome file lists -->
 	<welcome-file-list>
-		<welcome-file>index</welcome-file>
+		<welcome-file>index.jspx</welcome-file>
 	</welcome-file-list>
 
 	<!-- MIME types -->
