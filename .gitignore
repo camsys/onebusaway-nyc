@@ -26,3 +26,7 @@ onebusaway-nyc-acta-webapp/overlays/
 onebusaway-nyc-gtfsrt-integration-tests/overlays/
 
 onebusaway-nyc-integration-tests/overlays/
+
+### Release Files
+*pom.xml.releaseBackup
+release.properties
