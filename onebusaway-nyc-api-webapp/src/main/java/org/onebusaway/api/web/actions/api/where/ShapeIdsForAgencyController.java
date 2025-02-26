@@ -39,7 +39,6 @@ public class ShapeIdsForAgencyController {
   @Autowired
   private TransitDataService _service;
 
-  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

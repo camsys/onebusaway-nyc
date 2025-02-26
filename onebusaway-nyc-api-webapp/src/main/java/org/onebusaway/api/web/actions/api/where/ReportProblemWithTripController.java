@@ -41,7 +41,7 @@ public class ReportProblemWithTripController {
   @Autowired
   private TransitDataService _service;
 
-  @Autowired
+
   private ApiActionSupport _support;
 
   @GetMapping

@@ -142,6 +142,18 @@
             <version>2.31</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.dmurph</groupId>
+            <artifactId>JGoogleAnalyticsTracker</artifactId>
+            <version>1.2.2</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.dmurph</groupId>
+            <artifactId>JGoogleAnalyticsTracker</artifactId>
+            <version>1.2.3</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 

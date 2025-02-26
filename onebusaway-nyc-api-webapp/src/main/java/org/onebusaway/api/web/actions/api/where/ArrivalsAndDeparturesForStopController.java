@@ -52,7 +52,7 @@ public class ArrivalsAndDeparturesForStopController {
   @Autowired
   private TransitDataService _service;
 
-  @Autowired
+
   private ApiActionSupport _support;
 
 //  private ArrivalsAndDeparturesQueryBean _query = new ArrivalsAndDeparturesQueryBean();

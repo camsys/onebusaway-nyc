@@ -40,7 +40,6 @@ public class StopsForRouteController {
   @Autowired
   private NycTransitDataService _service;
 
-  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

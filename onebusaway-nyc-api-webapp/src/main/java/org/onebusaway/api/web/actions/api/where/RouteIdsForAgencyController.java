@@ -40,7 +40,6 @@ public class RouteIdsForAgencyController {
   @Autowired
   private TransitDataService _service;
 
-  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

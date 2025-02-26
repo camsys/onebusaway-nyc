@@ -40,7 +40,6 @@ public class StopIdsForAgencyController {
   @Autowired
   private NycTransitDataService _service;
 
-  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

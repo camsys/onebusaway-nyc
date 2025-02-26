@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.webapp.actions.api.siri;
+package org.onebusaway.api.siri;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.*;

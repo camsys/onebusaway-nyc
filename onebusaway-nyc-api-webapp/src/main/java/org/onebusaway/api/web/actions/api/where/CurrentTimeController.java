@@ -35,7 +35,7 @@ public class CurrentTimeController {
 
   private static final int V1 = 1;
 
-  @Autowired
+
   private ApiActionSupport _support;
 
   @GetMapping

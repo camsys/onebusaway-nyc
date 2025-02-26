@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.webapp.actions.api.siri.service;
+package org.onebusaway.api.siri.service;
 
 import java.util.List;
 import java.util.Map;
 
+import org.onebusaway.api.siri.impl.SiriSupportV2;
+import org.onebusaway.api.siri.model.DetailLevel;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.siri.support.SiriJsonSerializerV2;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializerV2;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 import uk.org.siri.siri_2.AnnotatedLineStructure;
@@ -44,7 +44,7 @@ public interface RealtimeServiceV2 {
 	public SiriXmlSerializerV2 getSiriXmlSerializer();
 
 	public VehicleActivityStructure getVehicleActivityForVehicle(
-			String vehicleId, int maximumOnwardCalls, DetailLevel detailLevel, 
+			String vehicleId, int maximumOnwardCalls, DetailLevel detailLevel,
 			long currentTime, boolean showApc, boolean showRawApc);
 
 	public List<VehicleActivityStructure> getVehicleActivityForRoute(
@@ -52,9 +52,9 @@ public interface RealtimeServiceV2 {
 			DetailLevel detailLevel, long currentTime, boolean showApc, boolean showRawApc);
 
 	public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(
-			String stopId, int maximumOnwardCalls, DetailLevel detailLevel,
-			long currentTime, List<AgencyAndId> routeIds,
-			Map<Filters, String> filters, boolean showApc, boolean showRawApc, boolean showCancelledTrips);
+            String stopId, int maximumOnwardCalls, DetailLevel detailLevel,
+            long currentTime, List<AgencyAndId> routeIds,
+            Map<SiriSupportV2.Filters, String> filters, boolean showApc, boolean showRawApc, boolean showCancelledTrips);
 
 	public boolean getVehiclesInServiceForRoute(String routeId,
 			String directionId, long currentTime);
@@ -74,19 +74,19 @@ public interface RealtimeServiceV2 {
 	public Map<Boolean, List<AnnotatedStopPointStructure>> getAnnotatedStopPointStructures(
 			List<String> agencyIds, List<AgencyAndId> routeIds,
 			DetailLevel detailLevel, long currentTime,
-			Map<Filters, String> filters);
+			Map<SiriSupportV2.Filters, String> filters);
 
 	public Map<Boolean, List<AnnotatedStopPointStructure>> getAnnotatedStopPointStructures(
 			CoordinateBounds bounds, List<String> agencyIds, List<AgencyAndId> routeIds, DetailLevel detailLevel,
-			long responseTimestamp, Map<Filters, String> filters);
+			long responseTimestamp, Map<SiriSupportV2.Filters, String> filters);
 
 	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
 			List<String> agencyIds, List<AgencyAndId> routeIds, DetailLevel detailLevel,
-			long responseTimestamp, Map<Filters, String> filters);
+			long responseTimestamp, Map<SiriSupportV2.Filters, String> filters);
 
 	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
 			List<String> agencyIds, CoordinateBounds bounds, DetailLevel detailLevel,
-			long responseTimestamp, Map<Filters, String> filters);
+			long responseTimestamp, Map<SiriSupportV2.Filters, String> filters);
 
     boolean showApc(String apiKey);
 

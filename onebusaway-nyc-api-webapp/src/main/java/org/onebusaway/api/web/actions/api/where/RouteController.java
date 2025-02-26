@@ -52,7 +52,7 @@ public class RouteController {
   @Autowired
   private TransitDataService _service;
 
-  @Autowired
+
   private ApiActionSupport _support;
 
   @GetMapping

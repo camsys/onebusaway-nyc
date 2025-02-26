@@ -45,7 +45,6 @@ public class TripDetailsController {
   @Autowired
   private NycTransitDataService _service;
 
-  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

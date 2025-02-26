@@ -27,7 +27,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.webapp.actions.api.siri;
+package org.onebusaway.api.siri;
 
 import java.io.IOException;
 import java.util.*;
@@ -44,7 +44,7 @@ import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.api.web.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.util.AgencyAndIdLibrary;
@@ -208,7 +208,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport {
       }
 
       // No vehicle id validation, so we pass null for error
-        _response = generateSiriResponse(activities, null, null, currentTimestamp);
+      _response = generateSiriResponse(activities, null, null, currentTimestamp);
 
       // *** CASE 2: by route, using direction id, if provided
     } else if (_request.getParameter("LineRef") != null) {

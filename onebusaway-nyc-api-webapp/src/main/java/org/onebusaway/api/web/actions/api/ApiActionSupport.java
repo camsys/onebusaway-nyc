@@ -24,11 +24,8 @@ import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.onebusaway.api.web.interceptors.GlobalExceptionHandler;
 
-
-@Component
 public class ApiActionSupport implements OneBusAwayApiActionSupport{
 
   static final long serialVersionUID = 1L;
@@ -44,6 +41,10 @@ public class ApiActionSupport implements OneBusAwayApiActionSupport{
   String _key = "";
 
   boolean _includeReferences = true;
+
+  public ApiActionSupport(int defaultVersion) {
+    _defaultVersion = defaultVersion;
+  }
 
   @Override
   public void ApiActionSupport(int defaultVersion) {
@@ -69,7 +70,7 @@ public class ApiActionSupport implements OneBusAwayApiActionSupport{
 
   /****
    * Protected Methods
-   * 
+   *
    * @param version
    * @return
    */

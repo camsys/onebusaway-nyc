@@ -52,7 +52,6 @@ public class TripsForLocationResponse {
   @Autowired
   private NycTransitDataService _service;
 
-  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

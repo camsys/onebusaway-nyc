@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.webapp.actions.api.siri.impl;
+package org.onebusaway.api.siri.impl;
 
 import java.util.*;
 import java.math.BigInteger;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.api.siri.service.RealtimeServiceV2;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -31,15 +32,12 @@ import org.onebusaway.nyc.siri.support.SiriJsonSerializerV2;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializerV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteResult;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.OnwardCallsMode;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteDirection;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.RouteForDirection;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.StopOnRoute;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.StopRouteDirection;
-import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
+import org.onebusaway.api.siri.model.RouteResult;
+import org.onebusaway.api.siri.model.DetailLevel;
+import org.onebusaway.api.siri.model.RouteDirection;
+import org.onebusaway.api.siri.model.RouteForDirection;
+import org.onebusaway.api.siri.model.StopOnRoute;
+import org.onebusaway.api.siri.model.StopRouteDirection;
 import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
@@ -187,7 +185,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			SiriSupportV2.fillMonitoredVehicleJourney(
 					activity.getMonitoredVehicleJourney(),
 					tripDetails.getTrip(), tripDetails.getStatus(), null,
-					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
+					SiriSupportV2.OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
 					stopIdToPredictionRecordMap, detailLevel, currentTime, null, showApc, showRawApc, false);
 
@@ -252,7 +250,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 					output.getMonitoredVehicleJourney(),
 					tripDetailsForCurrentTrip.getTrip(),
 					tripDetailsForCurrentTrip.getStatus(), null,
-					OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
+					SiriSupportV2.OnwardCallsMode.VEHICLE_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
 					stopIdToPredictionRecordMap, detailLevel,currentTime, null, showApc, showRawApc, false);
 
@@ -264,18 +262,18 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	@Override
 	public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(
-			String stopId, int maximumOnwardCalls, DetailLevel detailLevel,
-			long currentTime, List<AgencyAndId> routeIds, Map<Filters, String> filters, boolean showApc,
-			boolean showRawApc, boolean showCancelledTrips) {
+            String stopId, int maximumOnwardCalls, DetailLevel detailLevel,
+            long currentTime, List<AgencyAndId> routeIds, Map<SiriSupportV2.Filters, String> filters, boolean showApc,
+            boolean showRawApc, boolean showCancelledTrips) {
 
 		List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
 		boolean useTimePredictionsIfAvailable = _presentationService
 				.useTimePredictionsIfAvailable();
 		
-		String directionId = filters.get(Filters.DIRECTION_REF);
-		int maximumStopVisits = SiriSupportV2.convertToNumeric(filters.get(Filters.MAX_STOP_VISITS), Integer.MAX_VALUE);
-		Integer minimumStopVisitsPerLine = SiriSupportV2.convertToNumeric(filters.get(Filters.MIN_STOP_VISITS), null);
+		String directionId = filters.get(SiriSupportV2.Filters.DIRECTION_REF);
+		int maximumStopVisits = SiriSupportV2.convertToNumeric(filters.get(SiriSupportV2.Filters.MAX_STOP_VISITS), Integer.MAX_VALUE);
+		Integer minimumStopVisitsPerLine = SiriSupportV2.convertToNumeric(filters.get(SiriSupportV2.Filters.MIN_STOP_VISITS), null);
 		
 		
 		Map<AgencyAndId, Integer> visitCountByLine = new HashMap<AgencyAndId, Integer>();
@@ -333,7 +331,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			SiriSupportV2.fillMonitoredVehicleJourney(
 					mvjourney, tripBeanForAd,
 					statusBeanForCurrentTrip, adBean.getStop(),
-					OnwardCallsMode.STOP_MONITORING, _presentationService,
+					SiriSupportV2.OnwardCallsMode.STOP_MONITORING, _presentationService,
 					_nycTransitDataService, maximumOnwardCalls,
 					stopIdToPredictionRecordMap, detailLevel, currentTime, filters, showApc, showRawApc, isCancelled);
 
@@ -417,7 +415,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			List<AgencyAndId> routeIds, 
 			DetailLevel detailLevel, 
 			long currentTime,
-			Map<Filters, String> filters) {
+			Map<SiriSupportV2.Filters, String> filters) {
 		
 		// Cache stops by route so we don't need to call the transit data service repeatedly for the same route
 		Map<String, StopsForRouteBean> stopsForRouteCache = new HashMap<String, StopsForRouteBean>();
@@ -428,7 +426,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		// AnnotatedStopPointStructures List with hasUpcomingScheduledService
 		Map<Boolean, List<AnnotatedStopPointStructure>> output = new HashMap<Boolean, List<AnnotatedStopPointStructure>>();
 		
-		String upcomingScheduledService = filters.get(Filters.UPCOMING_SCHEDULED_SERVICE);
+		String upcomingScheduledService = filters.get(SiriSupportV2.Filters.UPCOMING_SCHEDULED_SERVICE);
 		
 		Boolean upcomingServiceAllStops = true;
 		
@@ -452,7 +450,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			List<AgencyAndId> routeIds, 
 			DetailLevel detailLevel, 
 			long currentTime,
-			Map<Filters, String> filters) {
+			Map<SiriSupportV2.Filters, String> filters) {
 		
 		// Cache stops by route so we don't need to call the transit data service repeatedly for the same route
 		Map<String, StopsForRouteBean> stopsForRouteCache = new HashMap<String, StopsForRouteBean>();
@@ -463,7 +461,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 		// AnnotatedStopPointStructures List with hasUpcomingScheduledService
 		Map<Boolean, List<AnnotatedStopPointStructure>> output = new HashMap<Boolean, List<AnnotatedStopPointStructure>>();
 		
-		String upcomingScheduledService = filters.get(Filters.UPCOMING_SCHEDULED_SERVICE);
+		String upcomingScheduledService = filters.get(SiriSupportV2.Filters.UPCOMING_SCHEDULED_SERVICE);
 		
 		Boolean upcomingServiceAllStops = true;
 		
@@ -493,7 +491,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			List<AgencyAndId> routeIds, 
 			DetailLevel detailLevel,
 			long currentTime, 
-			Map<Filters, String> filters) {
+			Map<SiriSupportV2.Filters, String> filters) {
 		
 		// Store processed StopBean as AnnotatedStopPointStructure 
 		List<AnnotatedLineStructure> annotatedLines = new ArrayList<AnnotatedLineStructure>();
@@ -539,7 +537,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	@Override
 	public Map<Boolean, List<AnnotatedLineStructure>> getAnnotatedLineStructures(
 			List<String> agencyIds, CoordinateBounds bounds, DetailLevel detailLevel,
-			long responseTimestamp, Map<Filters, String> filters) {
+			long responseTimestamp, Map<SiriSupportV2.Filters, String> filters) {
 		
 		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
 		
@@ -788,7 +786,7 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 			List<AgencyAndId> routeIds,
 			List<StopBean> stopBeans, 
 			List<AnnotatedStopPointStructure> annotatedStopPoints, 
-			Map<Filters, String> filters,
+			Map<SiriSupportV2.Filters, String> filters,
 			Map<String, StopsForRouteBean> stopsForRouteCache,
 			DetailLevel detailLevel,
 			long currentTime
@@ -850,14 +848,14 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 
 	private RouteResult getRouteResult(
 			RouteBean routeBean,
-			Map<Filters, String> filters){
+			Map<SiriSupportV2.Filters, String> filters){
 
 		List<RouteDirection> directions = new ArrayList<RouteDirection>();
 	    StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 	    
 	    // Filter Values
-	 	String directionIdFilter = filters.get(Filters.DIRECTION_REF);
-	 	String upcomingScheduledServiceFilter = filters.get(Filters.UPCOMING_SCHEDULED_SERVICE);
+	 	String directionIdFilter = filters.get(SiriSupportV2.Filters.DIRECTION_REF);
+	 	String upcomingScheduledServiceFilter = filters.get(SiriSupportV2.Filters.UPCOMING_SCHEDULED_SERVICE);
 	    
 	    // create stop ID->stop bean map
 	    Map<String, StopBean> stopIdToStopBeanMap = new HashMap<String, StopBean>();
@@ -928,11 +926,11 @@ public class RealtimeServiceV2Impl implements RealtimeServiceV2 {
 	private StopRouteDirection getStopRouteDirection(
 			StopBean stop,
 			List<StopsForRouteBean> stopsForRouteList,
-			Map<Filters, String> filters){
+			Map<SiriSupportV2.Filters, String> filters){
 		
 		// Filter Values
-		String upcomingScheduledServiceFilter = filters.get(Filters.UPCOMING_SCHEDULED_SERVICE);
-		String directionIdFilter = filters.get(Filters.DIRECTION_REF);
+		String upcomingScheduledServiceFilter = filters.get(SiriSupportV2.Filters.UPCOMING_SCHEDULED_SERVICE);
+		String directionIdFilter = filters.get(SiriSupportV2.Filters.DIRECTION_REF);
 		
 			
 		StopRouteDirection stopRouteDirection = new StopRouteDirection(stop);

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.webapp.actions.api.siri;
+package org.onebusaway.api.siri;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,40 +28,34 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.onebusaway.api.siri.model.DetailLevel;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.siri.support.SiriUpcomingServiceExtension;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.ServiceAlertsHelperV2;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
-import org.onebusaway.nyc.webapp.actions.api.siri.service.RealtimeServiceV2;
-import org.onebusaway.util.AgencyAndIdLibrary;
+import org.onebusaway.api.siri.impl.SiriSupportV2.Filters;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import uk.org.siri.siri_2.AnnotatedLineStructure;
 import uk.org.siri.siri_2.AnnotatedStopPointStructure;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;
 import uk.org.siri.siri_2.ExtensionsStructure;
-import uk.org.siri.siri_2.LinesDeliveryStructure;
 import uk.org.siri.siri_2.OtherErrorStructure;
 import uk.org.siri.siri_2.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri_2.Siri;
+import uk.org.siri.siri_2.StopPointsDeliveryStructure;
 
-public class LinesRequestV2Action extends MonitoringActionBase {
+public class StopPointsV2Action extends MonitoringActionBase {
 	private static final long serialVersionUID = 1L;
-
-	private static final String LINES_DETAIL_LEVEL = "LinesDetailLevel";
-	private static final String INCLUDE_POLYLINES = "includePolylines";
+	
+	private static final String STOP_POINTS_DETAIL_LEVEL = "StopPointsDetailLevel";
 
 	private Siri _response;
 
+	@Autowired
 	private HttpServletRequest _request;
 
+	@Autowired
 	private HttpServletResponse _servletResponse;
 
 	// See urlrewrite.xml as to how this is set. Which means this action doesn't
@@ -82,10 +76,10 @@ public class LinesRequestV2Action extends MonitoringActionBase {
 				_configurationService);
 
 		_realtimeService.setTime(responseTimestamp);
-
+		
 		boolean useLineRefOnly = false;
 		Boolean upcomingServiceAllStops = null;
-
+		
 		CoordinateBounds bounds = null;
 		boolean validBoundDistance = true;
 		
@@ -96,8 +90,7 @@ public class LinesRequestV2Action extends MonitoringActionBase {
 		String directionId = _request.getParameter(DIRECTION_REF);
 		String agencyId = _request.getParameter(OPERATOR_REF);
 		String hasUpcomingScheduledService = _request.getParameter(UPCOMING_SCHEDULED_SERVICE);
-		String detailLevelParam = _request.getParameter(LINES_DETAIL_LEVEL);
-		String includePolylines = _request.getParameter(INCLUDE_POLYLINES);
+		String detailLevelParam = _request.getParameter(STOP_POINTS_DETAIL_LEVEL);
 		
 		
 		//get the detail level parameter or set it to default if not specified
@@ -109,98 +102,96 @@ public class LinesRequestV2Action extends MonitoringActionBase {
 	    else{
 	    	detailLevel = DetailLevel.NORMAL;
 	    }
-
+		
+		
 		// Error Strings
 		String routeIdsErrorString = "";
 		String boundsErrorString = "";
-
-		/*
+		
+		
+		/* 
 		 * We need to support the user providing no agency id which means 'all
-		 * agencies'. So, this array will hold a single agency if the user
-		 * provides it or all agencies if the user provides none. We'll iterate
-		 * over them later while querying for vehicles and routes
-		 */
+		agencies'. So, this array will hold a single agency if the user provides it or
+		all agencies if the user provides none. We'll iterate over them later while
+		querying for vehicles and routes
+		*/
 		List<String> agencyIds = processAgencyIds(agencyId);
-
+		
 		List<AgencyAndId> routeIds = new ArrayList<AgencyAndId>();
+		
+		routeIdsErrorString =  processRouteIds(lineRef, routeIds, agencyIds);
 
-		routeIdsErrorString = processRouteIds(lineRef, routeIds, agencyIds);
-
-		// Calculate Bounds
-		try {
-			if (StringUtils.isNotBlank(circle)) {
-				bounds = getCircleBounds(circle);
+		// Calculate Bounds	
+		try{
+			if(StringUtils.isNotBlank(circle)){
+				bounds = getCircleBounds(circle);	
 				
-				if (bounds != null && !isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)) {
-					boundsErrorString += "Provided values exceed allowed search radius of "
-							+ MAX_BOUNDS_RADIUS + "m. ";
-					validBoundDistance = false;
-				}
-				
-			} else if (StringUtils.isNotBlank(boundingBox)) {
-				bounds = getBoxBounds(boundingBox);
-				
-				if (bounds != null && !isValidBoundBoxDistance(bounds, MAX_BOUNDS_DISTANCE)) {
-					boundsErrorString += "Provided values exceed allowed search distance of "
-							+ MAX_BOUNDS_DISTANCE + "m. ";
+				if(bounds != null && !isValidBoundsDistance(bounds, MAX_BOUNDS_RADIUS)){
+					boundsErrorString += "Provided values exceed allowed search radius of " + MAX_BOUNDS_RADIUS + "m ";
 					validBoundDistance = false;
 				}
 			}
-			
-		} catch (NumberFormatException nfe) {
+			else if(StringUtils.isNotBlank(boundingBox)){
+				bounds = getBoxBounds(boundingBox);
+				
+				if(bounds != null && !isValidBoundBoxDistance(bounds, MAX_BOUNDS_DISTANCE)){
+					boundsErrorString += "Provided values exceed allowed search distance of " + MAX_BOUNDS_DISTANCE + "m ";
+					validBoundDistance = false;
+				}
+			}
+		}
+		catch (NumberFormatException nfe){
 			boundsErrorString += ERROR_NON_NUMERIC;
 		}
 
 		// Check for case where only LineRef was provided
-		if (routeIds.size() > 0) {
-			useLineRefOnly = true;
-		} else if(bounds == null) {
-			boundsErrorString += ERROR_REQUIRED_PARAMS;
+		if (bounds == null) {
+			if (routeIds.size() > 0) {
+				useLineRefOnly = true;
+			} else {
+				boundsErrorString += ERROR_REQUIRED_PARAMS;
+			}
 		}
 
 		// Setup Filters
 		Map<Filters, String> filters = new HashMap<Filters, String>();
 		filters.put(Filters.DIRECTION_REF, directionId);
-		filters.put(Filters.LINE_REF, lineRef);
-		filters.put(Filters.INCLUDE_POLYLINES, includePolylines);
-		filters.put(Filters.UPCOMING_SCHEDULED_SERVICE, hasUpcomingScheduledService);
+		filters.put(Filters.UPCOMING_SCHEDULED_SERVICE,hasUpcomingScheduledService);
 
-		// Annotated Lines
-		List<AnnotatedLineStructure> lines = new ArrayList<AnnotatedLineStructure>();
-		Map<Boolean, List<AnnotatedLineStructure>> linesMap;
+		// Annotated Stop Points
+		List<AnnotatedStopPointStructure> stopPoints = new ArrayList<AnnotatedStopPointStructure>();
+		Map<Boolean, List<AnnotatedStopPointStructure>> stopPointsMap;
 
 		// Error Handler
 		Exception error = null;
-		if ((bounds == null && !useLineRefOnly)
-				|| (lineRef != null && routeIds.size() == 0)
-				|| !validBoundDistance) {
-			String errorString = (boundsErrorString + " " + routeIdsErrorString)
-					.trim();
+		if ((bounds == null && !useLineRefOnly) || 
+			(_request.getParameter(LINE_REF) != null && routeIds.size() == 0) ||
+			!validBoundDistance) {
+			String errorString = (boundsErrorString + " " + routeIdsErrorString).trim();
 			error = new Exception(errorString);
-		} else {
-
+		}
+		else{
+		
 			if (useLineRefOnly) {
-				linesMap = _realtimeService
-						.getAnnotatedLineStructures(agencyIds, routeIds, detailLevel,
-								responseTimestamp, filters);
+				stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(agencyIds,
+						routeIds, detailLevel, responseTimestamp, filters);
 			} else {
-				linesMap = _realtimeService
-						.getAnnotatedLineStructures(agencyIds, bounds, detailLevel,
-								responseTimestamp, filters);
+				stopPointsMap = _realtimeService.getAnnotatedStopPointStructures(bounds, agencyIds,
+						routeIds, detailLevel, responseTimestamp, filters);			
 			}
-
-			for (Map.Entry<Boolean, List<AnnotatedLineStructure>> entry : linesMap
-					.entrySet()) {
-				upcomingServiceAllStops = entry.getKey();
-				lines.addAll(entry.getValue());
+			
+			for (Map.Entry<Boolean, List<AnnotatedStopPointStructure>> entry : stopPointsMap.entrySet()) {
+				if(entry.getValue().size() > 0)
+					upcomingServiceAllStops= entry.getKey();
+				stopPoints.addAll(entry.getValue());
 			}
 		}
-
-		_response = generateSiriResponse(lines, upcomingServiceAllStops,
-				error, responseTimestamp);
+		
+		
+		_response = generateSiriResponse(stopPoints, upcomingServiceAllStops, error, responseTimestamp);
 
 		try {
-			this._servletResponse.getWriter().write(getLines());
+			this._servletResponse.getWriter().write(getStopPoints());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -208,14 +199,14 @@ public class LinesRequestV2Action extends MonitoringActionBase {
 		return null;
 	}
 
+
 	private Siri generateSiriResponse(
-			List<AnnotatedLineStructure> lines,
-			Boolean hasUpcomingScheduledService, Exception error,
+			List<AnnotatedStopPointStructure> stopPoints, Boolean hasUpcomingScheduledService, Exception error,
 			long responseTimestamp) {
 
-		LinesDeliveryStructure linesDelivery = new LinesDeliveryStructure();
-
-		linesDelivery.setResponseTimestamp(DateUtil
+		StopPointsDeliveryStructure stopPointsDelivery = new StopPointsDeliveryStructure();
+		
+		stopPointsDelivery.setResponseTimestamp(DateUtil
 				.toXmlGregorianCalendar(responseTimestamp));
 
 		if (error != null) {
@@ -230,41 +221,46 @@ public class LinesRequestV2Action extends MonitoringActionBase {
 			errorConditionStructure.setDescription(errorDescriptionStructure);
 			errorConditionStructure.setOtherError(otherErrorStructure);
 
-			linesDelivery.setErrorCondition(errorConditionStructure);
+			stopPointsDelivery.setErrorCondition(errorConditionStructure);
 		} else {
 			Calendar gregorianCalendar = new GregorianCalendar();
 			gregorianCalendar.setTimeInMillis(responseTimestamp);
 			gregorianCalendar.add(Calendar.MINUTE, 1);
-			linesDelivery
+			stopPointsDelivery
 					.setValidUntil(DateUtil
 							.toXmlGregorianCalendar(gregorianCalendar
 									.getTimeInMillis()));
-
-			linesDelivery.getAnnotatedLineRef().addAll(lines);
-
-			if (hasUpcomingScheduledService != null) {
+			
+			stopPointsDelivery.getAnnotatedStopPointRef().addAll(stopPoints);
+			
+			if(hasUpcomingScheduledService != null){
 				// siri extensions
 				ExtensionsStructure upcomingServiceExtensions = new ExtensionsStructure();
-				upcomingServiceExtensions.setAny(hasUpcomingScheduledService);
 				SiriUpcomingServiceExtension upcomingService = new SiriUpcomingServiceExtension();
-				upcomingService
-						.setUpcomingScheduledService(hasUpcomingScheduledService);
+				upcomingService.setUpcomingScheduledService(hasUpcomingScheduledService);
 				upcomingServiceExtensions.setAny(upcomingService);
-				linesDelivery.setExtensions(upcomingServiceExtensions);
+				stopPointsDelivery.setExtensions(upcomingServiceExtensions);
 			}
-
-			linesDelivery.setResponseTimestamp(DateUtil
+			
+			stopPointsDelivery.setResponseTimestamp(DateUtil
 					.toXmlGregorianCalendar(responseTimestamp));
 
+			// TODO - LCARABALLO Do I still need serviceAlertsHelper?
+			/*
+			 * _serviceAlertsHelper.addSituationExchangeToSiriForStops(
+			 * serviceDelivery, visits, _nycTransitDataService, stopIds);
+			 * _serviceAlertsHelper.addGlobalServiceAlertsToServiceDelivery(
+			 * serviceDelivery, _realtimeService);
+			 */
 		}
 
 		Siri siri = new Siri();
-		siri.setLinesDelivery(linesDelivery);
+		siri.setStopPointsDelivery(stopPointsDelivery);
 
 		return siri;
 	}
 
-	public String getLines() {
+	public String getStopPoints() {
 		try {
 			if (_type.equals("xml")) {
 				this._servletResponse.setContentType("application/xml");
@@ -280,6 +276,7 @@ public class LinesRequestV2Action extends MonitoringActionBase {
 		}
 	}
 
+	
 	public void setServletRequest(HttpServletRequest request) {
 		this._request = request;
 	}

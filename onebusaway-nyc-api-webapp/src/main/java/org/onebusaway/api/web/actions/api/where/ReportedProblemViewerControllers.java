@@ -29,7 +29,6 @@ public class ReportedProblemViewerControllers {
     @Autowired
     private TransitDataService _service;
 
-    @Autowired
     private ApiActionSupport _support;
 
     @Value("${reportedProblemViewerControllers.enabled:false}")

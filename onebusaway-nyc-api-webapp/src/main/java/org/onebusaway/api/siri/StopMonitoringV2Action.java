@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.onebusaway.nyc.webapp.actions.api.siri;
+package org.onebusaway.api.siri;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,12 +28,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.api.siri.model.DetailLevel;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.DateUtil;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.ServiceAlertsHelperV2;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2;
-import org.onebusaway.nyc.webapp.actions.api.siri.impl.SiriSupportV2.Filters;
-import org.onebusaway.nyc.webapp.actions.api.siri.model.DetailLevel;
+import org.onebusaway.api.siri.impl.ServiceAlertsHelperV2;
+import org.onebusaway.api.siri.impl.SiriSupportV2;
+import org.onebusaway.api.siri.impl.SiriSupportV2.Filters;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.org.siri.siri_2.ErrorDescriptionStructure;

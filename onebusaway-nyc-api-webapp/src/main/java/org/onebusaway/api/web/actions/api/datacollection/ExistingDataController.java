@@ -39,7 +39,6 @@ public class ExistingDataController {
 
   private static final long serialVersionUID = 1L;
 
-  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping("/existing-data")
