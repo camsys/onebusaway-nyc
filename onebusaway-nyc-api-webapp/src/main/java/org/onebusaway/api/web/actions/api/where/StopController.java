@@ -41,6 +41,7 @@ public class StopController {
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

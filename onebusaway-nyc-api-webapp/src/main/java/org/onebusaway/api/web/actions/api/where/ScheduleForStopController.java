@@ -41,6 +41,7 @@ public class ScheduleForStopController {
   @Autowired
   private TransitDataService _service;
 
+  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

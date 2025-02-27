@@ -57,7 +57,7 @@ public class CancelAlarmController {
   @Autowired
   private AlarmService _alarmService;
 
-
+  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

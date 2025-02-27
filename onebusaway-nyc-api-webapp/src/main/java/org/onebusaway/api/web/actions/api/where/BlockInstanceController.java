@@ -50,7 +50,7 @@ public class BlockInstanceController {
   @Autowired
   private NycDateConverterWrapper _formatter;
 
-
+  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

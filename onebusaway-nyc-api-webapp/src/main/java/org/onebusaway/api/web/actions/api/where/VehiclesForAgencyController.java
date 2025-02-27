@@ -41,7 +41,7 @@ public class VehiclesForAgencyController {
   @Autowired
   private TransitDataService _service;
 
-
+  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

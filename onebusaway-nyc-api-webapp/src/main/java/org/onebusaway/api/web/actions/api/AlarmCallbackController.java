@@ -33,8 +33,10 @@ public class AlarmCallbackController {
 
   private static final int V2 = 2;
 
+  @Autowired
   private AlarmService _alarmService;
 
+  @Autowired
   private ApiActionSupport _support;
 
   @RequestMapping

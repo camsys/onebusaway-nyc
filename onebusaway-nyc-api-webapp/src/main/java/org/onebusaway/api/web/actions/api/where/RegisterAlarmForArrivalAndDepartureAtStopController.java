@@ -44,7 +44,7 @@ public class RegisterAlarmForArrivalAndDepartureAtStopController {
   @Autowired
   private AlarmService _alarmService;
 
-
+  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

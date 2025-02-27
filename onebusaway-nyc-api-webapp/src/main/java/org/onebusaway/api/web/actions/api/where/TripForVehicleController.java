@@ -43,6 +43,7 @@ public class TripForVehicleController {
   @Autowired
   private NycTransitDataService _service;
 
+  @Autowired
   private ApiActionSupport _support;
 
   @GetMapping

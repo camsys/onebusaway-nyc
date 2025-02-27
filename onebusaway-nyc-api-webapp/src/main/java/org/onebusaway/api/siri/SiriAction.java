@@ -15,12 +15,12 @@
  */
 package org.onebusaway.api.siri;
 
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
 import org.onebusaway.api.web.actions.api.ApiActionSupport;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.util.impl.analytics.GoogleAnalyticsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,8 +28,9 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Base class for Siri Actions.
  */
-public class SiriAction extends ApiActionSupport
-        implements ServletRequestAware, ServletResponseAware {
+@RestController
+@RequestMapping("/siri")
+public class SiriAction extends ApiActionSupport {
 
   protected static final int V3 = 3;
   public static final double MAX_BOUNDS_DISTANCE= 500;
@@ -87,12 +88,10 @@ public class SiriAction extends ApiActionSupport
     return _type;
   }
 
-  @Override
   public void setServletRequest(HttpServletRequest request) {
     this._servletRequest = request;
   }
 
-  @Override
   public void setServletResponse(HttpServletResponse servletResponse) {
     this._servletResponse = servletResponse;
   }

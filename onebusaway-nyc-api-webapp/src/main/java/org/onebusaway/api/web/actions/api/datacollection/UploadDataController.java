@@ -47,7 +47,7 @@ public class UploadDataController {
   @Autowired
   private DataCollectionService _data;
 
-
+  @Autowired
   private ApiActionSupport _support;
 
   @PostMapping("/upload-data")

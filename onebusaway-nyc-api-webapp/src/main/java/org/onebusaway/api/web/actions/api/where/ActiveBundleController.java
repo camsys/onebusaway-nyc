@@ -36,6 +36,7 @@ public class ActiveBundleController {
     @Autowired
     private TransitDataService _service;
 
+    @Autowired
     private ApiActionSupport _support;
 
     @RequestMapping("/where/active-bundle")
