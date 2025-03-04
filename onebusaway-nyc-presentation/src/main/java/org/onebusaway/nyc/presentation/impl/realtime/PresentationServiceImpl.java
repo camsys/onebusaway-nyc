@@ -324,13 +324,18 @@ public class PresentationServiceImpl implements PresentationService {
     // hide buses that are on detour from a-d queries
     if(isOnDetour(statusBean))
       return false;
-    
-    // not in-service
+
+  boolean showDeadheads =
+          _configurationService.getConfigurationValueAsBoolean("display.showDeadheads", false);
+
+      // not in-service
     String phase = statusBean.getPhase();
     if(phase != null 
         && !phase.toUpperCase().equals("IN_PROGRESS")
         && !phase.toUpperCase().equals("LAYOVER_BEFORE") 
         && !phase.toUpperCase().equals("LAYOVER_DURING")
+        && !(phase.toUpperCase().startsWith("DEADHEAD_BEFORE") && showDeadheads)
+        && !(phase.toUpperCase().startsWith("DEADHEAD_DURING") && showDeadheads)
         && !phase.toUpperCase().equals("SPOOKING")) {
       _log.debug("  " + statusBean.getVehicleId() + " filtered out because phase is not in progress.");      
       return false;
