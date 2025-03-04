@@ -15,6 +15,7 @@
  */
 package org.onebusaway.api.web.actions.api;
 
+import java.io.Serializable;
 import java.util.*;
 import org.onebusaway.api.ResponseCodes;
 import org.onebusaway.api.web.actions.OneBusAwayApiActionSupport;
@@ -22,11 +23,14 @@ import org.onebusaway.api.impl.MaxCountSupport;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.api.model.transit.BeanFactoryV2;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.onebusaway.api.web.interceptors.GlobalExceptionHandler;
+import org.springframework.stereotype.Component;
 
-public class ApiActionSupport implements OneBusAwayApiActionSupport{
+@Component
+public class ApiActionSupport extends OneBusAwayApiActionSupport implements Serializable {
 
   static final long serialVersionUID = 1L;
 
@@ -42,16 +46,12 @@ public class ApiActionSupport implements OneBusAwayApiActionSupport{
 
   boolean _includeReferences = true;
 
-  public ApiActionSupport(int defaultVersion) {
-    _defaultVersion = defaultVersion;
-  }
 
-  @Override
   public void ApiActionSupport(int defaultVersion) {
     _defaultVersion = defaultVersion;
   }
 
-  @Override
+
   public void setVersion(int version) {
     _version = version;
   }

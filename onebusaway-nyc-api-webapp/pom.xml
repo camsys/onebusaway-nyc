@@ -175,6 +175,7 @@
                 <log4j.appender>ROLL</log4j.appender>
                 <api.cache.host>sessions-memcache</api.cache.host>
                 <api.cache.disabled>true</api.cache.disabled>
+                <geocoder.cache.disabled>true</geocoder.cache.disabled>
             </properties>
         </profile>
         <profile>
@@ -189,6 +190,7 @@
                 <log4j.appender>stdout</log4j.appender>
                 <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
                 <api.cache.disabled>true</api.cache.disabled>
+                <geocoder.cache.disabled>true</geocoder.cache.disabled>
             </properties>
         </profile>
         <profile>
@@ -202,6 +204,7 @@
                 <log4j.appender>stdout</log4j.appender>
                 <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
                 <api.cache.disabled>true</api.cache.disabled>
+                <geocoder.cache.disabled>true</geocoder.cache.disabled>
             </properties>
         </profile>
         <profile>
@@ -217,6 +220,7 @@
                 <log4j.appender>stdout</log4j.appender>
                 <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
                 <api.cache.disabled>true</api.cache.disabled>
+                <geocoder.cache.disabled>true</geocoder.cache.disabled>
             </properties>
         </profile>
         <profile>
@@ -233,6 +237,7 @@
                 <log4j.appender>stdout</log4j.appender>
                 <api.cache.host>sessions-memcache.dev.obanyc.com</api.cache.host>
                 <api.cache.disabled>true</api.cache.disabled>
+                <geocoder.cache.disabled>true</geocoder.cache.disabled>
             </properties>
         </profile>
     </profiles>

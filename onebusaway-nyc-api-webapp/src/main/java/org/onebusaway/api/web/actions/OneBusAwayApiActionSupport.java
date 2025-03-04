@@ -15,19 +15,13 @@
  */
 package org.onebusaway.api.web.actions;
 
-import org.onebusaway.api.model.ResponseBean;
+import org.apache.struts2.convention.annotation.ParentPackage;
 
-public interface OneBusAwayApiActionSupport{
+import com.opensymphony.xwork2.ActionSupport;
 
-  void ApiActionSupport(int defaultVersion);
+@ParentPackage("rest-custom")
+public class OneBusAwayApiActionSupport extends ActionSupport {
 
-  void setVersion(int version);
-
-  void setKey(String key);
-
-  void setIncludeReferences(boolean includeReferences);
-
-  ResponseBean getModel();
-
+  private static final long serialVersionUID = 1L;
 
 }

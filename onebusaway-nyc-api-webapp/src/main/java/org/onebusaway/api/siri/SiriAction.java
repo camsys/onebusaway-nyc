@@ -67,7 +67,7 @@ public class SiriAction extends ApiActionSupport {
   private String _type = null;
 
   public SiriAction(int defaultVersion) {
-    super(defaultVersion);
+    setVersion(defaultVersion);
   }
 
   public void setType(String type) {
