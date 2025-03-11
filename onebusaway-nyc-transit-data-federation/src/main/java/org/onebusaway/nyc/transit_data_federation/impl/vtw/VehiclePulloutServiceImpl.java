@@ -123,6 +123,7 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
 
   @PostConstruct
   public void setup(){
+    _log.info("Setting Up Vehicle Pullout Service");
     startUpdateProcess();
   }
 
@@ -234,6 +235,7 @@ public class VehiclePulloutServiceImpl implements VehiclePulloutService {
 
   public void getAndRefreshData() throws Exception {
     if(S3Utility.isS3Path(getDataPath())){
+      _log.info("Vehicle Pullout Serivce detected as S3 Path");
       refreshDataFromJson(getDataFromS3());
     }
     else{
