@@ -16,6 +16,7 @@
 
 package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.impl.S3Utility;
 import org.onebusaway.util.AgencyAndIdLibrary;
 import org.slf4j.Logger;
@@ -48,6 +49,9 @@ public class NycRouteTypeService {
     @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
 
+    @Autowired
+    private ConfigurationService _configurationService;
+
 
     @PostConstruct
     public void setup() throws IOException {
@@ -72,9 +76,9 @@ public class NycRouteTypeService {
 
     // method to pull in the csv from s3
     public InputStream getDataFromS3() {
-        String s3Username = System.getProperty("s3.username");
+        String s3Username = System.getProperty("s3.user");
         String s3Password = System.getProperty("s3.password");
-        String path = System.getProperty("s3.suplimentalRouteTypesPath");
+        String path = _configurationService.getConfigurationValueAsString("tdm.suplimentalRouteTypesPath", "s3://obanyc-bundle-data/supplimental/supplimental_route_types.csv");
         S3Utility s3Utility = new S3Utility(s3Username,s3Password,S3Utility.getBucketFromS3Path(path));
         return s3Utility.get(S3Utility.getKeyFromS3Path(path));
     }
