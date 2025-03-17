@@ -76,12 +76,12 @@ public class NycRouteTypeService {
 
     // method to pull in the csv from s3
     public InputStream getDataFromS3() {
-        String s3Username = System.getProperty("s3.mta.user");
-        String s3Password = System.getProperty("s3.mta.password");
+        String s3Username = System.getProperty("s3.user");
+        String s3Password = System.getProperty("s3.password");
         String path = _configurationService.getConfigurationValueAsString("tdm.suplimentalRouteTypesPath", null);
         S3Utility s3Utility = new S3Utility(s3Username,s3Password,S3Utility.getBucketFromS3Path(path));
         InputStream data = s3Utility.get(S3Utility.getKeyFromS3Path(path));
-        _log.info("Retrieved supplemental route type data from s3 from ", path);
+        _log.info("Retrieved supplemental route type data from s3 from "+ path);
         return data;
     }
 
