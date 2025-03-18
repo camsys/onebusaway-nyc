@@ -246,6 +246,8 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
                 vor.setRawCount(additionalApcData.getEstLoadAsInt());
                 vor.setCapacity(additionalApcData.getEstCapacityAsInt());
                 vor.setTimestamp(new Date(additionalApcData.getTimestamp()));
+                vor.setOccupancyStatus(calculator.toOccupancyStatus(additionalApcData,
+                        AgencyAndIdLibrary.convertFromString(vor.getRouteId())));
             }
             return vor;
 
