@@ -27,10 +27,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 // S3Utility class, mostly coppied over from FileServiceImpl
@@ -44,12 +43,11 @@ public class S3Utility {
     private String _username;
     private String _password;
 
-    @Autowired
     public void setS3User(String user) {
         _username = user;
     }
 
-    @Autowired
+
     public void setS3Password(String password) {
         _password = password;
     }
@@ -63,7 +61,8 @@ public class S3Utility {
         _username = username;
         setup();
     }
-    public S3Utility(String username, String password, String bucketName){
+
+    public S3Utility(String username, String password, String bucketName) throws Exception{
         _password = password;
         _username = username;
         _bucketName = bucketName;
@@ -71,18 +70,11 @@ public class S3Utility {
     }
 
 
-    @PostConstruct
     public void setup() {
-        try {
-            _log.info("setting up s3user=" + _username);
-            _credentials = new BasicAWSCredentials(_username, _password);
-            _s3 = new AmazonS3Client(_credentials);
-            _log.info("setup complete");
-        } catch (Throwable t) {
-            _log.error("FileServiceImpl setup failed, likely due to missing or invalid credentials");
-            _log.error(t.toString());
-        }
-
+        _log.info("setting up s3user=" + _username);
+        _credentials = new BasicAWSCredentials(_username, _password);
+        _s3 = new AmazonS3Client(_credentials);
+        _log.info("setup complete");
     }
 
 
@@ -200,6 +192,13 @@ public class S3Utility {
         GetObjectRequest request = new GetObjectRequest(this._bucketName, key);
         S3Object file = _s3.getObject(request);
         return file.getObjectContent();
+    }
+
+    public String getAsString(String key) throws IOException {
+        InputStream inputStream = get(key);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            return reader.lines().collect(Collectors.joining(System.lineSeparator()));
+        }
     }
 
     /**

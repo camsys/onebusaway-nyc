@@ -17,21 +17,32 @@
 package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import org.junit.Test;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.RouteType;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class NycRouteTypeServiceTest {
 
     @Test
-    public void testUpdateExpressRoutes() throws IOException {
-        InputStream stream =  getClass().getResourceAsStream("supplimental_route_types.csv");
-        NycRouteTypeService nycRouteTypeService = new NycRouteTypeService(stream);
-//        NycRouteTypeService nycRouteTypeService = new NycRouteTypeService();
-        assertTrue(nycRouteTypeService.isRouteExpress(AgencyAndIdLibrary.convertFromString("NYCT_X37")));
+    public void when_routetypes_retreived_as_json_then_total_routetypes_is_306() throws IOException {
+        InputStream inputStream =  getClass().getResourceAsStream("route_types.json");
+        NycRouteTypeService routeTypeService = new NycRouteTypeService();
+        routeTypeService.updateNycRouteTypeData(inputStream);
+        assertEquals(306, routeTypeService.getRouteTypes().size());
+    }
 
+    @Test
+    public void when_routetypes_retreived_as_json_then_check_x37_is_express() throws IOException {
+        InputStream inputStream =  getClass().getResourceAsStream("route_types.json");
+        NycRouteTypeService routeTypeService = new NycRouteTypeService();
+        routeTypeService.updateNycRouteTypeData(inputStream);
+        RouteType routeType = routeTypeService.getRouteTypes().get(AgencyAndIdLibrary.convertFromString("NYCT_X37"));
+        assertTrue(routeType.equals(RouteType.EXPRESS));
+        assertTrue(routeTypeService.isRouteExpress(AgencyAndIdLibrary.convertFromString("NYCT_X37")));
     }
 }

@@ -15,23 +15,29 @@
  */
 
 package org.onebusaway.nyc.transit_data_federation.impl.nyc;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.RouteType;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.nyc.util.impl.S3Utility;
-import org.onebusaway.util.AgencyAndIdLibrary;
+import org.onebusaway.nyc.util.impl.DataRetreivalService;
+import org.onebusaway.nyc.util.impl.HttpDataRetreivalService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.InputStream;;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.*;
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * Service for determining type of route, currently exclusively if route is express or not.
@@ -39,12 +45,14 @@ import java.util.*;
 @Component
 public class NycRouteTypeService {
     protected static Logger _log = LoggerFactory.getLogger(NycRouteTypeService.class);
+    private volatile Map<AgencyAndId, RouteType> _routesToNycType = new HashMap<>();
 
-    private Map<AgencyAndId, RouteType> _routesToNycType = new HashMap<AgencyAndId, RouteType>();
+    private volatile Set<AgencyAndId> _expressRoutes = new HashSet<>();
+    private DataRetreivalService dataRetreivalService;
+    private ScheduledFuture<?> _updateTask = null;
+    private ObjectReader objectReader;
 
-    private long _updateInterval = 10* 60 * 1000;
-
-    Set<AgencyAndId> _expressRoutes;
+    private String _dataPath;
 
     @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
@@ -52,135 +60,118 @@ public class NycRouteTypeService {
     @Autowired
     private ConfigurationService _configurationService;
 
+    public NycRouteTypeService(){
+        SimpleModule agencyAndIdDeserializer = new SimpleModule();
+        agencyAndIdDeserializer.addKeyDeserializer(AgencyAndId.class, new AgencyAndIdDeserializer());
+
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new JaxbAnnotationModule())
+                .registerModule(agencyAndIdDeserializer);
+        objectReader = mapper.readerFor(new TypeReference<Map<AgencyAndId, RouteType>>() {});
+    }
 
     @PostConstruct
     public void setup() throws IOException {
-        if(_taskScheduler != null) {
-            UpdateThread updateThread = new UpdateThread(this);
-            _taskScheduler.scheduleWithFixedDelay(updateThread, _updateInterval);
+        configRefresh();
+    }
+
+    @Refreshable(dependsOn = {"tds.routeTypeRefreshInterval", "tds.routeTypeUrl"})
+    public void configRefresh() {
+        initializeDataRetreivalService();
+        Integer updateIntervalSecs = _configurationService.getConfigurationValueAsInteger("tdm.routeTypeRefreshInterval", 60);
+        if (updateIntervalSecs != null && dataRetreivalService != null) {
+            cancelUpdateTask();
+            createUpdateTask(updateIntervalSecs);
         } else {
             _log.warn("Unable to create thread to regularly update nycRouteType, task scheduler unavailable");
-            updateNycRouteTypeData(getDataFromS3());
+            cancelUpdateTask();
         }
     }
 
-    String TYPE_COLUMN_IDENTIFIER = "type";
-    String ROUTE_ID_IDENTIFIER = "route_id";
-
-    public NycRouteTypeService(){
+    private void createUpdateTask(Integer updateIntervalSecs) {
+        _updateTask = _taskScheduler.scheduleWithFixedDelay(new UpdateThread(), updateIntervalSecs * 1000);
     }
 
-    public NycRouteTypeService(InputStream data) throws IOException {
-        updateNycRouteTypeData(data);
+    private void cancelUpdateTask(){
+        if(_updateTask != null){
+            _updateTask.cancel(true);
+        }
     }
 
-    // method to pull in the csv from s3
-    public InputStream getDataFromS3() {
-        String s3Username = System.getProperty("s3.user");
-        String s3Password = System.getProperty("s3.password");
-        String path = _configurationService.getConfigurationValueAsString("tdm.suplimentalRouteTypesPath", null);
-        S3Utility s3Utility = new S3Utility(s3Username,s3Password,S3Utility.getBucketFromS3Path(path));
-        InputStream data = s3Utility.get(S3Utility.getKeyFromS3Path(path));
-        _log.info("Retrieved supplemental route type data from s3 from "+ path);
-        return data;
-    }
-
-    // method to read in data from s3
-    public void updateNycRouteTypeData(InputStream data) throws IOException {
-        Map<AgencyAndId, RouteType> routesToNycType = new HashMap<AgencyAndId, RouteType>();
-
-        // find which collumn is the route id, and which is the type then read it into the hashmap
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(data))) {
-            List<String> headers = Arrays.asList(reader.readLine().split(","));
-
-            int routeIdIndex = headers.indexOf("route_id");
-            int typeIndex = headers.indexOf("type");
-
-
-            if (routeIdIndex == -1 || typeIndex == -1) {
-                throw new IllegalArgumentException("CSV file missing required columns: " + ROUTE_ID_IDENTIFIER + ", " + TYPE_COLUMN_IDENTIFIER);
+    private void initializeDataRetreivalService() {
+        _dataPath = _configurationService.getConfigurationValueAsString("tds.routeTypeUrl", null);
+        try {
+            if(_dataPath == null){
+                return;
             }
+            initializeHttpDataRetreivalService();
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] values = line.split(",", -1); // Keep empty values
-                if (values.length <= Math.max(routeIdIndex, typeIndex)) continue; // Skip malformed lines
-
-                String routeId = values[routeIdIndex].trim();
-                String typeValue = values[typeIndex].trim();
-
-                if (!routeId.isEmpty()) {
-                    RouteType routeType = RouteType.fromString(typeValue);
-                    routesToNycType.put(AgencyAndIdLibrary.convertFromString(routeId), routeType);
-                }
-            }
-            _routesToNycType = routesToNycType;
-            _expressRoutes = null;
-        } catch (IOException e) {
-            _log.info("Error reading CSV: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            _log.info("Invalid CSV format: " + e.getMessage());
+        } catch (Exception e){
+            _log.error("Unable to instantiate Data Retreival Service from {}", _dataPath);
         }
     }
 
-
-
-    public boolean isRouteExpress(AgencyAndId routeId) {
-        if(!_routesToNycType.containsKey(routeId)) {
-            return false;
-        }
-        return _routesToNycType.get(routeId).equals(RouteType.EXPRESS);
-    }
-
-    public Set<AgencyAndId> getExpressRoutes() {
-        if(_expressRoutes==null) {
-            _expressRoutes = new HashSet<AgencyAndId>();
-            for (Map.Entry<AgencyAndId, RouteType> entry : _routesToNycType.entrySet()) {
-                if (entry.getValue().equals(RouteType.EXPRESS)) {
-                    _expressRoutes.add(entry.getKey());
-                }
-            }
-        }
-        return new HashSet<AgencyAndId>(_expressRoutes);
+    private void initializeHttpDataRetreivalService() {
+        dataRetreivalService = new HttpDataRetreivalService();
     }
 
 
-
-    public enum RouteType {
-        FEEDER,
-        GRID,
-        EXPRESS,
-        UNIDENTIFIED;
-
-        public static RouteType fromString(String value) {
-            if (value == null || value.isBlank()) {
-                return UNIDENTIFIED;
-            }
-            try {
-                return RouteType.valueOf(value.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                return UNIDENTIFIED;
-            }
-        }
-    }
-
-
-    public static class UpdateThread implements Runnable {
-
-        private NycRouteTypeService resource;
-
-        public UpdateThread(NycRouteTypeService resource) {
-            this.resource = resource;
-        }
-
+    private class UpdateThread implements Runnable {
         @Override
         public void run() {
             try {
-                resource.updateNycRouteTypeData(resource.getDataFromS3());
-            } catch (IOException e) {
-                _log.error("Error updating nyc supplemental route types: " + e.getMessage());
+                InputStream inputStream = dataRetreivalService.get(_dataPath);
+                updateNycRouteTypeData(inputStream);
+            } catch (Exception e) {
+                _log.error("refreshData() failed: " + e.getMessage());
+                e.printStackTrace();
             }
         }
+    }
+
+    public void updateNycRouteTypeData(InputStream inputStream) {
+        Map<AgencyAndId, RouteType> routesToNycType;
+        Set<AgencyAndId> expressRoutes;
+        try{
+            routesToNycType = objectReader.readValue(inputStream);
+            expressRoutes = populateExpressRoutes(routesToNycType);
+
+            _routesToNycType = routesToNycType;
+            _expressRoutes = expressRoutes;
+        } catch (Exception e){
+            _log.error("Unable to retrieve list of route types from url", e);
+        } finally {
+            if(inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    _log.warn("Unable to close inputStream");
+                }
+            }
+        }
+    }
+
+    private Set<AgencyAndId> populateExpressRoutes(Map<AgencyAndId, RouteType> routesToNycType) {
+        Set<AgencyAndId> expressRoutes = new HashSet<>();
+        for (Map.Entry<AgencyAndId, RouteType> entry : routesToNycType.entrySet()) {
+            if (entry.getValue().equals(RouteType.EXPRESS)) {
+                expressRoutes.add(entry.getKey());
+            }
+        }
+        return expressRoutes;
+    }
+
+    public Map<AgencyAndId, RouteType> getRouteTypes(){
+        return _routesToNycType;
+    }
+
+    public Set<AgencyAndId> getExpressRoutes(){
+        return _expressRoutes;
+    }
+
+
+    public boolean isRouteExpress(AgencyAndId routeId) {
+        return _expressRoutes.contains(routeId);
     }
 
 }
