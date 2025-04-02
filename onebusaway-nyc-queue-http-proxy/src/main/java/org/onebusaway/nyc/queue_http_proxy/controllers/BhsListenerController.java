@@ -16,6 +16,8 @@
 
 package org.onebusaway.nyc.queue_http_proxy.controllers;
 
+import org.onebusaway.nyc.queue_http_proxy.impl.KafkaPublishingManager;
+import org.onebusaway.nyc.queue_http_proxy.impl.KafkaPublishingManagerImpl;
 import org.onebusaway.nyc.queue_http_proxy.impl.PublishingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,8 @@ public class BhsListenerController implements Serializable {
 
     private boolean enableExceptions;
 
+    KafkaPublishingManager kafkaProducer = new KafkaPublishingManagerImpl();;
+
     public boolean isEnableExceptions() {
         return enableExceptions;
     }
@@ -54,6 +58,7 @@ public class BhsListenerController implements Serializable {
     @ResponseBody
     public ResponseEntity<String> doPost(@RequestBody JsonNode requestBody) throws ServletException {
         try {
+            kafkaProducer.sendMessage(requestBody);
             publisher.send(requestBody);
             return ResponseEntity.ok("Success");
         } catch (Exception e) {

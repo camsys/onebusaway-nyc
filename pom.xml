@@ -756,6 +756,11 @@
                 <artifactId>javax.annotation-api</artifactId>
                 <version>${javax.annotation.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+                <version>0.10.0.1</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>
