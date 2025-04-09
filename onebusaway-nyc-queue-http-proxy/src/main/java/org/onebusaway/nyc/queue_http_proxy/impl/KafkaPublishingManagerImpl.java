@@ -10,35 +10,23 @@ public class KafkaPublishingManagerImpl implements KafkaPublishingManager{
     private final KafkaProducer<String, String> producer;
     private final String topicName;
     private final ObjectMapper objectMapper;
-
-    // Explicit, non-abstract constructor
     public KafkaPublishingManagerImpl(String bootstrapServers, String topicName) {
-        // Kafka Broker Configuration
         Properties props = new Properties();
 
-        // Use passed bootstrap servers
         props.put("bootstrap.servers", bootstrapServers);
 
-        // Serialization
         props.put("key.serializer", StringSerializer.class.getName());
         props.put("value.serializer", StringSerializer.class.getName());
 
-        // Optional: Authentication Configuration
         props.put("security.protocol", "SASL_SSL");
         props.put("sasl.mechanism", "AWS_MSK_IAM");
         props.put("sasl.jaas.config", "software.amazon.msk.auth.iam.IAMLoginModule required;");
 
-        // Create Producer
         this.producer = new KafkaProducer<>(props);
-
-        // Set Topic Name from parameter
         this.topicName = topicName;
-
-        // Initialize ObjectMapper for JSON processing
         this.objectMapper = new ObjectMapper();
     }
 
-    // Alternative constructor with default parameters
     public KafkaPublishingManagerImpl() {
         this(
                 "b-1.devkafka.oq7n4j.c2.kafka.us-east-1.amazonaws.com:9098," +
