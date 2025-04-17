@@ -73,6 +73,11 @@
       <artifactId>guava</artifactId>
       <version>31.0.1-jre</version>
     </dependency>
+      <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+          <version>3.4.0</version>
+      </dependency>
 
   </dependencies>
   <profiles>

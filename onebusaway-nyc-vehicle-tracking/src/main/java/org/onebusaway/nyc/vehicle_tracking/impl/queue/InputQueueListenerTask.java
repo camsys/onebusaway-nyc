@@ -16,7 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.queue.QueueListenerTask;
+import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputTask;
@@ -28,7 +28,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-public abstract class InputQueueListenerTask extends QueueListenerTask implements InputTask{
+public abstract class InputQueueListenerTask extends KafkaQueueListenerTask implements InputTask{
   
   InputService _inputService;
 

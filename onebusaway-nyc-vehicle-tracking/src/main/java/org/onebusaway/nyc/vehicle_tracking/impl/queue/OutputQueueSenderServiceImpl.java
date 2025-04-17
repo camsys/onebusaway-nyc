@@ -15,6 +15,9 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
@@ -34,6 +37,7 @@ import org.zeromq.ZMQ;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.Properties;
 import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -81,10 +85,6 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
   protected DNSResolver _primaryResolver = null;
 
-  protected ZMQ.Context _context = null;
-
-  protected ZMQ.Socket _socket = null;
-
   protected int _countInterval = 10000;
   
   @Autowired
@@ -92,6 +92,8 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
+
+  protected Properties properties = new Properties();
 
   @Override
   public void setServletContext(ServletContext servletContext) {
@@ -116,12 +118,12 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
     Date markTimestamp = new Date();
 
-    private ZMQ.Socket _zmqSocket = null;
+    private KafkaConsumer<String, String> _consumer = null;
 
     private byte[] _topicName = null;
 
-    public SendThread(ZMQ.Socket socket, String topicName) {
-      _zmqSocket = socket;
+    public SendThread(KafkaConsumer<String, String> consumer, String topicName) {
+      _consumer = consumer;
       _topicName = topicName.getBytes();
     }
 
@@ -386,6 +388,16 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
   @Override
   public String getPrimaryHostname() {
     return _primaryHostname;
+  }
+
+  private void setProperties(String bind, String queueName){
+
+    properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bind);
+    properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+    properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+    properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, queueName);
+    properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
   }
 
 }
