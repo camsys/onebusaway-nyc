@@ -3,24 +3,32 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Properties;
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KafkaPublishingManagerImpl implements KafkaPublishingManager{
     private final KafkaProducer<String, String> producer;
+
+    private static final Logger log = LoggerFactory.getLogger(KafkaPublishingManager.class);
     private final String topicName;
     private final ObjectMapper objectMapper;
     public KafkaPublishingManagerImpl(String bootstrapServers, String topicName) {
         Properties props = new Properties();
 
-        props.put("bootstrap.servers", bootstrapServers);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "b-1.devkafka.oq7n4j.c2.kafka.us-east-1.amazonaws.com:9098," +
+                "b-2.devkafka.oq7n4j.c2.kafka.us-east-1.amazonaws.com:9098");
+        props.put(ProducerConfig.CLIENT_ID_CONFIG, "dev-kafka");
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
-        props.put("key.serializer", StringSerializer.class.getName());
-        props.put("value.serializer", StringSerializer.class.getName());
+            props.put("security.protocol", "SASL_SSL");
+            props.put("sasl.mechanism", "SCRAM-SHA-512");
+            props.put("ssl.truststore.location", "/truststore/kafka.client.truststore.jks");
 
-        props.put("security.protocol", "SASL_SSL");
-        props.put("sasl.mechanism", "AWS_MSK_IAM");
-        props.put("sasl.jaas.config", "software.amazon.msk.auth.iam.IAMLoginModule required;");
+
 
         this.producer = new KafkaProducer<>(props);
         this.topicName = topicName;
@@ -31,7 +39,7 @@ public class KafkaPublishingManagerImpl implements KafkaPublishingManager{
         this(
                 "b-1.devkafka.oq7n4j.c2.kafka.us-east-1.amazonaws.com:9098," +
                         "b-2.devkafka.oq7n4j.c2.kafka.us-east-1.amazonaws.com:9098",
-                "test-topic"
+                "demo_java"
         );
     }
 
@@ -40,25 +48,29 @@ public class KafkaPublishingManagerImpl implements KafkaPublishingManager{
             // Convert JsonNode to JSON string
             String jsonString = objectMapper.writeValueAsString(jsonMessage);
 
-            // Create Producer Record
-            ProducerRecord<String, String> record =
-                    new ProducerRecord<>(topicName, jsonString);
+            log.info("I am a Kafka Producer");
 
-            // Send message
-            producer.send(record, (metadata, exception) -> {
-                if (exception == null) {
-                    System.out.println("Message sent successfully: " +
-                            "Topic=" + metadata.topic() +
-                            ", Partition=" + metadata.partition() +
-                            ", Offset=" + metadata.offset());
-                } else {
-                    System.err.println("Failed to send message: " +
-                            exception.getMessage());
-                }
-            });
+            String bootstrapServers = "127.0.0.1:9092";
 
-            // Ensure message is sent
+            Properties properties = new Properties();
+            properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+            properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+
+            // create the producer
+            KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
+
+            // create a producer record
+            ProducerRecord<String, String> producerRecord =
+                    new ProducerRecord<>("demo_java", "hello world");
+
+            // send data - asynchronous
+            producer.send(producerRecord);
+
+            // flush data - synchronous
             producer.flush();
+            // flush and close producer
+            producer.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -72,19 +84,29 @@ public class KafkaPublishingManagerImpl implements KafkaPublishingManager{
 
     public static void main(String[] args) {
         try {
-            // Create producer using interface
-            KafkaPublishingManager kafkaProducer = new KafkaPublishingManagerImpl();
+            log.info("I am a Kafka Producer");
 
-            // Example of creating a JsonNode
-            JsonNode jsonMessage = new ObjectMapper().readTree(
-                    "{\"key\":\"value\", \"data\":\"example\", \"nested\":{\"inner\":\"data\"}}"
-            );
+            String bootstrapServers = "b-1.devkafka.oq7n4j.c2.kafka.us-east-1.amazonaws.com:9092";
 
-            // Send message
-            kafkaProducer.sendMessage(jsonMessage);
+            Properties properties = new Properties();
+            properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+            properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
-            // Close resources
-            kafkaProducer.close();
+            // create the producer
+            KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
+
+            // create a producer record
+            ProducerRecord<String, String> producerRecord =
+                    new ProducerRecord<>("demo_java", "hello world");
+
+            // send data - asynchronous
+            producer.send(producerRecord);
+
+            // flush data - synchronous
+            producer.flush();
+            // flush and close producer
+            producer.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

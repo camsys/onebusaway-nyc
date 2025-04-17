@@ -6,7 +6,5 @@ public interface KafkaPublishingManager {
 
     void sendMessage(JsonNode jsonMessage);
 
-    void close();
-
 
 }
