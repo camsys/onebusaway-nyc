@@ -17,9 +17,12 @@ package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.DNSResolver;
+import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
@@ -36,6 +39,8 @@ import org.zeromq.ZMQ;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
 import java.util.TimerTask;
@@ -95,6 +100,10 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
   protected Properties properties = new Properties();
 
+  protected KafkaProducer<String, String> producer = null;
+
+  protected ProducerRecord<String, String> producerRecord = null;
+
   @Override
   public void setServletContext(ServletContext servletContext) {
     // check for primaryHost name
@@ -118,13 +127,13 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
     Date markTimestamp = new Date();
 
-    private KafkaConsumer<String, String> _consumer = null;
+    private KafkaProducer<String, String> _producer = null;
 
-    private byte[] _topicName = null;
+    private String _topicName = null;
 
-    public SendThread(KafkaConsumer<String, String> consumer, String topicName) {
-      _consumer = consumer;
-      _topicName = topicName.getBytes();
+    public SendThread(KafkaProducer<String, String> producer, String topicName) {
+      _producer = producer;
+      _topicName = topicName;
     }
 
     @Override
@@ -138,18 +147,11 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
           return;
         }
 
-        if (r != null) {
-          if (_isPrimaryInferenceInstance) {
-            _zmqSocket.send(_topicName, ZMQ.SNDMORE);
-            _zmqSocket.send(r.getBytes(), 0);
-          }
-        }
-
         final String h = _heartbeatBuffer.poll();
+        producerRecord = new ProducerRecord<>( _topicName, h);
         if (h != null) {
           if (_isPrimaryInferenceInstance) {
-            _zmqSocket.send(HEARTBEAT_TOPIC.getBytes(), ZMQ.SNDMORE);
-            _zmqSocket.send(h.getBytes(), 0);
+            producer.send(producerRecord);
             _log.debug("heartbeat=" + h);
           }
         }
@@ -240,6 +242,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
           _log.warn("Primary inference status changed to " + primaryValue);
           _isPrimaryInferenceInstance = primaryValue;
         }
+
       } catch (final Exception e) {
         _log.error(e.toString());
       }
@@ -329,27 +332,36 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
   protected synchronized void initializeQueue(String host, String queueName,
       Integer port) throws InterruptedException {
-    final String bind = "tcp://" + host + ":" + port;
-    _log.warn("binding to " + bind);
-    if (_context == null) {
-      _context = ZMQ.context(1);
+
+    String bind = host + ":" + port;
+    _log.warn("binding to " + bind + " with topic=" + queueName);
+
+    setProperties(bind, queueName);
+
+    producer = new KafkaProducer<>(properties);
+
+    if (properties.getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG).isEmpty()) {
+      setProperties(bind, queueName);
+      producerRecord = new ProducerRecord<>(queueName, null);
     }
-    if (_socket != null) {
+
+    if (!producerRecord.toString().isBlank()) {
       _executorService.shutdownNow();
       _heartbeatService.shutdownNow();
       Thread.sleep(1 * 1000);
-      _log.warn("_executorService.isTerminated="
-          + _executorService.isTerminated());
-      _socket.close();
+      _log.debug("_executorService.isTerminated="
+              + _executorService.isTerminated());
+      producer.close();
       _executorService = Executors.newFixedThreadPool(1);
-      _heartbeatService = Executors.newFixedThreadPool(1);
+      _heartbeatService.execute(new HeartbeatThread(HEARTBEAT_INTERVAL));
     }
 
-    _log.info("binding to " + bind);
-    _socket = _context.socket(ZMQ.PUB);
-    _socket.connect(bind);
-    _executorService.execute(new SendThread(_socket, queueName));
-    _heartbeatService.execute(new HeartbeatThread(HEARTBEAT_INTERVAL));
+    producer.send(producerRecord);
+
+    _executorService.execute(new SendThread(producer, bind));
+
+    producer.flush();
+    producer.close();
 
     _log.info("Inference output queue is sending to " + bind);
     _initialized = true;
