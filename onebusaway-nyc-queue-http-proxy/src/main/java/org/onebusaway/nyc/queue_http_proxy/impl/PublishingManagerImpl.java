@@ -18,10 +18,10 @@ package org.onebusaway.nyc.queue_http_proxy.impl;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.onebusaway.nyc.queue.DNSResolver;
-import org.onebusaway.nyc.queue.IPublisher;
-import org.onebusaway.nyc.queue.KafkaPublisher;
 import org.onebusaway.nyc.queue.Publisher;
+import org.onebusaway.nyc.queue.KafkaPublisher;
 import org.onebusaway.nyc.queue_http_proxy.model.RecordOverride;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,11 +37,14 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
-public class PublishingManagerImpl implements PublishingManager{
+public class PublishingManagerImpl implements PublishingManager {
 
     private static Logger _log = LoggerFactory.getLogger(PublishingManagerImpl.class);
 
     private final DateFormat dateFormat;
+
+    private static final String QUEUE_TYPE_KEY = "ie.queueType";
+    private static final String DEFAULT_QUEUE_TYPE = "KAFKA";
 
     private Map<String, Date> lastKnownVehicleRecords = new ConcurrentHashMap<>(10000);
 
@@ -56,19 +59,30 @@ public class PublishingManagerImpl implements PublishingManager{
 
     private Set<String> bypassHighFrequencyVehicles;
 
+    protected ConfigurationService _configurationService;
+
+    private String queueType = "";
+
+    @Autowired
+    @Qualifier("publisher")
+    private Publisher publisher;
+
     @Autowired
     @Qualifier("kafkaPublisher")
-    private KafkaPublisher publisher;
+    private KafkaPublisher kafkaPublisher;
 
     @Autowired
     @Qualifier("high_freq_publisher")
     private Publisher highFreqPublisher;
 
     @Autowired
+    @Qualifier("kafka_high_freq_publisher")
+    private KafkaPublisher kafkaHighFreqPublisher;
+
+    @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
 
     protected DNSResolver _resolver = null;
-
 
     public PublishingManagerImpl() {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SXXX");
@@ -136,8 +150,14 @@ public class PublishingManagerImpl implements PublishingManager{
             Date vehicleTimestamp = getVehicleTimestamp(ccLocationReport);
             processMessage(vehicleId, vehicleTimestamp, message.toString());
         } else {
-            publisher.send(message.toString());
-            highFreqPublisher.send(message.toString());
+           String queueType = System.getProperty(QUEUE_TYPE_KEY, DEFAULT_QUEUE_TYPE);
+           if(!queueType.isBlank() && queueType.equals("KAFKA")){
+               kafkaPublisher.send(message.toString());
+               kafkaHighFreqPublisher.send(message.toString());
+           }else{
+               publisher.send(message.toString());
+               highFreqPublisher.send(message.toString());
+           }
         }
     }
 
