@@ -227,6 +227,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
             // CASE 1:  no ApcData element from webservice, return whatever matches from cache
             if (additionalApcData == null  || !isTimely(vehicleId, additionalApcData.getTimestamp())) {
+                _log.debug(url + " no webservice data for " + vehicleId + ", using " + queueRecord);
                 if (queueRecord != null && queueRecord.getTimestamp() != null && isTimely(vehicleId, queueRecord.getTimestamp().getTime()))
                     return queueRecord;
                 else
@@ -234,6 +235,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
             }
             // CASE 2:  no enumeration from queue, return ApcData as VehicleOccupancyRecord
             if (queueRecord == null || !isTimely(vehicleId, queueRecord.getTimestamp().getTime())) {
+                _log.debug(url + " no queue record for " + vehicleId + ", using " + additionalApcData);
                 if (additionalApcData != null && isTimely(vehicleId, additionalApcData.getTimestamp()))
                     return toVehicleOccupancyRecord(additionalApcData);
                 else
@@ -243,6 +245,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
             VehicleOccupancyRecord vor = queueRecord.deepCopy();
             if (vor.getRawCount() == null || additionalApcData.getTimestamp() > queueRecord.getTimestamp().getTime()) {
                 // only merge data is absent or update more recent
+                _log.debug(url + " merging " + vehicleId + " with " + additionalApcData);
                 vor.setRawCount(additionalApcData.getEstLoadAsInt());
                 vor.setCapacity(additionalApcData.getEstCapacityAsInt());
                 vor.setTimestamp(new Date(additionalApcData.getTimestamp()));
