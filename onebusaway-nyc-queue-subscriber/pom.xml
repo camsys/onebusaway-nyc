@@ -96,7 +96,8 @@
               <archive>
                 <manifest>
                   <addClasspath>true</addClasspath>
-                  <mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>
+                  <!--<mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>-->
+                  <mainClass>org.onebusaway.nyc.queue.KafkaSubscriber</mainClass>
                 </manifest>
               </archive>
             </configuration>
@@ -109,7 +110,8 @@
               </descriptorRefs>
               <archive>
                 <manifest>
-                  <mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>
+                  <!--<mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>-->
+                  <mainClass>org.onebusaway.nyc.queue.KafkaSubscriber</mainClass>
                 </manifest>
               </archive>
               <classifier>jar-with-dependencies</classifier>
@@ -143,7 +145,8 @@
                   <goal>java</goal>
                 </goals>
                 <configuration>
-                  <mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>
+                  <!--<mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>-->
+                  <mainClass>org.onebusaway.nyc.queue.KafkaSubscriber</mainClass>
                   <arguments />
                 </configuration>
               </execution>
@@ -155,7 +158,8 @@
               <archive>
                 <manifest>
                   <addClasspath>true</addClasspath>
-                  <mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>
+                  <!--<mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>-->
+                  <mainClass>org.onebusaway.nyc.queue.KafkaSubscriber</mainClass>
                 </manifest>
               </archive>
             </configuration>
@@ -168,7 +172,8 @@
               </descriptorRefs>
               <archive>
                 <manifest>
-                  <mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>
+                  <!--<mainClass>org.onebusaway.nyc.queue.Subscriber</mainClass>-->
+                  <mainClass>org.onebusaway.nyc.queue.KafkaSubscriber</mainClass>
                 </manifest>
               </archive>
             </configuration>
@@ -197,7 +202,8 @@
               <archive>
                 <manifest>
                   <addClasspath>true</addClasspath>
-                  <mainClass>org.onebusaway.nyc.queue.TripUpdateSubscriber</mainClass>
+                  <!--<mainClass>org.onebusaway.nyc.queue.TripUpdateSubscriber</mainClass>-->
+                  <mainClass>org.onebusaway.nyc.queue.KafkaTripUpdateSubscriber</mainClass>
                 </manifest>
               </archive>
             </configuration>
@@ -210,7 +216,8 @@
               </descriptorRefs>
               <archive>
                 <manifest>
-                  <mainClass>org.onebusaway.nyc.queue.TripUpdateSubscriber</mainClass>
+                  <!--<mainClass>org.onebusaway.nyc.queue.TripUpdateSubscriber</mainClass>-->
+                  <mainClass>org.onebusaway.nyc.queue.KafkaTripUpdateSubscriber</mainClass>
                 </manifest>
               </archive>
             </configuration>

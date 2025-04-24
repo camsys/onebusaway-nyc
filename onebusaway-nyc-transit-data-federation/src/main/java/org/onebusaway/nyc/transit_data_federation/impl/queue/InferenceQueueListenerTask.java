@@ -17,6 +17,7 @@ package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 
@@ -26,7 +27,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-public abstract class InferenceQueueListenerTask extends QueueListenerTask {
+public abstract class InferenceQueueListenerTask extends KafkaQueueListenerTask {
 
 	protected abstract void processResult(NycQueuedInferredLocationBean inferredResult, String contents);
 	protected ObjectReader _reader;

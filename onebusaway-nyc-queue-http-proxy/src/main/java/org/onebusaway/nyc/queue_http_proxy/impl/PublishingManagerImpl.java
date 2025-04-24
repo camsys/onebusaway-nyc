@@ -57,8 +57,8 @@ public class PublishingManagerImpl implements PublishingManager{
     private Set<String> bypassHighFrequencyVehicles;
 
     @Autowired
-    @Qualifier("publisher")
-    private Publisher publisher;
+    @Qualifier("kafkaPublisher")
+    private KafkaPublisher publisher;
 
     @Autowired
     @Qualifier("high_freq_publisher")

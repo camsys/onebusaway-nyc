@@ -23,7 +23,9 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.zeromq.ZMQ;
 
@@ -44,6 +46,8 @@ public class KafkaTripUpdateSubscriber implements ITripUpdateSubscriber{
 	private static final String DEFAULT_OUTPUT = ".";
 	private static final String DEFAULT_SINGLE_MODE = "false";
 
+	private Properties properties = new Properties();
+
 	public void main(String[] args) {
 
 		String route = System.getProperty(ROUTE_KEY);
@@ -57,13 +61,8 @@ public class KafkaTripUpdateSubscriber implements ITripUpdateSubscriber{
 		String topic = System.getProperty(TOPIC_KEY, DEFAULT_TOPIC);
 
 		String bind = "tcp://" + host + ":" + port;
-		Properties properties = new Properties();
-		properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bind);
-		properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-		properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, topic);
-		properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
+		setProperties(bind, host);
 		KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties);
 		consumer.subscribe(Arrays.asList(topic));
 
@@ -88,7 +87,8 @@ public class KafkaTripUpdateSubscriber implements ITripUpdateSubscriber{
 							String vehicle = AgencyAndId.convertFromString(tripUpdate.getVehicle().getId()).getId();
 							String filename = outputDir + "/" + tripId.getId() + ".pb";
 							System.out.println("timestamp=" + timestamp + " vehicleid=" + vehicle + " filename=" + filename);
-							Subscriber.writeToFile(filename, record.value().getBytes());
+							//Subscriber.writeToFile(filename, record.value().getBytes());
+							KafkaSubscriber.writeToFile(filename, record.value().getBytes());
 							if (singleMode)
 								break;
 						}
@@ -117,7 +117,14 @@ public class KafkaTripUpdateSubscriber implements ITripUpdateSubscriber{
 
 	private void setProperties(String bind, String queueName){
 
-
+		properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bind);
+		properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bind);
+		properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+		properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, queueName);
+		properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+		properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+		properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
 	}
 
