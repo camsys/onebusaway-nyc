@@ -23,7 +23,9 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +62,7 @@ public abstract class KafkaQueueListenerTask implements IQueueListenerTask{
 
 	protected DNSResolver _resolver = null;
 	protected int _countInterval = 10000;
-	protected KafkaConsumer<String, String> consumer = null;
+	protected KafkaConsumer<String, String> consumer;
 
 	protected Properties properties = new Properties();
 
@@ -161,14 +163,19 @@ public abstract class KafkaQueueListenerTask implements IQueueListenerTask{
 	// (re)-initialize Kafka listener with the given args
 	protected synchronized void initializeQueue(String host, String queueName,
 			Integer port) throws InterruptedException {
+
+		try {
 		String bind = host + ":" + port;
 		_log.warn("binding to " + bind + " with topic=" + queueName);
 
-		consumer = new KafkaConsumer<>(properties);
-
-		if (properties.getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG).isEmpty()) {
+		if (properties.isEmpty() ||
+				properties.getProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG).isBlank() ||
+				properties.getProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG).isEmpty()) {
 			setProperties(bind, queueName);
+			_executorService = Executors.newFixedThreadPool(1);
 		}
+
+		consumer = new KafkaConsumer<>(properties);
 
 		if (!consumer.subscription().isEmpty()) {
 			_executorService.shutdownNow();
@@ -187,6 +194,9 @@ public abstract class KafkaQueueListenerTask implements IQueueListenerTask{
 
 		_log.warn("queue " + queueName + " is listening on " + bind);
 		_initialized = true;
+		}catch(Exception e){
+			System.out.println("exception = " + e + "");
+		}
 
 	}
 
@@ -208,11 +218,19 @@ public abstract class KafkaQueueListenerTask implements IQueueListenerTask{
 
 	private void setProperties(String bind, String queueName){
 
-		properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bind);
-		properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-		properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, queueName);
-		properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+		try {
+
+			properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bind);
+			properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bind);
+			properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+			properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+			properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+			properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+			properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, queueName);
+			properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+		}catch(Exception e){
+			System.out.println("exception = " + e + "");
+		}
 
 	}
 

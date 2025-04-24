@@ -1,0 +1,78 @@
+/**
+ * Copyright (C) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.onebusaway.nyc.vehicle_tracking.impl.queue;
+
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.util.AgencyAndIdLibrary;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
+public class OutputQueueSenderServiceTest {
+
+  @Mock
+  private VehicleAssignmentService vehicleAssignmentService;
+
+  @SuppressWarnings("unused")
+  @Mock
+  private VehicleLocationInferenceService vehicleLocationInferenceService;
+
+  @InjectMocks
+  private DummyPartitionedInputQueueListenerTask service;
+
+  @InjectMocks
+  private FileInputServiceImpl inputService;
+
+  @Before
+  public void setup() throws Exception {
+    Configurator.initialize(new DefaultConfiguration());
+    
+	final ArrayList<AgencyAndId> list = new ArrayList<AgencyAndId>();
+    list.add(AgencyAndIdLibrary.convertFromString("MTA NYCT_8140"));
+    
+    when(vehicleAssignmentService.getAssignedVehicleIdsForDepot("ZZ")).thenReturn(
+        list);
+    when(vehicleAssignmentService.getAssignedVehicleIdsForDepot("JG")).thenReturn(
+            list);
+    
+    inputService.setup();
+    inputService.setDepotPartitionKey("JG");
+    service.setInputService(inputService);
+  }
+
+  @Test
+  public void testDeserializeMessage() throws Exception {
+	  final String message = "{\"RealtimeEnvelope\": {\"UUID\":\"f43530c0-ec7a-11e5-a081-22000b028187\",\"timeReceived\": 1458244853196,\"CcLocationReport\": {\"request-id\":250,\"vehicle\":{\"vehicle-id\":8140,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2016-03-17T20:00:50.860-00:00\",\"latitude\":40530910,\"longitude\":-74236203,\"direction\":{\"deg\":71.50},\"speed\":36,\"manufacturer-data\":\"VFTP155-600-826\",\"operatorID\":{\"operator-id\":0,\"designator\":\"0\"},\"runID\":{\"run-id\":0,\"designator\":\"000\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"0\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPGGA,175251.000,4031.85833,N,07414.16762,W,1,08,01.2,+00031.0,M,,M,,*46\",\"$GPRMC,175251.00,A,4031.858330,N,07414.167620,W,006.955,033.61\"]}}}}}";
+      service.startListenerThread();
+      assertNotNull(inputService.deserializeMessage(message));
+  }
+}

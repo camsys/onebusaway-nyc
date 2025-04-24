@@ -19,6 +19,8 @@ package org.onebusaway.nyc.queue_http_proxy.impl;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.queue.IPublisher;
+import org.onebusaway.nyc.queue.KafkaPublisher;
+import org.onebusaway.nyc.queue.Publisher;
 import org.onebusaway.nyc.queue_http_proxy.model.RecordOverride;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,11 +58,11 @@ public class PublishingManagerImpl implements PublishingManager{
 
     @Autowired
     @Qualifier("publisher")
-    private IPublisher publisher;
+    private Publisher publisher;
 
     @Autowired
     @Qualifier("high_freq_publisher")
-    private IPublisher highFreqPublisher;
+    private Publisher highFreqPublisher;
 
     @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;

@@ -34,6 +34,12 @@ limitations under the License.
         <property name="port" value="5563" />
     </bean>
 
+    <bean id="kafkaPublisher" class="org.onebusaway.nyc.queue.KafkaPublisher">
+        <property name="topic" value="bhs_queue" />
+        <property name="host" value="*" />
+        <property name="port" value="9092" />
+    </bean>
+
     <bean id="high_freq_publisher" class="org.onebusaway.nyc.queue.Publisher">
         <property name="topic" value="bhs_high_freq_queue" />
         <property name="protocol" value="tcp" />

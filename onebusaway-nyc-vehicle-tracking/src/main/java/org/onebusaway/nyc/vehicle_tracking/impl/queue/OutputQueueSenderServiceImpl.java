@@ -369,17 +369,17 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
 
   public String getQueueHost() {
     return _configurationService.getConfigurationValueAsString(
-        "inference-engine.outputQueueHost", null);
+        "inference-engine.outputQueueHost", "localhost");
   }
 
   public String getQueueName() {
     return _configurationService.getConfigurationValueAsString(
-        "inference-engine.outputQueueName", null);
+        "inference-engine.outputQueueName", "bhs_queue");
   }
 
   public Integer getQueuePort() {
     return _configurationService.getConfigurationValueAsInteger(
-        "inference-engine.outputQueuePort", 5566);
+        "inference-engine.outputQueuePort", 9092);
   }
 
   @Override
