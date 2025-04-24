@@ -66,9 +66,9 @@ public class KafkaSubscriber implements ISubscriber{
 			}
 		}
 		String topic = DEFAULT_TOPIC;
-		if (System.getProperty(TOPIC_KEY) != null) {
-			topic = System.getProperty(TOPIC_KEY);
-		}
+		//if (System.getProperty(TOPIC_KEY) != null) {
+		//	topic = System.getProperty(TOPIC_KEY);
+		//}
 
 		String pbdir = null;
 		if (System.getProperty(PBDIR_KEY) != null) {

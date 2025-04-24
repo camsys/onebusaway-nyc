@@ -99,11 +99,11 @@ public class KafkaPublisher implements IPublisher {
 		 * do not bind to the socket, simply connect to existing socket provided by
 		 * broker.
 		 */
-		setProperties(bind, host);
+		setProperties(bind, topic);
 		producer = new KafkaProducer<>(properties);
-		producerRecord = new ProducerRecord<>(host, null);
+		producerRecord = new ProducerRecord<>(topic, null);
 		executorService = Executors.newFixedThreadPool(1);
-		executorService.execute(new SendThread(producer, bind));
+		executorService.execute(new SendThread(producer, topic));
 
 	}
 
@@ -229,11 +229,11 @@ public class KafkaPublisher implements IPublisher {
 		int processedCount = 0;
 		Date markTimestamp = new Date();
 
-		private KafkaProducer<String, String> _producer = null;
+		private KafkaProducer<String, String> _producer;
 
-		private String _topicName = null;
+		private String _topicName;
 
-		ProducerRecord<String, String> _producerRecord = null;
+		ProducerRecord<String, String> _producerRecord;
 
 		public SendThread(KafkaProducer<String, String> producer, String topicName) {
 			_producer = producer;

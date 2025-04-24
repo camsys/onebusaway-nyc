@@ -62,7 +62,7 @@ public class KafkaTripUpdateSubscriber implements ITripUpdateSubscriber{
 
 		String bind = "tcp://" + host + ":" + port;
 
-		setProperties(bind, host);
+		setProperties(bind, topic);
 		KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties);
 		consumer.subscribe(Arrays.asList(topic));
 
