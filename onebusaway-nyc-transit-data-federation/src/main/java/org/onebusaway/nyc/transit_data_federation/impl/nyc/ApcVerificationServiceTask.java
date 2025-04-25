@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ApcVerificationServiceTask implements Runnable {
@@ -43,8 +44,7 @@ public class ApcVerificationServiceTask implements Runnable {
         try {
             List<AgencyWithCoverageBean> agenciesWithCoverage = _transitDataService.getAgenciesWithCoverage();
             List<String> agencyIds = agenciesWithCoverage.stream()
-                    .map((agency) -> agency.getAgency().getId())
-                    .toList();
+                    .map((agency) -> agency.getAgency().getId()).collect(Collectors.toList());
             for (String agencyId : agencyIds) {
                 ListBean<VehicleStatusBean>  vehicles = _transitDataService.getAllVehiclesForAgency(agencyId, System.currentTimeMillis());
                 for (VehicleStatusBean vehicle : vehicles.getList()) {
