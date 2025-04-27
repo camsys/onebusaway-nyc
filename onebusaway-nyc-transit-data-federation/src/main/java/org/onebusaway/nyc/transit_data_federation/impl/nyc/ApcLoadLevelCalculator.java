@@ -17,6 +17,7 @@ package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.SupplementalRouteType;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.OccupancyStatus;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -115,7 +116,7 @@ public class ApcLoadLevelCalculator {
 
 
   public OccupancyStatus determineOccupancyStatus(Integer load, Integer capacity, AgencyAndId routeId) {
-    if (load == null || capacity == null) {
+    if (load == null || capacity == null || routeId == null) {
       return null;
     }
 
@@ -127,8 +128,8 @@ public class ApcLoadLevelCalculator {
       } 
       else {
         double loadFactor = load / (double) capacity;
-
-        if (_nycRouteTypeService.isRouteExpress(routeId)) {
+        SupplementalRouteType routeType = _nycRouteTypeService.getRouteType(routeId);
+        if (routeType == SupplementalRouteType.EXPRESS) {
           if (loadFactor > zExpressFactor) {
             occupancyStatus = OccupancyStatus.FULL;
           } else if (loadFactor >= yExpressFactor) {
@@ -138,7 +139,8 @@ public class ApcLoadLevelCalculator {
           } else {
             occupancyStatus = OccupancyStatus.MANY_SEATS_AVAILABLE;
           }
-        } else {
+        }
+        else if(routeType != SupplementalRouteType.UNIDENTIFIED) {
           if (loadFactor > zFactor) {
             occupancyStatus = OccupancyStatus.FULL;
           } else if (loadFactor >= yFactor) {
@@ -159,8 +161,8 @@ public class ApcLoadLevelCalculator {
   public OccupancyStatus toOccupancyStatus(NycVehicleLoadBean message) {
     if (useLoadFactor) return message.getLoad(); // the MTA will own this value
     OccupancyStatus occupancyStatus = determineOccupancyStatus(message.getEstLoad(),message.getEstCapacity(),AgencyAndIdLibrary.convertFromString(message.getRoute()));
-    if (_log.isDebugEnabled()) {
-      _log.debug("Vehicle ID: {}, Count: {}, Max Occupancy: {}, Route ID: {}, Express Status: {}, result: {}",
+    if (_log.isTraceEnabled()) {
+      _log.trace("Vehicle ID: {}, Count: {}, Max Occupancy: {}, Route ID: {}, Express Status: {}, result: {}",
           message.getVehicleId(), message.getEstLoad(), message.getEstCapacity(), message.getRoute(), _nycRouteTypeService.isRouteExpress(AgencyAndIdLibrary.convertFromString(message.getRoute())), occupancyStatus);
     }
     return occupancyStatus;
@@ -168,8 +170,8 @@ public class ApcLoadLevelCalculator {
 
   public OccupancyStatus toOccupancyStatus(ApcLoadData message, AgencyAndId routeId) {
     OccupancyStatus occupancyStatus =  determineOccupancyStatus(message.getEstLoadAsInt(), message.getEstCapacityAsInt(), routeId);
-    if(_log.isDebugEnabled()){
-      _log.debug("Vehicle ID: {}, Count: {}, Max Occupancy: {}, Route ID: {}, Express Status: {}, result: {}",
+    if(_log.isTraceEnabled()){
+      _log.trace("Occupancy Status determined: Vehicle ID: {}, Count: {}, Max Occupancy: {}, Route ID: {}, Express Status: {}, result: {}",
           message.getVehicleAsId(), message.getEstLoadAsInt(), message.getEstCapacityAsInt(), routeId, _nycRouteTypeService.isRouteExpress(routeId), occupancyStatus);
     }
     return occupancyStatus;
