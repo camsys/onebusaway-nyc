@@ -16,6 +16,7 @@
 
 package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.SupplementalRouteType;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.impl.S3Utility;
 import org.onebusaway.util.AgencyAndIdLibrary;
@@ -40,7 +41,7 @@ import java.util.*;
 public class NycRouteTypeService {
     protected static Logger _log = LoggerFactory.getLogger(NycRouteTypeService.class);
 
-    private Map<AgencyAndId, RouteType> _routesToNycType = new HashMap<AgencyAndId, RouteType>();
+    private Map<AgencyAndId, SupplementalRouteType> _routesToNycType = new HashMap<AgencyAndId, SupplementalRouteType>();
 
     private long _updateInterval = 10* 60 * 1000;
 
@@ -78,7 +79,7 @@ public class NycRouteTypeService {
     public InputStream getDataFromS3() {
         String s3Username = System.getProperty("s3.user");
         String s3Password = System.getProperty("s3.password");
-        String path = _configurationService.getConfigurationValueAsString("tdm.suplimentalRouteTypesPath", null);
+        String path = _configurationService.getConfigurationValueAsString("tdm.supplementalRouteTypesPath", null);
         S3Utility s3Utility = new S3Utility(s3Username,s3Password,S3Utility.getBucketFromS3Path(path));
         InputStream data = s3Utility.get(S3Utility.getKeyFromS3Path(path));
         _log.info("Retrieved supplemental route type data from s3 from "+ path);
@@ -87,7 +88,7 @@ public class NycRouteTypeService {
 
     // method to read in data from s3
     public void updateNycRouteTypeData(InputStream data) throws IOException {
-        Map<AgencyAndId, RouteType> routesToNycType = new HashMap<AgencyAndId, RouteType>();
+        Map<AgencyAndId, SupplementalRouteType> routesToNycType = new HashMap<AgencyAndId, SupplementalRouteType>();
 
         // find which collumn is the route id, and which is the type then read it into the hashmap
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(data))) {
@@ -110,58 +111,58 @@ public class NycRouteTypeService {
                 String typeValue = values[typeIndex].trim();
 
                 if (!routeId.isEmpty()) {
-                    RouteType routeType = RouteType.fromString(typeValue);
+                    SupplementalRouteType routeType = SupplementalRouteType.fromString(typeValue);
+                    if(routeType == SupplementalRouteType.UNIDENTIFIED || routeType == null) {
+                        _log.warn("Route type " + typeValue + " not recognized for route ID " + routeId);
+                    }
                     routesToNycType.put(AgencyAndIdLibrary.convertFromString(routeId), routeType);
                 }
             }
             _routesToNycType = routesToNycType;
             _expressRoutes = null;
         } catch (IOException e) {
-            _log.info("Error reading CSV: " + e.getMessage());
+            _log.error("Error reading CSV: " + e.getMessage());
         } catch (IllegalArgumentException e) {
-            _log.info("Invalid CSV format: " + e.getMessage());
+            _log.error("Invalid CSV format: " + e.getMessage());
+        }
+        if(_routesToNycType.isEmpty()) {
+            _log.error("No route types found in nycRouteType data");
+        } else {
+            _log.info("Loaded " + _routesToNycType.size() + " route types from nycRouteType data");
         }
     }
 
 
 
-    public boolean isRouteExpress(AgencyAndId routeId) {
+    public SupplementalRouteType getRouteType(AgencyAndId routeId) {
         if(!_routesToNycType.containsKey(routeId)) {
+            if(routeId!=null){_log.warn("Assessing route type: Route ID " + routeId + " not found in route type data.");}
+            return SupplementalRouteType.UNIDENTIFIED;
+        }
+        return _routesToNycType.get(routeId);
+    }
+
+    public boolean isRouteExpress(AgencyAndId routeId) {
+        if(routeId==null) {
             return false;
         }
-        return _routesToNycType.get(routeId).equals(RouteType.EXPRESS);
+        if(!_routesToNycType.containsKey(routeId)) {
+            _log.warn("Assessing express status: Route ID " + routeId + " not found in route type data.");
+            return false;
+        }
+        return _routesToNycType.get(routeId).equals(SupplementalRouteType.EXPRESS);
     }
 
     public Set<AgencyAndId> getExpressRoutes() {
         if(_expressRoutes==null) {
             _expressRoutes = new HashSet<AgencyAndId>();
-            for (Map.Entry<AgencyAndId, RouteType> entry : _routesToNycType.entrySet()) {
-                if (entry.getValue().equals(RouteType.EXPRESS)) {
+            for (Map.Entry<AgencyAndId, SupplementalRouteType> entry : _routesToNycType.entrySet()) {
+                if (entry.getValue().equals(SupplementalRouteType.EXPRESS)) {
                     _expressRoutes.add(entry.getKey());
                 }
             }
         }
         return new HashSet<AgencyAndId>(_expressRoutes);
-    }
-
-
-
-    public enum RouteType {
-        FEEDER,
-        GRID,
-        EXPRESS,
-        UNIDENTIFIED;
-
-        public static RouteType fromString(String value) {
-            if (value == null || value.isBlank()) {
-                return UNIDENTIFIED;
-            }
-            try {
-                return RouteType.valueOf(value.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                return UNIDENTIFIED;
-            }
-        }
     }
 
 
