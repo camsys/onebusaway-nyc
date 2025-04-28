@@ -47,6 +47,7 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 	private boolean checkAge = false;
 	private int ageLimit = 300;
 	private boolean refreshCheck;
+	private boolean useRawPositions = false;
 
 	public InferenceInputQueueListenerTask() {
 		setConfigurationService(new ConfigurationServiceImpl());
@@ -69,6 +70,12 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 		_configurationService = config;
 		refreshCache();
 	}
+
+	protected void setRawPositions(boolean useRawPositions) {
+		this.useRawPositions = useRawPositions;
+	}
+
+
 	
 	@Refreshable(dependsOn = {"display.checkAge", "display.useTimePredictions", "display.ageLimit"})
 	protected void refreshCache() {
@@ -93,16 +100,8 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 		return (System.currentTimeMillis() - timestamp) / 1000; // output in seconds
 	}
 
-	@Override
-	protected void processResult(NycQueuedInferredLocationBean inferredResult, String contents) {
+	protected VehicleLocationRecord createVehicleLocationRecord(NycQueuedInferredLocationBean inferredResult) {
 		VehicleLocationRecord vlr = new VehicleLocationRecord();
-		if (checkAge) {
-			long difference = computeTimeDifference(inferredResult.getRecordTimestamp());
-			if (difference > ageLimit) {
-				_log.info("VehicleLocationRecord for "+ inferredResult.getVehicleId() + " discarded.");
-				return;
-			}
-		}
 		vlr.setDistanceAlongBlock(inferredResult.getDistanceAlongBlock());
 		vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(inferredResult.getVehicleId()));
 		vlr.setTimeOfRecord(inferredResult.getRecordTimestamp());
@@ -110,15 +109,38 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 		vlr.setBlockId(AgencyAndIdLibrary.convertFromString(inferredResult.getBlockId()));
 		vlr.setTripId(AgencyAndIdLibrary.convertFromString(inferredResult.getTripId()));
 		vlr.setServiceDate(inferredResult.getServiceDate());
-		if (inferredResult.getInferredLatitude() != null)
+
+		if(useRawPositions
+				&& inferredResult.getObservedLatitude() != null
+				&& inferredResult.getObservedLongitude() != null) {
+			vlr.setCurrentLocationLat(inferredResult.getObservedLatitude());
+			vlr.setCurrentLocationLon(inferredResult.getObservedLongitude());
+		}
+		else if(inferredResult.getObservedLatitude() != null
+				&& inferredResult.getInferredLongitude() != null) {
 			vlr.setCurrentLocationLat(inferredResult.getInferredLatitude());
-		if (inferredResult.getInferredLongitude() != null)
 			vlr.setCurrentLocationLon(inferredResult.getInferredLongitude());
+		}
+
 		vlr.setPhase(EVehiclePhase.valueOf(inferredResult.getPhase()));
 		vlr.setStatus(inferredResult.getStatus());
 		// by contract, schDev shouldn't be null.  Still, no need to throw an NPE
-		if (inferredResult.getScheduleDeviation() != null)
+		if (inferredResult.getScheduleDeviation() != null) {
 			vlr.setScheduleDeviation(inferredResult.getScheduleDeviation());
+		}
+		return vlr;
+	}
+
+	@Override
+	protected void processResult(NycQueuedInferredLocationBean inferredResult, String contents) {
+		if (checkAge) {
+			long difference = computeTimeDifference(inferredResult.getRecordTimestamp());
+			if (difference > ageLimit) {
+				_log.info("VehicleLocationRecord for "+ inferredResult.getVehicleId() + " discarded.");
+				return;
+			}
+		}
+		VehicleLocationRecord vlr = createVehicleLocationRecord(inferredResult);
 		if (_vehicleLocationListener != null) {
 			_vehicleLocationListener.handleVehicleLocationRecord(vlr);
 		}
