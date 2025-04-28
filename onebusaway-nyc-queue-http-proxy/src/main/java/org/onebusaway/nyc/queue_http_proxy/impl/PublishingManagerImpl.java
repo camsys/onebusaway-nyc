@@ -46,6 +46,8 @@ public class PublishingManagerImpl implements PublishingManager {
     private static final String QUEUE_TYPE_KEY = "ie.queueType";
     private static final String DEFAULT_QUEUE_TYPE = "KAFKA";
 
+    String queueType = System.getProperty(QUEUE_TYPE_KEY, DEFAULT_QUEUE_TYPE);
+
     private Map<String, Date> lastKnownVehicleRecords = new ConcurrentHashMap<>(10000);
 
     private Map<String, RecordOverride> recordOverrides = new ConcurrentHashMap<>();
@@ -60,8 +62,6 @@ public class PublishingManagerImpl implements PublishingManager {
     private Set<String> bypassHighFrequencyVehicles;
 
     protected ConfigurationService _configurationService;
-
-    private String queueType = "";
 
     @Autowired
     @Qualifier("publisher")
@@ -150,7 +150,7 @@ public class PublishingManagerImpl implements PublishingManager {
             Date vehicleTimestamp = getVehicleTimestamp(ccLocationReport);
             processMessage(vehicleId, vehicleTimestamp, message.toString());
         } else {
-           String queueType = System.getProperty(QUEUE_TYPE_KEY, DEFAULT_QUEUE_TYPE);
+
            if(!queueType.isBlank() && queueType.equals("KAFKA")){
                kafkaPublisher.send(message.toString());
                kafkaHighFreqPublisher.send(message.toString());

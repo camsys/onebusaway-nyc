@@ -161,8 +161,8 @@ public abstract class KafkaQueueListenerTask implements IQueueListenerTask{
 	}
 
 	// (re)-initialize Kafka listener with the given args
-	protected synchronized void initializeQueue(String host, String queueName,
-			Integer port) throws InterruptedException {
+	public synchronized void initializeQueue(String host, String queueName,
+											 Integer port) throws InterruptedException {
 
 		try {
 		String bind = host + ":" + port;

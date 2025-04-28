@@ -23,7 +23,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.zeromq.ZMQ;
 
 import java.io.DataOutputStream;
 import java.io.File;

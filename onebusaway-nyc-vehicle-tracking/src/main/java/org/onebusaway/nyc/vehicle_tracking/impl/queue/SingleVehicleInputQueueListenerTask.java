@@ -36,7 +36,7 @@ import javax.annotation.PreDestroy;
  * 
  * @author jmaki
  */
-public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
+public abstract class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
     implements PartitionedInputQueueListener {
 
   @Autowired

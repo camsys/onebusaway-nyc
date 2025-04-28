@@ -16,13 +16,11 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.DNSResolver;
-import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;

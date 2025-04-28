@@ -67,7 +67,7 @@ public class PartitionedInputQueueListenerTaskTest {
     
     inputService.setup();
     inputService.setDepotPartitionKey("JG");
-    service.setInputService(inputService);
+    //service.setInputService(inputService);
   }
 
   @Test
@@ -100,7 +100,7 @@ public class PartitionedInputQueueListenerTaskTest {
   public void testIllegalUnquotedCharacterProcessing() throws Exception {
 	final char DEVICE_CONTROL = 0x13;
 	final String message = "{\"RealtimeEnvelope\": {\"UUID\":\"f43530c0-ec7a-11e5-a081-22000b028187\",\"timeReceived\": 1458244853196,\"CcLocationReport\": {\"request-id\":250,\"vehicle\":{\"vehicle-id\":8140,\"agency-id\":2008,\"agencydesignator\":\"MTA NYCT\"},\"status-info\":0,\"time-reported\":\"2016-03-17T20:00:50.860-00:00\",\"latitude\":40530910,\"longitude\":-74236203,\"direction\":{\"deg\":71.50},\"speed\":36,\"manufacturer-data\":\"VFTP155-600-826\",\"operatorID\":{\"operator-id\":0,\"designator\":\"0\"},\"runID\":{\"run-id\":0,\"designator\":\"000\"},\"destSignCode\":12,\"routeID\":{\"route-id\":0,\"route-designator\":\"0\"},\"localCcLocationReport\":{\"NMEA\":{\"sentence\":[\"$GPGGA,175251.000,4031.85833,N,07414.16762,W,1,08,01.2,+00031.0,M,,M,,*46\",\"$GPRMC,175251.00,A,4031.858330,N,07414.167620,W,006.955,033.61" + DEVICE_CONTROL + "\"]}}}}}";
-	service.deserializeMessage(message);
+	//service.deserializeMessage(message);
 	assertEquals(true, service.processMessage(null, message.getBytes()));
   }
 

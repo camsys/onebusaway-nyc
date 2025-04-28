@@ -17,11 +17,16 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
+import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
+import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.ServletContextAware;
 
@@ -41,11 +46,15 @@ import javax.servlet.ServletContext;
  * @author jmaki
  *
  */
-public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
-    implements PartitionedInputQueueListener, ServletContextAware {
+public abstract class PartitionedInputQueueListenerTask
+        implements PartitionedInputQueueListener, ServletContextAware, IQueueListenerTask {
   
   private String _depotPartitionKey;
-  
+
+  InputService _inputService;
+  KafkaQueueListenerTask _kafkaQueueListenerTask;
+  QueueListenerTask _ZmqQueueListenerTask;
+
   @Override
   public void setServletContext(ServletContext servletContext) {
     // check for depot partition keys in the servlet context
@@ -79,15 +88,24 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   @PostConstruct
   public void setup() {
 	_inputService.setDepotPartitionKey(_depotPartitionKey);
-    super.setup();
+    if(!queueType.isBlank() && queueType.equals("KAFKA")){
+      _kafkaQueueListenerTask.setup();
+    }else{
+      _ZmqQueueListenerTask.setup();
+    }
   }
 
   @Override
   @PreDestroy
   public void destroy() {
-    super.destroy();
+    _inputService.setDepotPartitionKey(_depotPartitionKey);
+    if(!queueType.isBlank() && queueType.equals("KAFKA")){
+      _kafkaQueueListenerTask.destroy();
+    }else{
+      _ZmqQueueListenerTask.destroy();
+    }
   }
 
-  
+
 
 }

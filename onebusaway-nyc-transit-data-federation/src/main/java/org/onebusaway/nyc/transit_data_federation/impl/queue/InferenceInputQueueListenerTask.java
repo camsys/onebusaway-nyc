@@ -18,6 +18,7 @@ package org.onebusaway.nyc.transit_data_federation.impl.queue;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.util.impl.tdm.ConfigurationServiceImpl;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
@@ -35,7 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  */
 
-public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask {
+public abstract class InferenceInputQueueListenerTask extends InferenceQueueListenerTask {
 
 	@Autowired
 	private VehicleLocationListener _vehicleLocationListener;
@@ -47,6 +48,9 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 	private boolean checkAge = false;
 	private int ageLimit = 300;
 	private boolean refreshCheck;
+
+	@Autowired
+	ConfigurationService _configurationService;
 
 	public InferenceInputQueueListenerTask() {
 		setConfigurationService(new ConfigurationServiceImpl());

@@ -17,20 +17,31 @@ package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import org.onebusaway.nyc.transit_data_federation.impl.queue.interfaces.InferenceQueueListenerInterface;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-public abstract class InferenceQueueListenerTask extends KafkaQueueListenerTask {
+public abstract class InferenceQueueListenerTask implements InferenceQueueListenerInterface, IQueueListenerTask {
 
 	protected abstract void processResult(NycQueuedInferredLocationBean inferredResult, String contents);
 	protected ObjectReader _reader;
+
+	protected boolean _initialized = false;
+
+	@Autowired
+	ConfigurationService _configurationService;
+	KafkaQueueListenerTask _kafkaQueueListenerTask;
+	QueueListenerTask _ZmqQueueListenerTask;
 
 	public InferenceQueueListenerTask() {
 		_reader = _mapper.reader(NycQueuedInferredLocationBean.class);
@@ -75,7 +86,13 @@ public abstract class InferenceQueueListenerTask extends KafkaQueueListenerTask 
 	@SuppressWarnings("deprecation")
 	@PostConstruct
 	public void setup() {
-		super.setup();
+
+
+		if(!queueType.isBlank() && queueType.equals("KAFKA")){
+			_kafkaQueueListenerTask.setup();
+		}else{
+			_ZmqQueueListenerTask.setup();
+		}
 
 		// use JAXB annotations so that we pick up anything from the
 		// auto-generated XML classes
@@ -87,7 +104,12 @@ public abstract class InferenceQueueListenerTask extends KafkaQueueListenerTask 
 
 	@PreDestroy
 	public void destroy() {
-		super.destroy();
+
+		if(!queueType.isBlank() && queueType.equals("KAFKA")){
+			_kafkaQueueListenerTask.destroy();
+		}else{
+			_ZmqQueueListenerTask.destroy();
+		}
 	}
 
 	@Refreshable(dependsOn = { "tds.inputQueueHost", "tds.inputQueuePort", "tds.inputQueueName" })
@@ -109,11 +131,15 @@ public abstract class InferenceQueueListenerTask extends KafkaQueueListenerTask 
 		_log.info("queue listening on " + host + ":" + port + ", queue=" + queueName);
 
 		try {
-			initializeQueue(host, queueName, port);
+			if(!queueType.isBlank() && queueType.equals("KAFKA")){
+				_kafkaQueueListenerTask.initializeQueue(host, queueName, port);;
+			}else{
+				_ZmqQueueListenerTask.initializeQueue(host, queueName, port);;
+			}
+
 		} catch (InterruptedException ie) {
 			return;
 		}
-
 		_initialized = true;
 	}
 

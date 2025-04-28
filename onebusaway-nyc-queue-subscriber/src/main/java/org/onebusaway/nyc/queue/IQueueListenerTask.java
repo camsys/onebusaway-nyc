@@ -16,11 +16,40 @@
 
 package org.onebusaway.nyc.queue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+
 /**
  * Represents an interface to simply listen to queue operations. This
  * is not attempting to be JMS. This is merely allowing us to
  */
 public interface IQueueListenerTask {
+
+	ExecutorService _executorService = null;
+	ObjectMapper _mapper = new ObjectMapper().registerModule(new JaxbAnnotationModule());
+	Logger _log = LoggerFactory.getLogger(IQueueListenerTask.class);
+
+	boolean _initialized = false;
+	int _countInterval = 10000;
+
+	Properties properties = new Properties();
+
+	String QUEUE_TYPE_KEY = "ie.queueType";
+	String DEFAULT_QUEUE_TYPE = "KAFKA";
+
+	String queueType = System.getProperty(QUEUE_TYPE_KEY, DEFAULT_QUEUE_TYPE);
+
+	void initializeQueue(String host, String queueName,
+						 Integer port) throws InterruptedException;
 
 	boolean processMessage(String address, byte[] buff) throws Exception;
 
@@ -30,11 +59,19 @@ public interface IQueueListenerTask {
 
 	String getQueueName();
 
+
+
 	/**
 	 * Return the name of the queue for display of statistics in logs.
 	 */
 	String getQueueDisplayName();
 
 	Integer getQueuePort();
+
+	void startDNSCheckThread();
+
+	void destroy();
+
+	void setup();
 
 }

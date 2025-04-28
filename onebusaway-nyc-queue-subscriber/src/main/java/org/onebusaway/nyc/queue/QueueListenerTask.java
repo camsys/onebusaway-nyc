@@ -40,8 +40,7 @@ import org.zeromq.ZMQ;
  */
 public abstract class QueueListenerTask implements IQueueListenerTask{
 
-	protected static Logger _log = LoggerFactory
-			.getLogger(QueueListenerTask.class);
+
 	@Autowired
 	protected ConfigurationService _configurationService;
 	@Autowired
@@ -153,8 +152,8 @@ public abstract class QueueListenerTask implements IQueueListenerTask{
 	}
 
 	// (re)-initialize ZMQ with the given args
-	protected synchronized void initializeQueue(String host, String queueName,
-			Integer port) throws InterruptedException {
+	public synchronized void initializeQueue(String host, String queueName,
+											 Integer port) throws InterruptedException {
 		String bind = "tcp://" + host + ":" + port;
 		_log.warn("binding to " + bind + " with topic=" + queueName);
 

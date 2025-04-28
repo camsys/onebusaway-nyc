@@ -27,7 +27,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.zeromq.ZMQ;
 
 import java.time.Duration;
 import java.util.Arrays;

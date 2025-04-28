@@ -16,10 +16,15 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
+import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
@@ -28,9 +33,18 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-public abstract class InputQueueListenerTask extends KafkaQueueListenerTask implements InputTask{
+public abstract class InputQueueListenerTask implements InputTask, IQueueListenerTask {
   
   InputService _inputService;
+
+  protected static Logger _log = LoggerFactory
+          .getLogger(InputQueueListenerTask.class);
+
+  @Autowired
+  private ConfigurationService _configurationService;
+
+  KafkaQueueListenerTask _kafkaQueueListenerTask;
+  QueueListenerTask _ZmqQueueListenerTask;
 
   @SuppressWarnings("deprecation")
   public InputQueueListenerTask() {
@@ -62,6 +76,7 @@ public abstract class InputQueueListenerTask extends KafkaQueueListenerTask impl
       return;
     }
 
+
     final String host = getQueueHost();
     final String queueName = getQueueName();
     final Integer port = getQueuePort();
@@ -74,7 +89,12 @@ public abstract class InputQueueListenerTask extends KafkaQueueListenerTask impl
     _log.info("realtime archive listening on " + host + ":" + port + ", queue="
         + queueName);
     try {
-      initializeQueue(host, queueName, port);
+      if(!queueType.isBlank() && queueType.equals("KAFKA")){
+        _kafkaQueueListenerTask.initializeQueue(host, queueName, port);
+      }else{
+        _ZmqQueueListenerTask.initializeQueue(host, queueName, port);
+      }
+
     } catch (final InterruptedException ie) {
       return;
     }
@@ -105,14 +125,22 @@ public abstract class InputQueueListenerTask extends KafkaQueueListenerTask impl
   @Override
   @PostConstruct
   public void setup() {
-	
-    super.setup();
+
+    if(!queueType.isBlank() && queueType.equals("KAFKA")){
+      _kafkaQueueListenerTask.setup();
+    }else{
+      _ZmqQueueListenerTask.setup();
+    }
   }
 
   @Override
   @PreDestroy
   public void destroy() {
-    super.destroy();
+    if(!queueType.isBlank() && queueType.equals("KAFKA")){
+      _kafkaQueueListenerTask.destroy();
+    }else{
+      _ZmqQueueListenerTask.destroy();
+    }
   }
 
 }

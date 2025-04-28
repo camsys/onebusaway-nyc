@@ -39,7 +39,12 @@ public class DummyPartitionedInputQueueListenerTask extends InputQueueListenerTa
 
   }
 
-  @Override
+    @Override
+    public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
+
+    }
+
+    @Override
   public boolean processMessage(String address, byte[] buff) {
     return true;
   }
@@ -83,6 +88,11 @@ public class DummyPartitionedInputQueueListenerTask extends InputQueueListenerTa
 	public Integer getQueuePort() {
     return -1;
   }
+
+    @Override
+    public void startDNSCheckThread() {
+
+    }
 
 
 }
