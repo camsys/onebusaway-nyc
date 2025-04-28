@@ -95,6 +95,24 @@ public class InferenceInputQueueListenerTaskTest {
 		return bean;
 	}
 
+	public NycQueuedInferredLocationBean initializeUseRawPositionsBean(){
+		NycQueuedInferredLocationBean bean = new NycQueuedInferredLocationBean();
+		bean.setObservedLatitude(Double.parseDouble("40.82360253803400"));
+		bean.setObservedLongitude(Double.parseDouble("73.85864343194800"));
+		bean.setVehicleId("MTA NYCT_123456789");
+		bean.setRecordTimestamp(timestamp);
+		bean.setBlockId("sample_blockID");
+		bean.setTripId("sample_tripID");
+		bean.setServiceDate(Long.parseLong("1374120000000"));
+		bean.setDistanceAlongBlock(Double.parseDouble("9379.514420929047"));
+		bean.setInferredLatitude(Double.parseDouble("40.82360253803387"));
+		bean.setInferredLongitude(Double.parseDouble("-73.85864343194719"));
+		bean.setPhase("IN_PROGRESS");
+		bean.setStatus("sample_Status");
+		bean.setScheduleDeviation(0);
+		return bean;
+	}
+
 	@Before
 	public void setupApiLibrary() throws Exception {
 		task = new InferenceInputQueueListenerTask();
@@ -189,6 +207,20 @@ public class InferenceInputQueueListenerTaskTest {
 		inferredResult = initializeSpookingBean();
 		assertEquals(inferredResult.getPhase(), "SPOOKING");
 		task.processResult(inferredResult, "");
+	}
+
+	@Test
+	public void testUseRawPositions() throws Exception {
+		inferredResult = initializeUseRawPositionsBean();
+
+		VehicleLocationRecord vlr = task.createVehicleLocationRecord(inferredResult);
+		assertEquals(inferredResult.getInferredLongitude().doubleValue(), vlr.getCurrentLocationLon(), 0);
+		assertEquals(inferredResult.getInferredLatitude().doubleValue(), vlr.getCurrentLocationLat(), 0);
+
+		task.setRawPositions(true);
+		vlr = task.createVehicleLocationRecord(inferredResult);
+		assertEquals(inferredResult.getObservedLongitude().doubleValue(), vlr.getCurrentLocationLon(), 0);
+		assertEquals(inferredResult.getObservedLatitude().doubleValue(), vlr.getCurrentLocationLat(), 0);
 	}
 }
 
