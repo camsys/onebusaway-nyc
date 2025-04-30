@@ -333,8 +333,7 @@ public class PresentationServiceImpl implements PresentationService {
         && !phase.toUpperCase().equals("IN_PROGRESS")
         && !phase.toUpperCase().equals("LAYOVER_BEFORE") 
         && !phase.toUpperCase().equals("LAYOVER_DURING")
-        && !(phase.toUpperCase().startsWith("DEADHEAD_BEFORE") && showDeadheads)
-        && !(phase.toUpperCase().startsWith("DEADHEAD_DURING") && showDeadheads)
+        && !(phase.toUpperCase().startsWith("DEADHEAD_") && showDeadheads)
         && !phase.toUpperCase().equals("SPOOKING")) {
       _log.debug("  " + statusBean.getVehicleId() + " filtered out because phase is not in progress.");      
       return false;
