@@ -67,7 +67,7 @@
 
 
 	<!-- Input Queue Configuration -->
-  	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
+  	<bean id="inferenceInputQueue" abstract="true" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
 	<!--  for debugging purposes, the TDS can be populated via a JSON file -->
 
 <!--
@@ -82,7 +82,7 @@
     </bean>
 
     <!--  APC Queue Configuration -->
-    <bean id="apcInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.nyc.ApcIntegrationServiceImpl">
+    <bean id="apcInputQueue" abstract="true" class="org.onebusaway.nyc.transit_data_federation.impl.nyc.ApcIntegrationServiceImpl">
         <property name="status" value="ENABLED"/>
     </bean>
 

@@ -23,6 +23,8 @@ import com.amazonaws.services.cloudwatch.model.MetricDatum;
 import com.amazonaws.services.cloudwatch.model.PutMetricDataRequest;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
+import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -41,7 +43,7 @@ import java.util.Date;
  *  -Dapc.value=my_cloudwatch_secret \
  *  >apc.log 2>&1 &
  */
-public class ApcMonitor extends QueueListenerTask {
+public abstract class ApcMonitor implements IQueueListenerTask {
 
     public static final String DEFAULT_ENV = "Obanyc:qa";
     public static final String DEFAULT_KEY = "my_cw_key";
@@ -50,6 +52,10 @@ public class ApcMonitor extends QueueListenerTask {
     public static final String DEFAULT_NAME = "apc";
     public static final String DEFAULT_DISPLAY_NAME = DEFAULT_NAME;
     public static final int DEFAULT_PORT = 5576;
+
+    KafkaQueueListenerTask _kafkaQueueListenerTask;
+    QueueListenerTask _ZmqQueueListenerTask;
+    protected boolean _initialized = false;
 
     private AmazonCloudWatchClient cloudWatch = new AmazonCloudWatchClient(new BasicAWSCredentials(getKey(), getValue()));
 
@@ -79,7 +85,12 @@ public class ApcMonitor extends QueueListenerTask {
 
         System.out.println("connecting to " + queueName + " queue at " + host  + ":" + port);
         try {
-            initializeQueue(host, queueName, port);
+            if(!queueType.isBlank() && queueType.equals("KAFKA")){
+                _kafkaQueueListenerTask.initializeQueue(host, queueName, port);
+            }else{
+                _ZmqQueueListenerTask.initializeQueue(host, queueName, port);
+            }
+            
         } catch (InterruptedException ie) {
             return;
         }
@@ -134,10 +145,13 @@ public class ApcMonitor extends QueueListenerTask {
     }
 
 
-    public static void main(String[] args) {
+    public void main(String[] args) {
         System.out.println("starting up....");
-        ApcMonitor monitor = new ApcMonitor();
-        monitor.setup();
+        if(!queueType.isBlank() && queueType.equals("KAFKA")){
+            _kafkaQueueListenerTask.setup();
+        }else{
+            _ZmqQueueListenerTask.setup();
+        }
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 Thread.sleep(1000);

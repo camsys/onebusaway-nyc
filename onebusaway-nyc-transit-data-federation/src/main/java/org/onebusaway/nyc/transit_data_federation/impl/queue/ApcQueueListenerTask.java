@@ -16,23 +16,35 @@
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
+import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Base class for attaching to APC Queue.
  */
-public abstract class ApcQueueListenerTask extends QueueListenerTask {
+public abstract class ApcQueueListenerTask implements IQueueListenerTask {
+
+    protected boolean _initialized = false;
+
+    @Autowired
+    protected ConfigurationService _configurationService;
 
     public enum Status {
         ENABLED, // read from queue
         TESTING, // don't read from queue, but allow cache to be read.
         DISABLED; // totally disabled
     };
+
+    KafkaQueueListenerTask _kafkaQueueListenerTask;
+    QueueListenerTask _ZmqQueueListenerTask;
 
     private Status status = Status.ENABLED;
 
@@ -101,7 +113,11 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
         _log.info("apc input queue listening on " + host + ":" + port + ", queue=" + queueName);
 
         try {
-            initializeQueue(host, queueName, port);
+            if(!queueType.isBlank() && queueType.equals("KAFKA")){
+                _kafkaQueueListenerTask.initializeQueue(host, queueName, port);
+            }else{
+                _ZmqQueueListenerTask.initializeQueue(host, queueName, port);
+            }
         } catch (InterruptedException ie) {
             return;
         }
@@ -136,6 +152,10 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
             return;
         }
         _log.info("starting DNS check for APC queue " + getQueueName());
-        super.startDNSCheckThread();
+        if(!queueType.isBlank() && queueType.equals("KAFKA")){
+            _kafkaQueueListenerTask.startDNSCheckThread();;
+        }else{
+            _ZmqQueueListenerTask.startDNSCheckThread();;
+        }
     }
 }

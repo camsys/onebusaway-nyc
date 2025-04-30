@@ -37,8 +37,6 @@ public interface IQueueListenerTask {
 	ExecutorService _executorService = null;
 	ObjectMapper _mapper = new ObjectMapper().registerModule(new JaxbAnnotationModule());
 	Logger _log = LoggerFactory.getLogger(IQueueListenerTask.class);
-
-	boolean _initialized = false;
 	int _countInterval = 10000;
 
 	Properties properties = new Properties();
@@ -58,8 +56,6 @@ public interface IQueueListenerTask {
 	String getQueueHost();
 
 	String getQueueName();
-
-
 
 	/**
 	 * Return the name of the queue for display of statistics in logs.

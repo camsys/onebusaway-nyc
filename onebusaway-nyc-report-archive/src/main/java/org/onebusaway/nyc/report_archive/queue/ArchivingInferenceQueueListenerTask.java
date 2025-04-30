@@ -41,6 +41,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class ArchivingInferenceQueueListenerTask implements
         InferenceQueueListenerInterface, IQueueListenerTask {
 
+  protected boolean _initialized = false;
+
   private static Logger _log = LoggerFactory.getLogger(ArchivingInferenceQueueListenerTask.class);
 
   private CcAndInferredLocationDao _locationDao;

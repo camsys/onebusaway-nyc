@@ -40,6 +40,8 @@ public abstract class InputQueueListenerTask implements InputTask, IQueueListene
   protected static Logger _log = LoggerFactory
           .getLogger(InputQueueListenerTask.class);
 
+  protected boolean _initialized = false;
+
   @Autowired
   private ConfigurationService _configurationService;
 

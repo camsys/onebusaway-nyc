@@ -17,11 +17,22 @@
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
+import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class TimeQueueListenerTask extends QueueListenerTask {
+public abstract class TimeQueueListenerTask implements IQueueListenerTask {
+
+	@Autowired
+	protected ConfigurationService _configurationService;
+	protected boolean _initialized = false;
+
+	KafkaQueueListenerTask _kafkaQueueListenerTask;
+	QueueListenerTask _ZmqQueueListenerTask;
 
 		public enum Status {
 			ENABLED, // read from queue
@@ -120,7 +131,11 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 	  if (!useTimePredictionsIfAvailable()) {
 	    _log.error("time predictions disabled -- exiting");
 	    return;
-	  } 
-	  super.startDNSCheckThread();
+	  }
+		if(!queueType.isBlank() && queueType.equals("KAFKA")){
+			_kafkaQueueListenerTask.startDNSCheckThread();
+		}else{
+			_ZmqQueueListenerTask.startDNSCheckThread();
+		}
 	}
 }

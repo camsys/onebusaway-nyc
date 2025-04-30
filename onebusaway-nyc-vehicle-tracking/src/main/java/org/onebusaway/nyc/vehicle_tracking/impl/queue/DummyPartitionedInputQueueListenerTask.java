@@ -34,6 +34,8 @@ public class DummyPartitionedInputQueueListenerTask extends InputQueueListenerTa
 
   protected DNSResolver _outputQueueResolver;
 
+    protected boolean _initialized = false;
+
   @Override
   public void setDepotPartitionKey(String depotPartitionKey) {
 

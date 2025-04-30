@@ -25,8 +25,10 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.ServletContextAware;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +36,7 @@ import java.util.*;
 
 
 // S3Utility class, mostly coppied over from FileServiceImpl
-public class S3Utility {
+public class S3Utility implements ServletContextAware {
 
     private static Logger _log = LoggerFactory.getLogger(S3Utility.class);
     private AWSCredentials _credentials;
@@ -56,6 +58,11 @@ public class S3Utility {
 
     public void setBucketName(String bucketName) {
         this._bucketName = bucketName;
+    }
+
+    @Autowired
+    public String getBucketName() {
+        return this._bucketName;
     }
 
     public S3Utility(String username, String password){
@@ -83,6 +90,28 @@ public class S3Utility {
             _log.error(t.toString());
         }
 
+    }
+
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        if (servletContext != null) {
+            String user = servletContext.getInitParameter("s3.user");
+            _log.info("servlet context provided s3.user=" + user);
+            if (user != null) {
+                setS3User(user);
+            }
+            String password = servletContext.getInitParameter("s3.password");
+            if (password != null) {
+                setS3Password(password);
+            }
+            String bucketName = servletContext.getInitParameter("s3.bundle.bucketName");
+            if (bucketName != null) {
+                _log.info("servlet context provided bucketName=" + bucketName);
+                setBucketName(bucketName);
+            } else {
+                _log.info("servlet context missing bucketName, using " + getBucketName());
+            }
+        }
     }
 
 
