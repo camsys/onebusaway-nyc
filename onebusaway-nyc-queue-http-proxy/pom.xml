@@ -112,7 +112,7 @@
     </testResources>
     <plugins>
       <!-- jetty -->
-      <plugin>
+   <!--   <plugin>
         <groupId>org.mortbay.jetty</groupId>
         <artifactId>maven-jetty-plugin</artifactId>
         <version>${jetty.version}</version>
@@ -151,7 +151,7 @@
           </execution>
         </executions>
 
-      </plugin>
+      </plugin>-->
       <!-- integration testing -->
       <!-- 
       <plugin>

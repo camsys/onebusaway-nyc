@@ -18,10 +18,10 @@
 
 	<repositories>
 		<!-- Required for the xwiki-rendering-macros -->
-		<repository>
+		<!--<repository>
 			<id>xwiki</id>
 			<url>https://maven.xwiki.org/releases</url>
-		</repository>
+		</repository>-->
 	</repositories>
 	<dependencies>
 		<!-- Jersey Depedencies -->
