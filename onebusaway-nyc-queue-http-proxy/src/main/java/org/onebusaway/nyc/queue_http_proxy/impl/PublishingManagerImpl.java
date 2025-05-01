@@ -18,6 +18,7 @@ package org.onebusaway.nyc.queue_http_proxy.impl;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.onebusaway.nyc.queue.DNSResolver;
+import org.onebusaway.nyc.queue.IPublisher;
 import org.onebusaway.nyc.queue.Publisher;
 import org.onebusaway.nyc.queue.KafkaPublisher;
 import org.onebusaway.nyc.queue_http_proxy.model.RecordOverride;
@@ -26,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -52,6 +55,7 @@ public class PublishingManagerImpl implements PublishingManager {
 
     private Map<String, RecordOverride> recordOverrides = new ConcurrentHashMap<>();
 
+    ApplicationContext context = new ClassPathXmlApplicationContext("application-context-webapp.xml");
 
     private String highFrequencyVehiclesList;
 
@@ -63,21 +67,9 @@ public class PublishingManagerImpl implements PublishingManager {
 
     protected ConfigurationService _configurationService;
 
-    @Autowired
-    @Qualifier("publisher")
-    private Publisher publisher;
+    private IPublisher publisher = context.getBean("publisher", IPublisher.class);;
 
-    @Autowired
-    @Qualifier("kafkaPublisher")
-    private KafkaPublisher kafkaPublisher;
-
-    @Autowired
-    @Qualifier("high_freq_publisher")
-    private Publisher highFreqPublisher;
-
-    @Autowired
-    @Qualifier("kafka_high_freq_publisher")
-    private KafkaPublisher kafkaHighFreqPublisher;
+    private IPublisher highFreqPublisher = context.getBean("high_freq_publisher", IPublisher.class);;
 
     @Autowired
     private ThreadPoolTaskScheduler _taskScheduler;
@@ -150,14 +142,8 @@ public class PublishingManagerImpl implements PublishingManager {
             Date vehicleTimestamp = getVehicleTimestamp(ccLocationReport);
             processMessage(vehicleId, vehicleTimestamp, message.toString());
         } else {
-
-           if(!queueType.isBlank() && queueType.equals("KAFKA")){
-               kafkaPublisher.send(message.toString());
-               kafkaHighFreqPublisher.send(message.toString());
-           }else{
-               publisher.send(message.toString());
-               highFreqPublisher.send(message.toString());
-           }
+            publisher.send(message.toString());
+            highFreqPublisher.send(message.toString());
         }
     }
 
@@ -197,6 +183,7 @@ public class PublishingManagerImpl implements PublishingManager {
     }
 
     private void processMessage(String vehicleId, Date vehicleTimestamp, String message) throws ExecutionException {
+
         highFreqPublisher.send(message);
 
         vehicleTimestamp = getFixedVehicleTimestamp(vehicleTimestamp);

@@ -89,6 +89,8 @@ public class KafkaPublisher implements IPublisher {
 		this.port = port;
 	}
 
+	//TODO: separate autowired bean for common methods
+
 	@PostConstruct
 	@Override
 	public synchronized void init() {
