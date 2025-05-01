@@ -58,7 +58,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * @author sheldonabrown
  *
  */
-public class QueuePredictionIntegrationServiceImpl extends
+public abstract class QueuePredictionIntegrationServiceImpl extends
 		TimeQueueListenerTask implements PredictionIntegrationService {
 
 	private static final int DEFAULT_CACHE_TIMEOUT = 2 * 60; // seconds
@@ -249,11 +249,6 @@ public class QueuePredictionIntegrationServiceImpl extends
 	@Override
 	public boolean isEnabled() {
 		return getStatus().equals(Status.ENABLED) || getStatus().equals(Status.TESTING);
-	}
-
-	@Override
-	public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
-
 	}
 
 	public void destroy() {

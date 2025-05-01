@@ -183,6 +183,21 @@ public abstract class QueueListenerTask implements IQueueListenerTask{
 
 	}
 
+	@Override
+	public String getQueueHost() {
+		return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
+	}
+
+	@Override
+	public String getQueueName() {
+		return _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
+	}
+
+	@Override
+	public Integer getQueuePort() {
+		return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5564);
+	}
+
 	private class DNSCheckThread extends TimerTask {
 
 		@Override
