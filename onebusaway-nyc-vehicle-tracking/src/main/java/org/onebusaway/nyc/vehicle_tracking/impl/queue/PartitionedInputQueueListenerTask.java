@@ -28,6 +28,7 @@ import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueL
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.context.ServletContextAware;
 
 import tcip_final_3_0_5_1.CPTVehicleIden;
@@ -52,8 +53,10 @@ public abstract class PartitionedInputQueueListenerTask
   private String _depotPartitionKey;
 
   InputService _inputService;
-  KafkaQueueListenerTask _kafkaQueueListenerTask;
-  QueueListenerTask _ZmqQueueListenerTask;
+
+  @Autowired
+  @Qualifier("listener")
+  IQueueListenerTask _queueListenerTask;
 
   @Override
   public void setServletContext(ServletContext servletContext) {
@@ -88,22 +91,14 @@ public abstract class PartitionedInputQueueListenerTask
   @PostConstruct
   public void setup() {
 	_inputService.setDepotPartitionKey(_depotPartitionKey);
-    if(!queueType.isBlank() && queueType.equals("KAFKA")){
-      _kafkaQueueListenerTask.setup();
-    }else{
-      _ZmqQueueListenerTask.setup();
-    }
+    _queueListenerTask.setup();
   }
 
   @Override
   @PreDestroy
   public void destroy() {
     _inputService.setDepotPartitionKey(_depotPartitionKey);
-    if(!queueType.isBlank() && queueType.equals("KAFKA")){
-      _kafkaQueueListenerTask.destroy();
-    }else{
-      _ZmqQueueListenerTask.destroy();
-    }
+    _queueListenerTask.destroy();
   }
 
 

@@ -37,6 +37,7 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public abstract class ArchivingInferenceQueueListenerTask implements
         InferenceQueueListenerInterface, IQueueListenerTask {
@@ -53,8 +54,9 @@ public abstract class ArchivingInferenceQueueListenerTask implements
 
   private final ObjectMapper _mapper = new ObjectMapper();
 
-  KafkaQueueListenerTask _kafkaQueueListenerTask;
-  QueueListenerTask _ZmqQueueListenerTask;
+  @Autowired
+  @Qualifier("listener")
+  IQueueListenerTask _queueListenerTask;
 
   @Autowired
   public void setLocationDao(CcAndInferredLocationDao locationDao) {
@@ -93,11 +95,7 @@ public abstract class ArchivingInferenceQueueListenerTask implements
         + ", queue=" + queueName);
     try {
 
-      if(!queueType.isBlank() && queueType.equals("KAFKA")){
-        _kafkaQueueListenerTask.initializeQueue(host, queueName, port);;
-      }else{
-        _ZmqQueueListenerTask.initializeQueue(host, queueName, port);;
-      }
+      _queueListenerTask.initializeQueue(host, queueName, port);;
       _log.warn("queue config:" + queueName + " COMPLETE");
     } catch (InterruptedException ie) {
       _log.error("queue " + queueName + " interrupted");
@@ -142,15 +140,9 @@ public abstract class ArchivingInferenceQueueListenerTask implements
     return "archive_inference";
   }
 
-
-
   @PostConstruct
   public void setup() {
-    if(!queueType.isBlank() && queueType.equals("KAFKA")){
-      _kafkaQueueListenerTask.setup();
-    }else{
-      _ZmqQueueListenerTask.setup();
-    }
+    _queueListenerTask.setup();
 
     // make parsing lenient
     _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
@@ -159,11 +151,7 @@ public abstract class ArchivingInferenceQueueListenerTask implements
 
   @PreDestroy
   public void destroy() {
-    if(!queueType.isBlank() && queueType.equals("KAFKA")){
-      _kafkaQueueListenerTask.destroy();
-    }else{
-      _ZmqQueueListenerTask.destroy();
-    }
+    _queueListenerTask.destroy();
   }
 
 }

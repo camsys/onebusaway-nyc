@@ -27,24 +27,32 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.interfaces.InferenceQueueListenerInterface;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-public abstract class InferenceQueueListenerTask implements InferenceQueueListenerInterface, IQueueListenerTask {
+public class InferenceQueueListenerTask implements InferenceQueueListenerInterface, IQueueListenerTask {
 
-	protected abstract void processResult(NycQueuedInferredLocationBean inferredResult, String contents);
+	protected void processResult(NycQueuedInferredLocationBean inferredResult, String contents){};
 	protected ObjectReader _reader;
 
 	protected boolean _initialized = false;
 
 	@Autowired
 	ConfigurationService _configurationService;
-	KafkaQueueListenerTask _kafkaQueueListenerTask;
-	QueueListenerTask _ZmqQueueListenerTask;
+
+	@Autowired
+	@Qualifier("listener")
+	IQueueListenerTask _queueListenerTask;
 
 	public InferenceQueueListenerTask() {
 		_reader = _mapper.reader(NycQueuedInferredLocationBean.class);
+	}
+
+	@Override
+	public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
+
 	}
 
 	@Override
@@ -79,20 +87,25 @@ public abstract class InferenceQueueListenerTask implements InferenceQueueListen
 	}
 
 	@Override
+	public String getQueueDisplayName() {
+		return null;
+	}
+
+	@Override
 	public Integer getQueuePort() {
 		return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5564);
+	}
+
+	@Override
+	public void startDNSCheckThread() {
+
 	}
 
 	@SuppressWarnings("deprecation")
 	@PostConstruct
 	public void setup() {
 
-
-		if(!queueType.isBlank() && queueType.equals("KAFKA")){
-			_kafkaQueueListenerTask.setup();
-		}else{
-			_ZmqQueueListenerTask.setup();
-		}
+		_queueListenerTask.setup();
 
 		// use JAXB annotations so that we pick up anything from the
 		// auto-generated XML classes
@@ -104,12 +117,8 @@ public abstract class InferenceQueueListenerTask implements InferenceQueueListen
 
 	@PreDestroy
 	public void destroy() {
+		_queueListenerTask.destroy();
 
-		if(!queueType.isBlank() && queueType.equals("KAFKA")){
-			_kafkaQueueListenerTask.destroy();
-		}else{
-			_ZmqQueueListenerTask.destroy();
-		}
 	}
 
 	@Refreshable(dependsOn = { "tds.inputQueueHost", "tds.inputQueuePort", "tds.inputQueueName" })
@@ -131,12 +140,7 @@ public abstract class InferenceQueueListenerTask implements InferenceQueueListen
 		_log.info("queue listening on " + host + ":" + port + ", queue=" + queueName);
 
 		try {
-			if(!queueType.isBlank() && queueType.equals("KAFKA")){
-				_kafkaQueueListenerTask.initializeQueue(host, queueName, port);;
-			}else{
-				_ZmqQueueListenerTask.initializeQueue(host, queueName, port);;
-			}
-
+			_queueListenerTask.initializeQueue(host, queueName, port);;
 		} catch (InterruptedException ie) {
 			return;
 		}

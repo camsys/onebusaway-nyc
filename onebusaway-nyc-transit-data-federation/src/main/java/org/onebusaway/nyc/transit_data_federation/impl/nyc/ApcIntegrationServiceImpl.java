@@ -25,6 +25,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
@@ -40,6 +41,7 @@ import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
 import org.onebusaway.transit_data_federation.services.realtime.BlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import javax.annotation.PostConstruct;
@@ -63,8 +65,9 @@ public abstract class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
     @Autowired
     protected ConfigurationService _configurationService;
 
-    KafkaQueueListenerTask _kafkaQueueListenerTask;
-    QueueListenerTask _ZmqQueueListenerTask;
+    @Autowired
+    @Qualifier("listener")
+    IQueueListenerTask _queueListenerTask;
 
     // in progress read connection timeout in millis
     private static final int TIMEOUT_CONNECTION = 5000;
@@ -104,11 +107,7 @@ public abstract class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
     @PostConstruct
     public void setup() {
 
-        if(!queueType.isBlank() && queueType.equals("KAFKA")){
-            _kafkaQueueListenerTask.setup();
-        }else{
-            _ZmqQueueListenerTask.setup();
-        }
+        _queueListenerTask.setup();
 
         if (!getRawCountsViaWebService()) {
             _log.error("url not configured, Raw Count polling via webservice disabled.");

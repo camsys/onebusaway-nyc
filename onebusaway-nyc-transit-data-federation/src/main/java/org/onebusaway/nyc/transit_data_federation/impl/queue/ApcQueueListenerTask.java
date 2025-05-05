@@ -26,6 +26,7 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Base class for attaching to APC Queue.
@@ -43,8 +44,9 @@ public abstract class ApcQueueListenerTask implements IQueueListenerTask {
         DISABLED; // totally disabled
     };
 
-    KafkaQueueListenerTask _kafkaQueueListenerTask;
-    QueueListenerTask _ZmqQueueListenerTask;
+    @Autowired
+    @Qualifier("listener")
+    IQueueListenerTask _queueListenerTask;
 
     private Status status = Status.ENABLED;
 
@@ -113,11 +115,7 @@ public abstract class ApcQueueListenerTask implements IQueueListenerTask {
         _log.info("apc input queue listening on " + host + ":" + port + ", queue=" + queueName);
 
         try {
-            if(!queueType.isBlank() && queueType.equals("KAFKA")){
-                _kafkaQueueListenerTask.initializeQueue(host, queueName, port);
-            }else{
-                _ZmqQueueListenerTask.initializeQueue(host, queueName, port);
-            }
+            _queueListenerTask.initializeQueue(host, queueName, port);
         } catch (InterruptedException ie) {
             return;
         }
@@ -152,10 +150,6 @@ public abstract class ApcQueueListenerTask implements IQueueListenerTask {
             return;
         }
         _log.info("starting DNS check for APC queue " + getQueueName());
-        if(!queueType.isBlank() && queueType.equals("KAFKA")){
-            _kafkaQueueListenerTask.startDNSCheckThread();;
-        }else{
-            _ZmqQueueListenerTask.startDNSCheckThread();;
-        }
+        _queueListenerTask.startDNSCheckThread();;
     }
 }

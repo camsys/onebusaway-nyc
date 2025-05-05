@@ -33,7 +33,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-public abstract class InputQueueListenerTask implements InputTask, IQueueListenerTask {
+public class InputQueueListenerTask implements InputTask, IQueueListenerTask {
   
   InputService _inputService;
 
@@ -45,8 +45,9 @@ public abstract class InputQueueListenerTask implements InputTask, IQueueListene
   @Autowired
   private ConfigurationService _configurationService;
 
-  KafkaQueueListenerTask _kafkaQueueListenerTask;
-  QueueListenerTask _ZmqQueueListenerTask;
+  @Autowired
+  @Qualifier("listener")
+  IQueueListenerTask _queueListenerTask;
 
   @SuppressWarnings("deprecation")
   public InputQueueListenerTask() {
@@ -68,7 +69,17 @@ public abstract class InputQueueListenerTask implements InputTask, IQueueListene
     return _inputService.deserializeMessage(contents);
   }
 
-  @Override
+    @Override
+    public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
+
+    }
+
+    @Override
+    public boolean processMessage(String address, byte[] buff) throws Exception {
+        return false;
+    }
+
+    @Override
   @Refreshable(dependsOn = {
       "inference-engine.inputQueueHost", "inference-engine.inputQueuePort",
       "inference-engine.inputQueueName"})
@@ -91,12 +102,7 @@ public abstract class InputQueueListenerTask implements InputTask, IQueueListene
     _log.info("realtime archive listening on " + host + ":" + port + ", queue="
         + queueName);
     try {
-      if(!queueType.isBlank() && queueType.equals("KAFKA")){
-        _kafkaQueueListenerTask.initializeQueue(host, queueName, port);
-      }else{
-        _ZmqQueueListenerTask.initializeQueue(host, queueName, port);
-      }
-
+        _queueListenerTask.initializeQueue(host, queueName, port);
     } catch (final InterruptedException ie) {
       return;
     }
@@ -118,31 +124,34 @@ public abstract class InputQueueListenerTask implements InputTask, IQueueListene
         "inference-engine.inputQueueName", null);
   }
 
-  @Override
+    @Override
+    public String getQueueDisplayName() {
+        return null;
+    }
+
+    @Override
   public Integer getQueuePort() {
     return _configurationService.getConfigurationValueAsInteger(
         "inference-engine.inputQueuePort", 5563);
   }
 
-  @Override
+    @Override
+    public void startDNSCheckThread() {
+
+    }
+
+    @Override
   @PostConstruct
   public void setup() {
 
-    if(!queueType.isBlank() && queueType.equals("KAFKA")){
-      _kafkaQueueListenerTask.setup();
-    }else{
-      _ZmqQueueListenerTask.setup();
-    }
+    _queueListenerTask.setup();
+
   }
 
   @Override
   @PreDestroy
   public void destroy() {
-    if(!queueType.isBlank() && queueType.equals("KAFKA")){
-      _kafkaQueueListenerTask.destroy();
-    }else{
-      _ZmqQueueListenerTask.destroy();
-    }
+    _queueListenerTask.destroy();
   }
 
 }

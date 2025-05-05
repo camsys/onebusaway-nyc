@@ -31,8 +31,8 @@ limitations under the License.
 
     <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
 
-    <bean id="kafkaPublisher" class="org.onebusaway.nyc.queue.KafkaPublisher" />
-    <bean id="zmqPublisher" class="org.onebusaway.nyc.queue.Publisher" />
+  <!--  <bean id="kafkaPublisher" class="org.onebusaway.nyc.queue.KafkaPublisher" />
+    <bean id="zmqPublisher" class="org.onebusaway.nyc.queue.Publisher" /> -->
 
     <bean id="publisher" class="org.onebusaway.nyc.queue.KafkaPublisher" />
     <bean id="high_freq_publisher" class="org.onebusaway.nyc.queue.KafkaPublisher" />

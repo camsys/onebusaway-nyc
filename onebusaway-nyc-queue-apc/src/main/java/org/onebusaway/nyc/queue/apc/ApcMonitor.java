@@ -28,6 +28,8 @@ import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.Date;
 
@@ -53,8 +55,9 @@ public abstract class ApcMonitor implements IQueueListenerTask {
     public static final String DEFAULT_DISPLAY_NAME = DEFAULT_NAME;
     public static final int DEFAULT_PORT = 5576;
 
-    KafkaQueueListenerTask _kafkaQueueListenerTask;
-    QueueListenerTask _ZmqQueueListenerTask;
+    @Autowired
+    @Qualifier("listener")
+    IQueueListenerTask _queueListenerTask;
     protected boolean _initialized = false;
 
     private AmazonCloudWatchClient cloudWatch = new AmazonCloudWatchClient(new BasicAWSCredentials(getKey(), getValue()));
@@ -85,11 +88,7 @@ public abstract class ApcMonitor implements IQueueListenerTask {
 
         System.out.println("connecting to " + queueName + " queue at " + host  + ":" + port);
         try {
-            if(!queueType.isBlank() && queueType.equals("KAFKA")){
-                _kafkaQueueListenerTask.initializeQueue(host, queueName, port);
-            }else{
-                _ZmqQueueListenerTask.initializeQueue(host, queueName, port);
-            }
+            _queueListenerTask.initializeQueue(host, queueName, port);
             
         } catch (InterruptedException ie) {
             return;
@@ -147,11 +146,7 @@ public abstract class ApcMonitor implements IQueueListenerTask {
 
     public void main(String[] args) {
         System.out.println("starting up....");
-        if(!queueType.isBlank() && queueType.equals("KAFKA")){
-            _kafkaQueueListenerTask.setup();
-        }else{
-            _ZmqQueueListenerTask.setup();
-        }
+        _queueListenerTask.setup();
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 Thread.sleep(1000);

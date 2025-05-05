@@ -29,6 +29,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.TimeQueueListenerTask;
@@ -87,8 +88,9 @@ public abstract class QueuePredictionIntegrationServiceImpl extends
 	private Long _serviceTime = null; // leave empty for now, set for tests
 
 	protected boolean _initialized = false;
-	KafkaQueueListenerTask _kafkaQueueListenerTask;
-	QueueListenerTask _ZmqQueueListenerTask;
+	@Autowired
+	@Qualifier("listener")
+	IQueueListenerTask _queueListenerTask;
 
 	public void setCheckPredictionAge(Boolean checkAge) {
 		_checkPredictionAge = checkAge;
@@ -252,11 +254,7 @@ public abstract class QueuePredictionIntegrationServiceImpl extends
 	}
 
 	public void destroy() {
-		if(!queueType.isBlank() && queueType.equals("KAFKA")){
-			_kafkaQueueListenerTask.destroy();
-		}else{
-			_ZmqQueueListenerTask.destroy();
-		}
+		_queueListenerTask.destroy();
 		_log.warn("destroy called!");
 	}
 

@@ -71,8 +71,9 @@ public abstract class OpsInputQueueListenerTask implements IQueueListenerTask {
 
   protected boolean _initialized = false;
 
-  KafkaQueueListenerTask _kafkaQueueListenerTask;
-  QueueListenerTask _ZmqQueueListenerTask;
+  @Autowired
+  @Qualifier("listener")
+  IQueueListenerTask _queueListenerTask;
 
   public OpsInputQueueListenerTask() {
     /*
@@ -196,11 +197,7 @@ public abstract class OpsInputQueueListenerTask implements IQueueListenerTask {
 
   @PostConstruct
   public void setup() {
-    if(!queueType.isBlank() && queueType.equals("KAFKA")){
-      _kafkaQueueListenerTask.setup();
-    }else{
-      _ZmqQueueListenerTask.setup();
-    }
+    _queueListenerTask.setup();
     // make parsing lenient
     _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
         false);
@@ -211,11 +208,7 @@ public abstract class OpsInputQueueListenerTask implements IQueueListenerTask {
 
   @PreDestroy
   public void destroy() {
-    if(!queueType.isBlank() && queueType.equals("KAFKA")){
-      _kafkaQueueListenerTask.destroy();
-    }else{
-      _ZmqQueueListenerTask.destroy();
-    }
+    _queueListenerTask.destroy();
   }
 
   /**

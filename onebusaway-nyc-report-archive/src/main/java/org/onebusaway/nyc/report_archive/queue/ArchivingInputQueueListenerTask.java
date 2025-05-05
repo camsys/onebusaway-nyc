@@ -60,8 +60,9 @@ public abstract class ArchivingInputQueueListenerTask implements IQueueListenerT
 
   protected boolean _initialized = false;
 
-  KafkaQueueListenerTask _kafkaQueueListenerTask;
-  QueueListenerTask _ZmqQueueListenerTask;
+  @Autowired
+  @Qualifier("listener")
+  IQueueListenerTask _queueListenerTask;
 
   @Autowired
   public void setCcLocationCache(CcLocationCache cache) {
@@ -227,11 +228,7 @@ public abstract class ArchivingInputQueueListenerTask implements IQueueListenerT
 
   @PostConstruct
   public void setup() {
-    if(!queueType.isBlank() && queueType.equals("KAFKA")){
-      _kafkaQueueListenerTask.setup();
-    }else{
-      _ZmqQueueListenerTask.setup();
-    }
+    _queueListenerTask.setup();
     // make parsing lenient
     _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
         false);
@@ -242,11 +239,7 @@ public abstract class ArchivingInputQueueListenerTask implements IQueueListenerT
 
   @PreDestroy
   public void destroy() {
-    if(!queueType.isBlank() && queueType.equals("KAFKA")){
-      _kafkaQueueListenerTask.destroy();
-    }else{
-      _ZmqQueueListenerTask.destroy();
-    }
+    _queueListenerTask.destroy();
   }
 
   /**

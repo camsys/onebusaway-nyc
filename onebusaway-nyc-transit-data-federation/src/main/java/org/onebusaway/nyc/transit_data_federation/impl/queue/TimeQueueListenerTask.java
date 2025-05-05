@@ -24,6 +24,7 @@ import org.onebusaway.nyc.queue.QueueListenerTask;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public abstract class TimeQueueListenerTask implements IQueueListenerTask {
 
@@ -31,8 +32,9 @@ public abstract class TimeQueueListenerTask implements IQueueListenerTask {
 	protected ConfigurationService _configurationService;
 	protected boolean _initialized = false;
 
-	KafkaQueueListenerTask _kafkaQueueListenerTask;
-	QueueListenerTask _ZmqQueueListenerTask;
+	@Autowired
+	@Qualifier("listener")
+	IQueueListenerTask _queueListenerTask;
 
 		public enum Status {
 			ENABLED, // read from queue
@@ -132,10 +134,6 @@ public abstract class TimeQueueListenerTask implements IQueueListenerTask {
 	    _log.error("time predictions disabled -- exiting");
 	    return;
 	  }
-		if(!queueType.isBlank() && queueType.equals("KAFKA")){
-			_kafkaQueueListenerTask.startDNSCheckThread();
-		}else{
-			_ZmqQueueListenerTask.startDNSCheckThread();
-		}
+		_queueListenerTask.startDNSCheckThread();
 	}
 }
