@@ -35,7 +35,7 @@ limitations under the License.
     <bean id="zmqPublisher" class="org.onebusaway.nyc.queue.Publisher" /> -->
 
     <bean id="publisher" class="org.onebusaway.nyc.queue.KafkaPublisher" />
-    <bean id="high_freq_publisher" class="org.onebusaway.nyc.queue.KafkaPublisher" />
+    <bean id="high_freq_publisher" class="org.onebusaway.nyc.queue.Publisher" />
 
 
 </beans>

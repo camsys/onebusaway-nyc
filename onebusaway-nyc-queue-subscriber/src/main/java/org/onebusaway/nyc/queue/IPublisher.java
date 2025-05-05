@@ -23,6 +23,14 @@ package org.onebusaway.nyc.queue;
  */
 public interface IPublisher {
 
+	void setTopic(String topic);
+
+	void setProtocol(String protocol);
+
+	void setHost(String host);
+
+	void setPort(int port);
+
 	void init();
 
 	void close();

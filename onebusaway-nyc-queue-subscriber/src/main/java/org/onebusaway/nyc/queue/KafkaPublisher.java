@@ -33,8 +33,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.transaction.annotation.Transactional;
 
-public class KafkaPublisher implements IPublisher {
+public class KafkaPublisher implements IPublisher,InitializingBean {
 
 	private static Logger _log = LoggerFactory.getLogger(KafkaPublisher.class);
 	private ExecutorService executorService = null;
@@ -89,12 +91,17 @@ public class KafkaPublisher implements IPublisher {
 		this.port = port;
 	}
 
-	//TODO: separate autowired bean for common methods
-
-	@PostConstruct
 	@Override
-	public synchronized void init() {
-		String bind = protocol + "://" + host + ":" + port;
+	public synchronized void init() {}
+
+	@Override
+	@Transactional
+	public void afterPropertiesSet() {
+		//String bind = protocol + "://" + host + ":" + port;
+		protocol= "http";
+		host= "localhost";
+		port= 9092;
+		String bind = "http://localhost:9092";
 		_log.warn("connecting to " + bind);
 		/*
 		 * do not bind to the socket, simply connect to existing socket provided by

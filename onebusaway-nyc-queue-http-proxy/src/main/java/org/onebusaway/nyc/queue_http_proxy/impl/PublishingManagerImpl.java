@@ -48,8 +48,6 @@ public class PublishingManagerImpl implements PublishingManager {
 
     private Map<String, RecordOverride> recordOverrides = new ConcurrentHashMap<>();
 
-    ApplicationContext context = new ClassPathXmlApplicationContext("application-context-webapp.xml");
-
     private String highFrequencyVehiclesList;
 
     private Set<String> highFrequencyVehicles;
@@ -57,8 +55,6 @@ public class PublishingManagerImpl implements PublishingManager {
     private String bypassHighFrequencyVehiclesList;
 
     private Set<String> bypassHighFrequencyVehicles;
-
-    protected ConfigurationService _configurationService;
 
     @Autowired
     @Qualifier("publisher")
