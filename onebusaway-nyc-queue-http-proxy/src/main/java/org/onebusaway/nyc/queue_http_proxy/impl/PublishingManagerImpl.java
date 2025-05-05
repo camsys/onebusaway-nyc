@@ -44,11 +44,6 @@ public class PublishingManagerImpl implements PublishingManager {
 
     private final DateFormat dateFormat;
 
-    private static final String QUEUE_TYPE_KEY = "ie.queueType";
-    private static final String DEFAULT_QUEUE_TYPE = "KAFKA";
-
-    String queueType = System.getProperty(QUEUE_TYPE_KEY, DEFAULT_QUEUE_TYPE);
-
     private Map<String, Date> lastKnownVehicleRecords = new ConcurrentHashMap<>(10000);
 
     private Map<String, RecordOverride> recordOverrides = new ConcurrentHashMap<>();

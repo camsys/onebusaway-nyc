@@ -37,14 +37,8 @@ public interface IQueueListenerTask {
 	ExecutorService _executorService = null;
 	ObjectMapper _mapper = new ObjectMapper().registerModule(new JaxbAnnotationModule());
 	Logger _log = LoggerFactory.getLogger(IQueueListenerTask.class);
-	int _countInterval = 10000;
 
 	Properties properties = new Properties();
-
-	String QUEUE_TYPE_KEY = "ie.queueType";
-	String DEFAULT_QUEUE_TYPE = "KAFKA";
-
-	String queueType = System.getProperty(QUEUE_TYPE_KEY, DEFAULT_QUEUE_TYPE);
 
 	void initializeQueue(String host, String queueName,
 						 Integer port) throws InterruptedException;
