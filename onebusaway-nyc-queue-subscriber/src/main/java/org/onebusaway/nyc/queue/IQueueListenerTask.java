@@ -37,6 +37,7 @@ public interface IQueueListenerTask {
 	ObjectMapper _mapper = new ObjectMapper().registerModule(new JaxbAnnotationModule());
 	Logger _log = LoggerFactory.getLogger(IQueueListenerTask.class);
 
+
 	Properties properties = new Properties();
 
 	void initializeQueue(String host, String queueName,

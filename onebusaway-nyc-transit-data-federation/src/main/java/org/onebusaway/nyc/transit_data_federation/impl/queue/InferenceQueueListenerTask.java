@@ -77,12 +77,12 @@ public class InferenceQueueListenerTask implements InferenceQueueListenerInterfa
 
 	@Override
 	public String getQueueHost() {
-		return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
+		return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", "localhost");
 	}
 
 	@Override
 	public String getQueueName() {
-		return _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
+		return _configurationService.getConfigurationValueAsString("tds.inputQueueName", "bhs_queue");
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class InferenceQueueListenerTask implements InferenceQueueListenerInterfa
 
 	@Override
 	public Integer getQueuePort() {
-		return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5564);
+		return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 9092);
 	}
 
 	@Override

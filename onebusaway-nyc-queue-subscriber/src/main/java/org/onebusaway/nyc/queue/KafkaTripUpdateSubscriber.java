@@ -86,7 +86,6 @@ public class KafkaTripUpdateSubscriber implements ITripUpdateSubscriber{
 							String vehicle = AgencyAndId.convertFromString(tripUpdate.getVehicle().getId()).getId();
 							String filename = outputDir + "/" + tripId.getId() + ".pb";
 							System.out.println("timestamp=" + timestamp + " vehicleid=" + vehicle + " filename=" + filename);
-							//Subscriber.writeToFile(filename, record.value().getBytes());
 							KafkaSubscriber.writeToFile(filename, record.value().getBytes());
 							if (singleMode)
 								break;

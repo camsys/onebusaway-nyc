@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl.queue.interfaces;
 
-import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
