@@ -16,26 +16,12 @@
 
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
-import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.IQueueListenerTask;
-import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
-import org.onebusaway.nyc.queue.QueueListenerTask;
-import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
-import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.context.ServletContextAware;
-
-import tcip_final_3_0_5_1.CPTVehicleIden;
-import tcip_final_3_0_5_1.CcLocationReport;
-
-import java.util.ArrayList;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;

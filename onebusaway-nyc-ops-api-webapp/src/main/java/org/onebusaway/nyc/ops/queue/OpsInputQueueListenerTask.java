@@ -28,8 +28,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.IQueueListenerTask;
-import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
-import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.report.impl.CcLocationCache;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;

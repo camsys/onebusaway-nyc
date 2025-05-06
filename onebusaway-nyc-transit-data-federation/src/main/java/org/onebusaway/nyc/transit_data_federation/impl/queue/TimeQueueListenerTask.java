@@ -18,8 +18,6 @@ package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.IQueueListenerTask;
-import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
-import org.onebusaway.nyc.queue.QueueListenerTask;
 
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;

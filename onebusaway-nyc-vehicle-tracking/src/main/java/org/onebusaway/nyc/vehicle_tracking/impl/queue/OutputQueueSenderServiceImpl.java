@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.context.ServletContextAware;
-import org.zeromq.ZMQ;
 
 import java.io.IOException;
 import java.io.StringWriter;

@@ -24,8 +24,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.IQueueListenerTask;
-import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
-import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.services.InferencePersistenceService;
 import org.onebusaway.nyc.report.services.CcAndInferredLocationDao;

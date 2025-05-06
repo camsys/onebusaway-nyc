@@ -24,8 +24,6 @@ import com.amazonaws.services.cloudwatch.model.PutMetricDataRequest;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.IQueueListenerTask;
-import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
-import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.springframework.beans.factory.annotation.Autowired;

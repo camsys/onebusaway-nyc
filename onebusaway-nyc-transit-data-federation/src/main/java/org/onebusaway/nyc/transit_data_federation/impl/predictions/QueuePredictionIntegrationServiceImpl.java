@@ -30,8 +30,6 @@ import com.google.common.cache.CacheBuilder;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.IQueueListenerTask;
-import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
-import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.TimeQueueListenerTask;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;

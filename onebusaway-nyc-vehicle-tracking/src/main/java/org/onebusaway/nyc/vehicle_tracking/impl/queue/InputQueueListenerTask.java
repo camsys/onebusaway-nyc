@@ -17,8 +17,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.IQueueListenerTask;
-import org.onebusaway.nyc.queue.KafkaQueueListenerTask;
-import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;

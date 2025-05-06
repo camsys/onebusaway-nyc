@@ -18,7 +18,6 @@ package org.onebusaway.nyc.queue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
