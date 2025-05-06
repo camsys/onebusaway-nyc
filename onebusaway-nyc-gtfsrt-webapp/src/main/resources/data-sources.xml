@@ -58,8 +58,9 @@
     <!-- Input Queue Configuration -->
     <bean id="inferenceInputQueue"
           class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask"
-            destroy-method="destroy"
-    />
+            destroy-method="destroy">
+        <property name="rawPositions" value="false"/>
+    </bean>
 
     <!--  Time Queue Configuration -->
     <!--  This option integrates with an external time prediction queue -->
