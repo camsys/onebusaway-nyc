@@ -33,7 +33,7 @@ import javax.servlet.ServletContext;
  * @author jmaki
  *
  */
-public abstract class PartitionedInputQueueListenerTask
+public class PartitionedInputQueueListenerTask
         implements PartitionedInputQueueListener, ServletContextAware, IQueueListenerTask {
   
   private String _depotPartitionKey;
@@ -64,14 +64,34 @@ public abstract class PartitionedInputQueueListenerTask
   }
 
   @Override
+  public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
+
+  }
+
+  @Override
   public boolean processMessage(String address, byte[] buff) throws Exception{
 	  return _inputService.processMessage(address, buff);
   }
-  
+
+  @Override
+  public void startListenerThread() {}
+
+  @Override
+  public String getQueueHost() {return null;}
+
+  @Override
+  public String getQueueName() {return null;}
+
   @Override
   public String getQueueDisplayName() {
     return "PartitionedInputQueueListenerTask";
   }
+
+  @Override
+  public Integer getQueuePort() {return null;}
+
+  @Override
+  public void startDNSCheckThread() {}
 
   @Override
   @PostConstruct

@@ -56,7 +56,7 @@
     </bean>
 
     <!-- Input Queue Configuration -->
-    <bean id="inferenceInputQueue" abstract="true"
+    <bean id="inferenceInputQueue"
           class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask"
             destroy-method="destroy"
     />

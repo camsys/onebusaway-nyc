@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 /**
  * Base class for attaching to APC Queue.
  */
-public abstract class ApcQueueListenerTask implements IQueueListenerTask {
+public class ApcQueueListenerTask implements IQueueListenerTask {
 
     protected boolean _initialized = false;
 
@@ -54,7 +54,7 @@ public abstract class ApcQueueListenerTask implements IQueueListenerTask {
             .getLogger(ApcQueueListenerTask.class);
 
 
-    protected abstract void processResult(NycVehicleLoadBean message, String contents);
+    protected void processResult(NycVehicleLoadBean message, String contents){};
 
 
     public Boolean useApcIfAvailable() {
@@ -62,6 +62,9 @@ public abstract class ApcQueueListenerTask implements IQueueListenerTask {
         return _configurationService.getConfigurationValueAsBoolean("tds.useApc", Boolean.FALSE);
     }
 
+
+    @Override
+    public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {}
 
     @Override
     public boolean processMessage(String contents, byte[] buff) throws Exception {        
@@ -150,4 +153,9 @@ public abstract class ApcQueueListenerTask implements IQueueListenerTask {
         _log.info("starting DNS check for APC queue " + getQueueName());
         _queueListenerTask.startDNSCheckThread();;
     }
+
+    @Override
+    public void destroy() {}
+    @Override
+    public void setup() {}
 }

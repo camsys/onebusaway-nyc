@@ -47,7 +47,7 @@ import java.util.Arrays;
  * Base class for listeners that subscribe to ZeroMQ. Provides a simple
  * re-connection mechanism if the IP changes.
  */
-public abstract class KafkaQueueListenerTask implements IQueueListenerTask{
+public class KafkaQueueListenerTask implements IQueueListenerTask{
 
 	protected static Logger _log = LoggerFactory
 			.getLogger(KafkaQueueListenerTask.class);
@@ -200,6 +200,16 @@ public abstract class KafkaQueueListenerTask implements IQueueListenerTask{
 
 	}
 
+	@Override
+	public boolean processMessage(String address, byte[] buff) throws Exception {
+		return false;
+	}
+
+	@Override
+	public void startListenerThread() {
+
+	}
+
 	private class DNSCheckThread extends TimerTask {
 
 		@Override
@@ -241,6 +251,11 @@ public abstract class KafkaQueueListenerTask implements IQueueListenerTask{
 	@Override
 	public String getQueueName() {
 		return _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
+	}
+
+	@Override
+	public String getQueueDisplayName() {
+		return null;
 	}
 
 	@Override

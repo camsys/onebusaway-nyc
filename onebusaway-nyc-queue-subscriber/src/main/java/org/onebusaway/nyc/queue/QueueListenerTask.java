@@ -38,7 +38,7 @@ import org.zeromq.ZMQ;
  * Base class for listeners that subscribe to ZeroMQ. Provides a simple
  * re-connection mechanism if the IP changes.
  */
-public abstract class QueueListenerTask implements IQueueListenerTask{
+public class QueueListenerTask implements IQueueListenerTask{
 
 
 	@Autowired
@@ -184,6 +184,16 @@ public abstract class QueueListenerTask implements IQueueListenerTask{
 	}
 
 	@Override
+	public boolean processMessage(String address, byte[] buff) throws Exception {
+		return false;
+	}
+
+	@Override
+	public void startListenerThread() {
+
+	}
+
+	@Override
 	public String getQueueHost() {
 		return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
 	}
@@ -191,6 +201,11 @@ public abstract class QueueListenerTask implements IQueueListenerTask{
 	@Override
 	public String getQueueName() {
 		return _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
+	}
+
+	@Override
+	public String getQueueDisplayName() {
+		return null;
 	}
 
 	@Override

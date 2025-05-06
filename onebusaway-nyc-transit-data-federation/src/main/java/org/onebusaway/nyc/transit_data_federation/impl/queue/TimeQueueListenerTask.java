@@ -24,7 +24,7 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-public abstract class TimeQueueListenerTask implements IQueueListenerTask {
+public class TimeQueueListenerTask implements IQueueListenerTask {
 
 	@Autowired
 	protected ConfigurationService _configurationService;
@@ -40,7 +40,10 @@ public abstract class TimeQueueListenerTask implements IQueueListenerTask {
 			DISABLED; // totally disabled
 		};
 
-  protected abstract void processResult(FeedMessage message);
+  protected void processResult(FeedMessage message){};
+
+	@Override
+	public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {}
 
 	@Override
 	public boolean processMessage(String address, byte[] buff) {
@@ -134,4 +137,10 @@ public abstract class TimeQueueListenerTask implements IQueueListenerTask {
 	  }
 		_queueListenerTask.startDNSCheckThread();
 	}
+
+	@Override
+	public void destroy() {}
+
+	@Override
+	public void setup() {}
 }

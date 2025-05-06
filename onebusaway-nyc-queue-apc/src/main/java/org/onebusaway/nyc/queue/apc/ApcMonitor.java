@@ -43,7 +43,7 @@ import java.util.Date;
  *  -Dapc.value=my_cloudwatch_secret \
  *  >apc.log 2>&1 &
  */
-public abstract class ApcMonitor implements IQueueListenerTask {
+public class ApcMonitor implements IQueueListenerTask {
 
     public static final String DEFAULT_ENV = "Obanyc:qa";
     public static final String DEFAULT_KEY = "my_cw_key";
@@ -59,6 +59,9 @@ public abstract class ApcMonitor implements IQueueListenerTask {
     protected boolean _initialized = false;
 
     private AmazonCloudWatchClient cloudWatch = new AmazonCloudWatchClient(new BasicAWSCredentials(getKey(), getValue()));
+
+    @Override
+    public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {}
 
     @Override
     public boolean processMessage(String contents, byte[] buff) throws Exception {
@@ -132,6 +135,15 @@ public abstract class ApcMonitor implements IQueueListenerTask {
         }
         return DEFAULT_PORT;
     }
+
+    @Override
+    public void startDNSCheckThread() {}
+
+    @Override
+    public void destroy() {}
+
+    @Override
+    public void setup() {}
 
 
     private void processResult(NycVehicleLoadBean message, String contents) {

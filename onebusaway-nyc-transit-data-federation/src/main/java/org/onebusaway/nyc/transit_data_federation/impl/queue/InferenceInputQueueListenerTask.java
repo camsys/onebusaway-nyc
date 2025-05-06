@@ -26,6 +26,7 @@ import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * This component listens to the inference output queue and injects records into
@@ -36,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  */
 
-public abstract class InferenceInputQueueListenerTask extends InferenceQueueListenerTask {
+public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask {
 
 	@Autowired
 	private VehicleLocationListener _vehicleLocationListener;
@@ -50,6 +51,7 @@ public abstract class InferenceInputQueueListenerTask extends InferenceQueueList
 	private boolean refreshCheck;
 
 	@Autowired
+	@Qualifier("configurationService")
 	ConfigurationService _configurationService;
 
 	public InferenceInputQueueListenerTask() {

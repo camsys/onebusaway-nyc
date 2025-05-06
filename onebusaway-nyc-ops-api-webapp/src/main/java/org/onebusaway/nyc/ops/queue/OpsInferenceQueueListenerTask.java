@@ -42,7 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-public abstract class OpsInferenceQueueListenerTask extends
+public class OpsInferenceQueueListenerTask extends
     InferenceQueueListenerTask {
 
   private static Logger _log = LoggerFactory.getLogger(OpsInferenceQueueListenerTask.class);

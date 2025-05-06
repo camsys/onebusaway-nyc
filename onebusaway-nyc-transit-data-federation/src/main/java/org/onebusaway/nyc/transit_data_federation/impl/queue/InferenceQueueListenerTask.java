@@ -38,6 +38,7 @@ public class InferenceQueueListenerTask implements InferenceQueueListenerInterfa
 	protected boolean _initialized = false;
 
 	@Autowired
+	@Qualifier("configurationService")
 	ConfigurationService _configurationService;
 
 	@Autowired
