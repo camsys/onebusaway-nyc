@@ -53,23 +53,8 @@ public class ApcQueueListenerTaskTest {
     private ApcQueueListenerTask getTask() {
         return new ApcQueueListenerTask() {
             @Override
-            public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
-
-            }
-
-            @Override
             public String getQueueName() {
                 return "apc";
-            }
-
-            @Override
-            public void destroy() {
-
-            }
-
-            @Override
-            public void setup() {
-
             }
 
             @Override

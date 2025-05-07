@@ -25,7 +25,6 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.ApcQueueListenerTask;
@@ -39,7 +38,6 @@ import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
 import org.onebusaway.transit_data_federation.services.realtime.BlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import javax.annotation.PostConstruct;
@@ -55,17 +53,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * Support levels of crowding and / or raw passenger count integration
  * and inject into OneBusAway TDS.
  */
-public abstract class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
+public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
     // how recent the occupancy record needs to be for usage
     public static final int MAX_AGE_MILLIS = 6 * 60 * 1000; // 6 minutes
-
-    @Autowired
-    protected ConfigurationService _configurationService;
-
-    @Autowired
-    @Qualifier("listener")
-    IQueueListenerTask _queueListenerTask;
 
     // in progress read connection timeout in millis
     private static final int TIMEOUT_CONNECTION = 5000;
@@ -104,9 +95,7 @@ public abstract class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
 
     @PostConstruct
     public void setup() {
-
-        _queueListenerTask.setup();
-
+        super.setup();
         if (!getRawCountsViaWebService()) {
             _log.error("url not configured, Raw Count polling via webservice disabled.");
             return;
@@ -305,7 +294,7 @@ public abstract class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
              * in order to populate route cache we need route + direction
              * route + direction ensure the data expires at the end of a trip
              * By using the timestamp of the record we index into the correct trip!
-            */
+             */
             AgencyAndId vehicleAgencyAndId = new AgencyAndId(data.getAgencyId(),data.getVehicle());
             TargetTime target = new TargetTime(System.currentTimeMillis(), data.getTimestamp());
             BlockLocation blockLocation = blockLocationService.getLocationForVehicleAndTime(

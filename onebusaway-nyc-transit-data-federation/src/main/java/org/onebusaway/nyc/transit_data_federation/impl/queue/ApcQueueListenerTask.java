@@ -16,35 +16,23 @@
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.queue.IQueueListenerTask;
+import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
 
 import org.apache.commons.lang.StringUtils;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Base class for attaching to APC Queue.
  */
-public abstract class ApcQueueListenerTask implements IQueueListenerTask {
-
-    protected boolean _initialized = false;
-
-    @Autowired
-    protected ConfigurationService _configurationService;
+public abstract class ApcQueueListenerTask extends QueueListenerTask {
 
     public enum Status {
         ENABLED, // read from queue
         TESTING, // don't read from queue, but allow cache to be read.
         DISABLED; // totally disabled
     };
-
-    @Autowired
-    @Qualifier("listener")
-    IQueueListenerTask _queueListenerTask;
 
     private Status status = Status.ENABLED;
 
@@ -64,14 +52,14 @@ public abstract class ApcQueueListenerTask implements IQueueListenerTask {
 
 
     @Override
-    public boolean processMessage(String contents, byte[] buff) throws Exception {        
+    public boolean processMessage(String contents, byte[] buff) throws Exception {
         if(!useApcIfAvailable()){
             return false;
         }
         if(StringUtils.isBlank(contents)){
-          _log.warn("rejected message, message is empty");
-          return false;
-        }   
+            _log.warn("rejected message, message is empty");
+            return false;
+        }
 
         if(!getQueueName().endsWith(contents)) {
             _log.warn("rejected message for queue " + contents);
@@ -113,8 +101,8 @@ public abstract class ApcQueueListenerTask implements IQueueListenerTask {
         _log.info("apc input queue listening on " + host + ":" + port + ", queue=" + queueName);
 
         try {
-            _queueListenerTask.initializeQueue(host, queueName, port);
-        } catch (InterruptedException ie) {
+            initializeQueue(host, queueName, port);
+        } catch (Exception e) {
             return;
         }
 
@@ -148,6 +136,6 @@ public abstract class ApcQueueListenerTask implements IQueueListenerTask {
             return;
         }
         _log.info("starting DNS check for APC queue " + getQueueName());
-        _queueListenerTask.startDNSCheckThread();;
+        super.startDNSCheckThread();
     }
 }

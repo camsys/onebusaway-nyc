@@ -42,8 +42,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-public abstract class OpsInferenceQueueListenerTask extends
-    InferenceQueueListenerTask {
+public class OpsInferenceQueueListenerTask extends
+        InferenceQueueListenerTask {
 
   private static Logger _log = LoggerFactory.getLogger(OpsInferenceQueueListenerTask.class);
 
@@ -52,16 +52,16 @@ public abstract class OpsInferenceQueueListenerTask extends
   private RecordValidationService validationService;
 
   private InferencePersistenceService persister;
-  
+
   private CcAndInferredLocationService _locationService;
-  
+
   private static final int STATUS_INTERVAL_MINUTES = 1;
-  
+
   private ScheduledFuture<OpsInferenceQueueListenerTask.StatusThread> _statusTask = null;
-  
+
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
-  
+
   @Autowired
   public void setLocationDao(CcAndInferredLocationDao locationDao) {
     this._locationDao = locationDao;
@@ -74,17 +74,17 @@ public abstract class OpsInferenceQueueListenerTask extends
 
   @Autowired
   public void setInferencePersistenceService(
-      InferencePersistenceService pService) {
+          InferencePersistenceService pService) {
     this.persister = pService;
   }
-  
+
   @Autowired
   public void setLocationService(CcAndInferredLocationService locationService) {
     this._locationService = locationService;
   }
 
   @Refreshable(dependsOn = {
-      "tds.inputQueueHost", "tds.inputQueuePort", "tds.inputQueueName"})
+          "tds.inputQueueHost", "tds.inputQueuePort", "tds.inputQueueName"})
   @Override
   public void startListenerThread() {
     if (_initialized == true) {
@@ -100,11 +100,11 @@ public abstract class OpsInferenceQueueListenerTask extends
       return;
     }
     _log.info("inference archive listening on " + host + ":" + port
-        + ", queue=" + queueName);
+            + ", queue=" + queueName);
     try {
       initializeQueue(host, queueName, port);
       _log.warn("queue config:" + queueName + " COMPLETE");
-    } catch (InterruptedException ie) {
+    } catch (Exception e) {
       _log.error("queue " + queueName + " interrupted");
       return;
     } catch (Throwable t) {
@@ -115,20 +115,20 @@ public abstract class OpsInferenceQueueListenerTask extends
   @Override
   // this method must throw exceptions to force a transaction rollback
   protected void processResult(NycQueuedInferredLocationBean inferredResult,
-      String contents) {
+                               String contents) {
     long timeReceived = System.currentTimeMillis();
     ArchivedInferredLocationRecord locationRecord = null;
 
     if (_log.isDebugEnabled())
       _log.debug("vehicle=" + inferredResult.getVehicleId() + ":"
-          + new Date(inferredResult.getRecordTimestamp()));
+              + new Date(inferredResult.getRecordTimestamp()));
 
     boolean validInferredResult = validationService.validateInferenceRecord(inferredResult);
 
     if (validInferredResult) {
       locationRecord = new ArchivedInferredLocationRecord(inferredResult,
-          contents, timeReceived);
-        persister.persist(locationRecord, contents);
+              contents, timeReceived);
+      persister.persist(locationRecord, contents);
     } else {
       discardRecord(inferredResult.getVehicleId(), contents);
     }
@@ -137,32 +137,49 @@ public abstract class OpsInferenceQueueListenerTask extends
 
   private void discardRecord(String vehicleId, String contents) {
     _log.error(
-        "Discarding inferred record for vehicle : {} as inferred latitude or inferred longitude "
-            + "values are out of range, or tripID is too long", vehicleId);
+            "Discarding inferred record for vehicle : {} as inferred latitude or inferred longitude "
+                    + "values are out of range, or tripID is too long", vehicleId);
     Exception e = new Exception("Inference record for vehile : " + vehicleId
-        + " failed validation." + "Discarding");
+            + " failed validation." + "Discarding");
     _locationDao.handleException(contents, e, new Date());
   }
 
+  @Override
+  public String getQueueHost() {
+    return _configurationService.getConfigurationValueAsString(
+            "tds.inputQueueHost", null);
+  }
+
+  @Override
+  public String getQueueName() {
+    return _configurationService.getConfigurationValueAsString(
+            "tds.inputQueueName", null);
+  }
 
   public String getQueueDisplayName() {
     return "archive_inference";
   }
 
-  
+  @Override
+  public Integer getQueuePort() {
+    return _configurationService.getConfigurationValueAsInteger(
+            "tds.inputQueuePort", 5567);
+  }
+
   public void logStatus() {
     _log.info("obanyc_inferredlocation records count : " + _locationDao.getArchiveInferredLocationCount());
     _log.info("obanyc_cclocationreport records count : " + _locationDao.getCcLocationReportRecordCount());
     _log.info("obanyc_last_known_vehicle records Count : " + _locationDao.getCcAndInferredLocationCount());
   }
-  
-  
+
+
   private class StatusThread extends TimerTask {
     @Override
     public void run() {
       logStatus();
     }
   }
+
 
   @SuppressWarnings("unchecked")
   @PostConstruct
@@ -171,22 +188,22 @@ public abstract class OpsInferenceQueueListenerTask extends
 
     // make parsing lenient
     _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-        false);
-    
-   // get current state from backup ops api or archiver
+            false);
+
+    // get current state from backup ops api or archiver
     try {
-    	_log.info("Attempting to set initial state");
-		List<CcAndInferredLocationRecord> lastKnownRecords = _locationService.getAllLastKnownRecords();
-		_locationDao.saveOrUpdateRecords(lastKnownRecords);
-	} catch (Exception e) {
-		_log.error("Failed to set initial state", e);
-	}
+      _log.info("Attempting to set initial state");
+      List<CcAndInferredLocationRecord> lastKnownRecords = _locationService.getAllLastKnownRecords();
+      _locationDao.saveOrUpdateRecords(lastKnownRecords);
+    } catch (Exception e) {
+      _log.error("Failed to set initial state", e);
+    }
 
     if (_statusTask == null) {
-    	_statusTask = (ScheduledFuture<StatusThread>) _taskScheduler.scheduleWithFixedDelay(new StatusThread(),
-        STATUS_INTERVAL_MINUTES * 60 * 1000);
+      _statusTask = (ScheduledFuture<StatusThread>) _taskScheduler.scheduleWithFixedDelay(new StatusThread(),
+              STATUS_INTERVAL_MINUTES * 60 * 1000);
     }
-    
+
   }
 
   @PreDestroy

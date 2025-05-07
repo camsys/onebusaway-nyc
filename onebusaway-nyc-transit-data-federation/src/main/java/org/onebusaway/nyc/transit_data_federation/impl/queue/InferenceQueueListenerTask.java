@@ -17,45 +17,27 @@ package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.queue.IQueueListenerTask;
+import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-import org.onebusaway.nyc.transit_data_federation.impl.queue.interfaces.InferenceQueueListenerInterface;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-public class InferenceQueueListenerTask implements InferenceQueueListenerInterface, IQueueListenerTask {
+public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 
-	protected void processResult(NycQueuedInferredLocationBean inferredResult, String contents){};
+	protected abstract void processResult(NycQueuedInferredLocationBean inferredResult, String contents);
 	protected ObjectReader _reader;
-
-	protected boolean _initialized = false;
-
-	@Autowired
-	ConfigurationService _configurationService;
-
-	@Autowired
-	@Qualifier("listener")
-	IQueueListenerTask _queueListenerTask;
 
 	public InferenceQueueListenerTask() {
 		_reader = _mapper.reader(NycQueuedInferredLocationBean.class);
 	}
 
 	@Override
-	public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
-
-	}
-
-	@Override
 	public boolean processMessage(String address, byte[] buff) {
-	  String contents = null;
+		String contents = null;
 		try {
 			contents= new String(buff);
 			if (address == null || !address.equals(getQueueName())) {
@@ -65,7 +47,7 @@ public class InferenceQueueListenerTask implements InferenceQueueListenerInterfa
 			// jackson advice:  prefer reader over mapper
 			NycQueuedInferredLocationBean inferredResult = _reader.readValue(contents);
 			processResult(inferredResult, contents);
-			
+
 			return true;
 		} catch (Exception e) {
 			_log.warn("Received corrupted message from queue; discarding: " + e.getMessage(), e);
@@ -85,25 +67,14 @@ public class InferenceQueueListenerTask implements InferenceQueueListenerInterfa
 	}
 
 	@Override
-	public String getQueueDisplayName() {
-		return null;
-	}
-
-	@Override
 	public Integer getQueuePort() {
 		return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5564);
-	}
-
-	@Override
-	public void startDNSCheckThread() {
-
 	}
 
 	@SuppressWarnings("deprecation")
 	@PostConstruct
 	public void setup() {
-
-		_queueListenerTask.setup();
+		super.setup();
 
 		// use JAXB annotations so that we pick up anything from the
 		// auto-generated XML classes
@@ -115,8 +86,7 @@ public class InferenceQueueListenerTask implements InferenceQueueListenerInterfa
 
 	@PreDestroy
 	public void destroy() {
-		_queueListenerTask.destroy();
-
+		super.destroy();
 	}
 
 	@Refreshable(dependsOn = { "tds.inputQueueHost", "tds.inputQueuePort", "tds.inputQueueName" })
@@ -138,10 +108,11 @@ public class InferenceQueueListenerTask implements InferenceQueueListenerInterfa
 		_log.info("queue listening on " + host + ":" + port + ", queue=" + queueName);
 
 		try {
-			_queueListenerTask.initializeQueue(host, queueName, port);;
-		} catch (InterruptedException ie) {
+			initializeQueue(host, queueName, port);
+		} catch (Exception e) {
 			return;
 		}
+
 		_initialized = true;
 	}
 

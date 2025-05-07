@@ -17,30 +17,19 @@
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.queue.IQueueListenerTask;
+import org.onebusaway.nyc.queue.QueueListenerTask;
 
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
-import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-public abstract class TimeQueueListenerTask implements IQueueListenerTask {
+public abstract class TimeQueueListenerTask extends QueueListenerTask {
 
-	@Autowired
-	protected ConfigurationService _configurationService;
-	protected boolean _initialized = false;
+	public enum Status {
+		ENABLED, // read from queue
+		TESTING, // don't read from queue, but allow cache to be read.
+		DISABLED; // totally disabled
+	};
 
-	@Autowired
-	@Qualifier("listener")
-	IQueueListenerTask _queueListenerTask;
-
-		public enum Status {
-			ENABLED, // read from queue
-			TESTING, // don't read from queue, but allow cache to be read.
-			DISABLED; // totally disabled
-		};
-
-  protected abstract void processResult(FeedMessage message);
+	protected abstract void processResult(FeedMessage message);
 
 	@Override
 	public boolean processMessage(String address, byte[] buff) {
@@ -48,16 +37,16 @@ public abstract class TimeQueueListenerTask implements IQueueListenerTask {
 			if (address == null || buff == null || !address.equals(getQueueName()) || !useTimePredictionsIfAvailable()) {
 				return false;
 			}
-			
+
 			processResult(FeedMessage.parseFrom(buff));
 			return true;
 		} catch (Exception e) {
-		  _log.warn("exception:", e);
+			_log.warn("exception:", e);
 			_log.warn("Received corrupted message from queue; discarding: " + e.getMessage());
 			return false;
 		}
 	}
-	
+
 	@Override
 	public String getQueueHost() {
 		return _configurationService.getConfigurationValueAsString("tds.timePredictionQueueHost", null);
@@ -72,28 +61,28 @@ public abstract class TimeQueueListenerTask implements IQueueListenerTask {
 	public Integer getQueuePort() {
 		return _configurationService.getConfigurationValueAsInteger("tds.timePredictionQueueOutputPort", 5569);
 	}
-	
-  @Override
-  public String getQueueDisplayName() {
-    return "timePrediction";
-  }
-  
-  private Status status = Status.ENABLED;
-  
-  public Status getStatus(){
-	  return status;
-  }
-  
- 	public void setStatus(Status status) {
-  	this.status = status;
-		}
-  
-  @Refreshable(dependsOn = { "display.useTimePredictions" })
-  public Boolean useTimePredictionsIfAvailable() {
-    if (!Status.ENABLED.equals(status)) return false;
-    return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
-  }
-  
+
+	@Override
+	public String getQueueDisplayName() {
+		return "timePrediction";
+	}
+
+	private Status status = Status.ENABLED;
+
+	public Status getStatus(){
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+
+	@Refreshable(dependsOn = { "display.useTimePredictions" })
+	public Boolean useTimePredictionsIfAvailable() {
+		if (!Status.ENABLED.equals(status)) return false;
+		return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
+	}
+
 	@Refreshable(dependsOn = { "tds.timePredictionQueueHost", "tds.timePredictionQueuePort", "tds.timePredictionQueueName" })
 	public void startListenerThread() {
 		if (_initialized == true) {
@@ -102,10 +91,10 @@ public abstract class TimeQueueListenerTask implements IQueueListenerTask {
 		}
 
 		if (!useTimePredictionsIfAvailable()) {
-		  _log.error("time predictions disabled -- exiting");
-		  return;
+			_log.error("time predictions disabled -- exiting");
+			return;
 		}
-		
+
 		String host = getQueueHost();
 		String queueName = getQueueName();
 		Integer port = getQueuePort();
@@ -119,7 +108,7 @@ public abstract class TimeQueueListenerTask implements IQueueListenerTask {
 
 		try {
 			initializeQueue(host, queueName, port);
-		} catch (InterruptedException ie) {
+		} catch (Exception e) {
 			return;
 		}
 
@@ -128,10 +117,10 @@ public abstract class TimeQueueListenerTask implements IQueueListenerTask {
 
 	@Override
 	public void startDNSCheckThread() {
-	  if (!useTimePredictionsIfAvailable()) {
-	    _log.error("time predictions disabled -- exiting");
-	    return;
-	  }
-		_queueListenerTask.startDNSCheckThread();
+		if (!useTimePredictionsIfAvailable()) {
+			_log.error("time predictions disabled -- exiting");
+			return;
+		}
+		super.startDNSCheckThread();
 	}
 }

@@ -65,9 +65,10 @@
 
     <alias name="dataSource" alias="mutableDataSource" />
 
+    <bean id="provider" class="org.onebusaway.nyc.queue.KafkaQueueProvider" scope="prototype"/>
 
 	<!-- Input Queue Configuration -->
-  	<bean id="inferenceInputQueue" abstract="true" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
+  	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
 	<!--  for debugging purposes, the TDS can be populated via a JSON file -->
 
 <!--
@@ -77,12 +78,12 @@
 -->
 	<!--  Time Queue Configuration -->
 	<!--  This option integrates with an external time prediction queue -->
-    <bean id="timeInputQueue" abstract="true" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
+    <bean id="timeInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl">
         <property name="status" value="ENABLED"/>
     </bean>
 
     <!--  APC Queue Configuration -->
-    <bean id="apcInputQueue" abstract="true" class="org.onebusaway.nyc.transit_data_federation.impl.nyc.ApcIntegrationServiceImpl">
+    <bean id="apcInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.nyc.ApcIntegrationServiceImpl">
         <property name="status" value="ENABLED"/>
     </bean>
 
