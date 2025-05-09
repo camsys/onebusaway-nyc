@@ -65,6 +65,9 @@
 
     <alias name="dataSource" alias="mutableDataSource" />
 
+    <!--change provider from KafkaQueueProvider to ZeromqQueueProvider to switch queue types,
+        keep scope prototype -->
+
     <bean id="provider" class="org.onebusaway.nyc.queue.KafkaQueueProvider" scope="prototype"/>
 
 	<!-- Input Queue Configuration -->

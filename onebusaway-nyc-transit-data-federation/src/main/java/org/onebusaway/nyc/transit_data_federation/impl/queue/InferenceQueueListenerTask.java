@@ -40,7 +40,7 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 		String contents = null;
 		try {
 			contents= new String(buff);
-			if (address == null || !address.equals(getQueueName())) {
+			if (address == null || !address.equals(getQueueName()) || contents.contains("heartbeat")) {
 				return false;
 			}
 
@@ -58,17 +58,20 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 
 	@Override
 	public String getQueueHost() {
-		return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
+		//return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
+		return "localhost";
 	}
 
 	@Override
 	public String getQueueName() {
-		return _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
+		//return _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
+		return "inference_queue";
 	}
 
 	@Override
 	public Integer getQueuePort() {
-		return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5564);
+		//return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5564);
+		return 9092;
 	}
 
 	@SuppressWarnings("deprecation")

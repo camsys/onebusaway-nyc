@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.queue;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -12,12 +14,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import static org.onebusaway.nyc.queue.IQueueListenerTask._mapper;
 
 public class KafkaQueueProvider implements MessageQueueProvider{
 
@@ -95,7 +101,13 @@ public class KafkaQueueProvider implements MessageQueueProvider{
                 if (!records.isEmpty()) {
                     for (ConsumerRecord<String, String> record : records) {
                         try {
-                            byte[] buff = SerializationUtils.serialize((Serializable) record);
+                            String jsonValue = record.value();
+                            if (jsonValue.startsWith("\"") && jsonValue.endsWith("\"")) {
+                                jsonValue = jsonValue.substring(1, jsonValue.length() - 1).replace("\\\"", "\"");
+                            }
+
+                            byte[] buff = jsonValue.getBytes(StandardCharsets.UTF_8);
+
                             handoff.put(new QueueMessage(queueName, buff));
                             processedCount++;
                         } catch (Exception ex) {
