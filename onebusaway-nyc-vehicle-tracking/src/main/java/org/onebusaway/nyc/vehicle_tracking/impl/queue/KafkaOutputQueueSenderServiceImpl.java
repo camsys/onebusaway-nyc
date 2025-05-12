@@ -44,7 +44,6 @@ import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Sends inference output to the inference output queue.
@@ -222,7 +221,7 @@ public class KafkaOutputQueueSenderServiceImpl implements OutputQueueSenderServi
       "inference-engine.outputQueueHost", "inference-engine.outputQueuePort",
       "inference-engine.outputQueueName"})
   public void startListenerThread() {
-    if (_initialized == true) {
+    if (_initialized) {
       _log.warn("Configuration service tried to reconfigure inference output queue service; this service is not reconfigurable once started.");
       return;
     }
@@ -250,7 +249,6 @@ public class KafkaOutputQueueSenderServiceImpl implements OutputQueueSenderServi
     } catch (final InterruptedException ie) {
       _log.error("reinitialize failed:", ie);
       _outputQueueResolver.reset();
-      return;
     }
   }
 

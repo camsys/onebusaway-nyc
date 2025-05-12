@@ -50,10 +50,10 @@ import javax.servlet.ServletContext;
  * @author sheldonabrown
  *
  */
-public class OutputQueueSenderServiceImpl implements OutputQueueSenderService,
+public class ZeromqOutputQueueSenderServiceImpl implements OutputQueueSenderService,
     ServletContextAware {
 
-  private static Logger _log = LoggerFactory.getLogger(OutputQueueSenderServiceImpl.class);
+  private static Logger _log = LoggerFactory.getLogger(ZeromqOutputQueueSenderServiceImpl.class);
 
   private static final long HEARTBEAT_INTERVAL = 1000l;
 
