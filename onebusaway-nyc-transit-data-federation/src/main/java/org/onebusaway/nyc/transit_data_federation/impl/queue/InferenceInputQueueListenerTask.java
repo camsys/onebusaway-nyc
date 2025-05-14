@@ -115,11 +115,13 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
 				&& inferredResult.getObservedLongitude() != null) {
 			vlr.setCurrentLocationLat(inferredResult.getObservedLatitude());
 			vlr.setCurrentLocationLon(inferredResult.getObservedLongitude());
-		}
-		else if(inferredResult.getObservedLatitude() != null
-				&& inferredResult.getInferredLongitude() != null) {
-			vlr.setCurrentLocationLat(inferredResult.getInferredLatitude());
-			vlr.setCurrentLocationLon(inferredResult.getInferredLongitude());
+		} else {
+			if (inferredResult.getInferredLatitude() != null) {
+				vlr.setCurrentLocationLat(inferredResult.getInferredLatitude());
+			}
+			if (inferredResult.getInferredLongitude() != null) {
+				vlr.setCurrentLocationLon(inferredResult.getInferredLongitude());
+			}
 		}
 
 		vlr.setPhase(EVehiclePhase.valueOf(inferredResult.getPhase()));
