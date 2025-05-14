@@ -102,16 +102,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
 				// service alerts for this route + direction
 				List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
-				List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRoute(routeBean.getId());
-				serviceAlertBeans = serviceAlertBeans.stream().filter(
-						serviceAlertBean->{
-							return serviceAlertBean.getAllAffects().stream().anyMatch(situationAffectsBean -> {
-								return situationAffectsBean.getRouteId().equals(routeBean.getId()) &&
-										(situationAffectsBean.getDirectionId()==null || situationAffectsBean.getDirectionId()==stopGroupBean.getId());
-							});
-						}).collect(Collectors.toList());
+				Set<ServiceAlertBean> serviceAlertBeans = new HashSet<>();
+				serviceAlertBeans.addAll(_realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId()));
+				serviceAlertBeans.addAll(_realtimeService.getServiceAlertsForRoute(routeBean.getId()));
 
-				populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, HTMLIZE_NEWLINES);
+				populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans.stream().collect(Collectors.toList()), HTMLIZE_NEWLINES);
 
 				directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, null, serviceAlertDescriptions));
 			}
