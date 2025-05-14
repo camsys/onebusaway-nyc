@@ -22,7 +22,11 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
@@ -47,7 +51,6 @@ import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
-import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import uk.org.siri.siri.DirectionRefStructure;
 import uk.org.siri.siri.ExtensionsStructure;
 import uk.org.siri.siri.LineRefStructure;
@@ -239,8 +242,9 @@ public class SearchResultFactoryImplTest {
 
 	private RouteResult runGetRouteResult(List<ServiceAlertBean> serviceAlerts) {
 		setupStops();
-		when(_realtimeService.getServiceAlertsForRouteAndDirection(anyString(), anyString())).thenReturn(serviceAlerts);
-		when(_realtimeService.getServiceAlertsForRoute(anyString())).thenReturn(serviceAlerts);
+		when(
+				_realtimeService.getServiceAlertsForRouteAndDirection(anyString(),
+						anyString())).thenReturn(serviceAlerts);
 		SearchResultFactoryImpl srf = new SearchResultFactoryImpl(
 				_nycTransitDataService, _realtimeService, _configurationService);
 		RouteResult result = (RouteResult) srf.getRouteResult(createRouteBean());
@@ -290,18 +294,10 @@ public class SearchResultFactoryImplTest {
 		return routeBean;
 	}
 
-	private List<ServiceAlertBean> createServiceAlerts(String[] descriptions, String[] summaries) {
+	private List<ServiceAlertBean> createServiceAlerts(String[] descriptions,
+			String[] summaries) {
 		List<ServiceAlertBean> serviceAlerts = new ArrayList<ServiceAlertBean>();
 		ServiceAlertBean saBean = new ServiceAlertBean();
-
-		SituationAffectsBean situationAffectsBean = new SituationAffectsBean();
-		situationAffectsBean.setRouteId("route id");
-
-		List situationAffects = Arrays.asList(situationAffectsBean);
-		situationAffects.add(situationAffectsBean);
-
-		saBean.setAllAffects(situationAffects);
-
 		serviceAlerts.add(saBean);
 		if (descriptions.length > 0)
 			saBean.setDescriptions(createTextList(descriptions));
