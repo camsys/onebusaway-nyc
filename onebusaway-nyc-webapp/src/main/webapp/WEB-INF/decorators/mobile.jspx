@@ -66,6 +66,7 @@
 			<div id="mobile-survey">
 				<p>We have a new look! Try the Beta <a href="https://bustime-beta.mta.info">here &gt;&gt;</a></p>
 			</div>
+			<br />
 		</s:if>
     	<p>
 			<s:url var="mobileHelpUrl" namespace="/m/wiki" action="Help/Index"/>	
