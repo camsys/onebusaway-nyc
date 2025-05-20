@@ -64,7 +64,7 @@
 	<div id="footer">
 		<s:if test="%{getShowSurvey()}">
 			<div id="mobile-survey">
-				<div>We have a new look! Try the Beta <a href="https://bustime-beta.mta.info">here &gt;&gt;</a></div>
+				<p>We have a new look! Try the Beta <a href="https://bustime-beta.mta.info">here &gt;&gt;</a></p>
 			</div>
 		</s:if>
     	<p>
