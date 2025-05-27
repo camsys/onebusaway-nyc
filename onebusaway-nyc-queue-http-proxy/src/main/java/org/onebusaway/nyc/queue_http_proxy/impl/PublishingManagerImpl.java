@@ -16,6 +16,7 @@
 
 package org.onebusaway.nyc.queue_http_proxy.impl;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.queue.IPublisher;
 import org.onebusaway.nyc.queue_http_proxy.model.RecordOverride;
