@@ -78,7 +78,7 @@ public class PublishingManagerImpl implements PublishingManager{
         setupHighFreqVehicles();
         setupBypassHighFreqVehicles();
         startDNSCheckThread();
-
+        startCacheCheckThread();
     }
 
     public Map<String, RecordOverride> getRecordOverrides() {
@@ -209,7 +209,6 @@ public class PublishingManagerImpl implements PublishingManager{
     }
 
 
-
     // DNS CHECK - Reloads queue if DNS information changes
     public void startDNSCheckThread() {
         String host = getHost();
@@ -218,8 +217,14 @@ public class PublishingManagerImpl implements PublishingManager{
 
         if (_taskScheduler != null) {
             DNSCheckThread dnsCheckThread = new DNSCheckThread();
-            // Check every 20 seconds
             _taskScheduler.scheduleWithFixedDelay(dnsCheckThread, TimeUnit.SECONDS.toMillis(20));
+        }
+    }
+
+    public void startCacheCheckThread() {
+        if (_taskScheduler != null) {
+            CacheCheckThread cacheCheckThread = new CacheCheckThread();
+            _taskScheduler.scheduleWithFixedDelay(cacheCheckThread, TimeUnit.MINUTES.toMillis(15));
         }
     }
 
@@ -248,7 +253,29 @@ public class PublishingManagerImpl implements PublishingManager{
         }
     }
 
-
-
-
+    private class CacheCheckThread extends TimerTask {
+        @Override
+        public void run() {
+            Map<String, Date> sortedLastKnownVehicleRecords = new TreeMap<>(lastKnownVehicleRecords);
+            try {
+                _log.info("checking last known vehicle records");
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                StringBuilder sb = new StringBuilder();
+                sb.append("[");
+                sb.append("\n");
+                for(Map.Entry<String, Date> entry : sortedLastKnownVehicleRecords.entrySet()) {
+                    sb.append("Vehicle ID: ");
+                    sb.append(entry.getKey());
+                    sb.append("," );
+                    sb.append("Date: ");
+                    sb.append(sdf.format(entry.getValue()));
+                    sb.append("\n");
+                }
+                sb.append("]");
+                _log.info(sb.toString());
+            } catch (Exception e) {
+                _log.error(e.toString());
+            }
+        }
+    }
 }
