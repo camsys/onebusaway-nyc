@@ -18,6 +18,7 @@ package org.onebusaway.nyc.queue_http_proxy.impl;
 
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.queue.IPublisher;
+import org.onebusaway.nyc.queue_http_proxy.model.RecordOverride;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,9 @@ public class PublishingManagerImpl implements PublishingManager{
     private final DateFormat dateFormat;
 
     private Map<String, Date> lastKnownVehicleRecords = new ConcurrentHashMap<>(10000);
+
+    private Map<String, RecordOverride> recordOverrides = new ConcurrentHashMap<>();
+
 
     private String highFrequencyVehiclesList;
 
@@ -74,6 +78,14 @@ public class PublishingManagerImpl implements PublishingManager{
         setupBypassHighFreqVehicles();
         startDNSCheckThread();
 
+    }
+
+    public Map<String, RecordOverride> getRecordOverrides() {
+        return recordOverrides;
+    }
+
+    public void setRecordOverrides(Map<String, RecordOverride> recordOverrides) {
+        this.recordOverrides = recordOverrides;
     }
 
     private void setupHighFreqVehicles(){
@@ -114,6 +126,7 @@ public class PublishingManagerImpl implements PublishingManager{
     public void send(JsonNode message) throws ExecutionException, ParseException {
         JsonNode ccLocationReport = message.get("CcLocationReport");
         String vehicleId = getVehicleId(ccLocationReport);
+        optionallyOverrideSelectRecords(vehicleId, ccLocationReport);
 
         if(!bypassHighFrequencyVehicles.contains(vehicleId) &&
                 (highFrequencyVehicles.contains(vehicleId) || highFrequencyVehicles.contains("*"))){
@@ -122,6 +135,19 @@ public class PublishingManagerImpl implements PublishingManager{
         } else {
             publisher.send(message.toString());
             highFreqPublisher.send(message.toString());
+        }
+    }
+
+    private void optionallyOverrideSelectRecords(String vehicleId, JsonNode ccLocationReport) {
+        if(recordOverrides.containsKey(vehicleId) && ccLocationReport.isObject()){
+            RecordOverride recordOverride = recordOverrides.get(vehicleId);
+            if(ccLocationReport.has("latitude") && ccLocationReport.has("latitude")){
+                ObjectNode ccLocationReportObject = (ObjectNode) ccLocationReport;
+                ccLocationReportObject.put("latitude", recordOverride.getLat());
+                ccLocationReportObject.put("longitude", recordOverride.getLon());
+                ObjectNode vehicleObject = (ObjectNode) ccLocationReportObject.get("vehicle");
+                vehicleObject.put("agencydesignator",recordOverride.getAgency());
+            }
         }
     }
 
