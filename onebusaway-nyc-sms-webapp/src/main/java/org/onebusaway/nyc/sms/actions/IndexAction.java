@@ -119,15 +119,17 @@ public class IndexAction extends SessionedIndexAction {
     Boolean showAd = _configurationService.getConfigurationValueAsBoolean("sms.showAd", false);
     Boolean adLabelOnly = _configurationService.getConfigurationValueAsBoolean("sms.adLabelOnly", false);
 
+    if(commandString != null && commandString.equals("R") && _lastCommandString != null
+            && _lastQuery != null && !_lastQuery.isEmpty()) {
+      commandString = _lastCommandString;
+    }
+
     if(queryString != null && !queryString.isEmpty()) {
       _lastQuery = queryString;
       _searchResults = _searchService.getSearchResults(queryString, _resultFactory);
     } else if (commandString != null && commandString.equals("R") && _lastQuery != null && !_lastQuery.isEmpty()) {
-      if (_lastCommandString != null) {
-        commandString = _lastCommandString;
-      }
       if (_searchResults == null) {
-        _searchResults = _searchService.getSearchResults(_lastQuery, _resultFactory);
+         _searchResults = _searchService.getSearchResults(_lastQuery, _resultFactory);
       }
     } else if(_searchResults != null && "StopResult".equals(_searchResults.getResultType()) && commandString != null && getRoutesInSearchResults().contains(commandString)) {
       // We are all set, let the existing stop results be processed given the route command string
@@ -502,7 +504,7 @@ public class IndexAction extends SessionedIndexAction {
     String message = "";
     String body = (observationsByDistanceFromStopAcrossAllRoutes.isEmpty()? "No Results.": "");
     String header = "";
-    String footer = "\nO to refresh";
+    String footer = "\nR to refresh";
     for(String observationString : observationsByDistanceFromStopAcrossAllRoutes.values()) {
       String textToAdd = observationString + "\n";
 
