@@ -195,7 +195,9 @@ public class PublishingManagerImpl implements PublishingManager{
         long timeSinceLastUpdateMillis = currentVehicleTimestamp.getTime() - lastVehicleTime.getTime();
 
         // Checks for vehicles that are more than 25 seconds old OR vehicles that have the same timestamp
-        if(TimeUnit.MILLISECONDS.toSeconds(timeSinceLastUpdateMillis) > 25 || timeSinceLastUpdateMillis == 0){
+        if(TimeUnit.MILLISECONDS.toSeconds(timeSinceLastUpdateMillis) > 25
+                || TimeUnit.MILLISECONDS.toSeconds(timeSinceLastUpdateMillis) < -300
+                || timeSinceLastUpdateMillis == 0){
             return true;
         }
         return false;
