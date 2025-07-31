@@ -64,9 +64,9 @@
 	<div id="footer">
 		<s:if test="%{getShowSurvey()}">
 			<div id="mobile-survey">
-				<p>We have a new look! Try the Beta <a href="https://bustime-beta.mta.info">here &gt;&gt;</a></p>
-				<br />
 				<p>Help us improve your bus experience! Take our short survey <a href="https://bustime.mta.info/survey">here</a></p>
+				<br />
+				<p>We have a new look! Try the Beta <a href="https://bustime-beta.mta.info">here &gt;&gt;</a></p>
 			</div>
 			<br />
 		</s:if>
