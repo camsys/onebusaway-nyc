@@ -17,8 +17,10 @@ package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.SupplementalRouteType;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.OccupancyStatus;
+import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.util.AgencyAndIdLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,75 +105,76 @@ public class ApcLoadLevelCalculator {
       }
     }
 
-    public void updateApcLoadLevelCalculatorConfigs() {
-      xFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.xFactor", Float.toString(DEFAULT_X_FACTOR)));
-      yFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.yFactor", Float.toString(DEFAULT_Y_FACTOR)));
-      zFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.zFactor", Float.toString(DEFAULT_Z_FACTOR)));
-      xExpressFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.xExpressFactor", Float.toString(DEFAULT_EXPRESS_X_FACTOR)));
-      yExpressFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.yExpressFactor", Float.toString(DEFAULT_EXPRESS_Y_FACTOR)));
-      zExpressFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.zExpressFactor", Float.toString(DEFAULT_EXPRESS_Z_FACTOR)));
+  public void updateApcLoadLevelCalculatorConfigs() {
+    xFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.xFactor", Float.toString(DEFAULT_X_FACTOR)));
+    yFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.yFactor", Float.toString(DEFAULT_Y_FACTOR)));
+    zFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.zFactor", Float.toString(DEFAULT_Z_FACTOR)));
+    xExpressFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.xExpressFactor", Float.toString(DEFAULT_EXPRESS_X_FACTOR)));
+    yExpressFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.yExpressFactor", Float.toString(DEFAULT_EXPRESS_Y_FACTOR)));
+    zExpressFactor = Float.parseFloat(_config.getConfigurationValueAsString("tds.apcLoadLevelCalculator.zExpressFactor", Float.toString(DEFAULT_EXPRESS_Z_FACTOR)));
+  }
+
+
+  public OccupancyStatus determineOccupancyStatus(Integer load, Integer capacity, AgencyAndId routeId) {
+    if (load == null || capacity == null || routeId == null) {
+      return null;
     }
+
+    OccupancyStatus occupancyStatus = null;
+
+    if (capacity > 0) {
+      if (load == 0) {
+        occupancyStatus = OccupancyStatus.MANY_SEATS_AVAILABLE;
+      } 
+      else {
+        double loadFactor = load / (double) capacity;
+        SupplementalRouteType routeType = _nycRouteTypeService.getRouteType(routeId);
+        if (routeType == SupplementalRouteType.EXPRESS) {
+          if (loadFactor > zExpressFactor) {
+            occupancyStatus = OccupancyStatus.FULL;
+          } else if (loadFactor >= yExpressFactor) {
+            occupancyStatus = OccupancyStatus.STANDING_ROOM_ONLY;
+          } else if (loadFactor >= xExpressFactor) {
+            occupancyStatus = OccupancyStatus.FEW_SEATS_AVAILABLE;
+          } else {
+            occupancyStatus = OccupancyStatus.MANY_SEATS_AVAILABLE;
+          }
+        }
+        else if(routeType != SupplementalRouteType.UNIDENTIFIED) {
+          if (loadFactor > zFactor) {
+            occupancyStatus = OccupancyStatus.FULL;
+          } else if (loadFactor >= yFactor) {
+            occupancyStatus = OccupancyStatus.STANDING_ROOM_ONLY;
+          } else if (loadFactor >= xFactor) {
+            occupancyStatus = OccupancyStatus.FEW_SEATS_AVAILABLE;
+          } else {
+            occupancyStatus = OccupancyStatus.MANY_SEATS_AVAILABLE;
+          }
+        }
+      }
+    }
+    return occupancyStatus;
+  }
+
 
 
   public OccupancyStatus toOccupancyStatus(NycVehicleLoadBean message) {
     if (useLoadFactor) return message.getLoad(); // the MTA will own this value
-    if (message.getEstCapacity() > 0) {
-      // we are responsible for the calculation
-      if (message.getEstLoad() == 0)
-        return OccupancyStatus.MANY_SEATS_AVAILABLE;
-      double loadFactor = message.getEstLoad() / message.getEstCapacity();
-      if(_nycRouteTypeService.isRouteExpress(AgencyAndIdLibrary.convertFromString(message.getRoute()))){
-        if (loadFactor > zExpressFactor)
-          return OccupancyStatus.FULL;
-        if (loadFactor >= yExpressFactor)
-          return OccupancyStatus.STANDING_ROOM_ONLY;
-        if (loadFactor >= xExpressFactor)
-          return OccupancyStatus.FEW_SEATS_AVAILABLE;
-        // implicitly loadFactor < xFactor
-      } else {
-          if (loadFactor > zFactor)
-            return OccupancyStatus.FULL;
-          if (loadFactor >= yFactor)
-            return OccupancyStatus.STANDING_ROOM_ONLY;
-          if (loadFactor >= xFactor)
-            return OccupancyStatus.FEW_SEATS_AVAILABLE;
-          // implicitly loadFactor < xFactor
-      }
-      return OccupancyStatus.MANY_SEATS_AVAILABLE;
+    OccupancyStatus occupancyStatus = determineOccupancyStatus(message.getEstLoad(),message.getEstCapacity(),AgencyAndIdLibrary.convertFromString(message.getRoute()));
+    if (_log.isTraceEnabled()) {
+      _log.trace("Vehicle ID: {}, Count: {}, Max Occupancy: {}, Route ID: {}, Express Status: {}, result: {}",
+          message.getVehicleId(), message.getEstLoad(), message.getEstCapacity(), message.getRoute(), _nycRouteTypeService.isRouteExpress(AgencyAndIdLibrary.convertFromString(message.getRoute())), occupancyStatus);
     }
-    return null;
+    return occupancyStatus;
   }
 
   public OccupancyStatus toOccupancyStatus(ApcLoadData message, AgencyAndId routeId) {
-
-    if (message.getEstLoadAsInt() != null) {
-      // we are responsible for the calculation
-      if (message.getEstCapacityAsInt() != null && message.getEstCapacityAsInt() > 0) {
-        if (message.getEstLoadAsInt() == 0)
-          return OccupancyStatus.MANY_SEATS_AVAILABLE;
-
-        double loadFactor = Double.valueOf(message.getEstLoadAsInt()) / message.getEstCapacityAsInt();
-        if(_nycRouteTypeService.isRouteExpress(routeId)){
-          if (loadFactor > zExpressFactor)
-            return OccupancyStatus.FULL;
-          if (loadFactor >= yExpressFactor)
-            return OccupancyStatus.STANDING_ROOM_ONLY;
-          if (loadFactor >= xExpressFactor)
-            return OccupancyStatus.FEW_SEATS_AVAILABLE;
-          // implicitly loadFactor < xFactor
-        } else {
-          if (loadFactor > zFactor)
-            return OccupancyStatus.FULL;
-          if (loadFactor >= yFactor)
-            return OccupancyStatus.STANDING_ROOM_ONLY;
-          if (loadFactor >= xFactor)
-            return OccupancyStatus.FEW_SEATS_AVAILABLE;
-          // implicitly loadFactor < xFactor
-        }
-        return OccupancyStatus.MANY_SEATS_AVAILABLE;
-      }
+    OccupancyStatus occupancyStatus =  determineOccupancyStatus(message.getEstLoadAsInt(), message.getEstCapacityAsInt(), routeId);
+    if(_log.isTraceEnabled()){
+      _log.trace("Occupancy Status determined: Vehicle ID: {}, Count: {}, Max Occupancy: {}, Route ID: {}, Express Status: {}, result: {}",
+          message.getVehicleAsId(), message.getEstLoadAsInt(), message.getEstCapacityAsInt(), routeId, _nycRouteTypeService.isRouteExpress(routeId), occupancyStatus);
     }
-    return null;
+    return occupancyStatus;
   }
 
 
