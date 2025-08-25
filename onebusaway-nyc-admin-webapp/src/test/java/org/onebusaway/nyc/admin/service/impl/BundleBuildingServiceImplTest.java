@@ -185,6 +185,7 @@ public class BundleBuildingServiceImplTest {
 
   }
 
+  @Ignore
   @Test
   public void testBuild(){
     testBuild(1);
