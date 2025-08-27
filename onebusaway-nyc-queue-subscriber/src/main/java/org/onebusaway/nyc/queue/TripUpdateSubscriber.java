@@ -28,7 +28,7 @@ public class TripUpdateSubscriber implements ITripUpdateSubscriber{
 	private static final String ROUTE_KEY = "tu.route";
 	private static final String OUTPUT_DIR_KEY = "tu.output";
 	private static final String DEFAULT_HOST = "queue.dev.obanyc.com";
-	private static final int DEFAULT_PORT = 5569;
+	private static final int DEFAULT_PORT = 9092;
 	private static final String DEFAULT_TOPIC = "time";
 	private static final String DEFAULT_OUTPUT = ".";
 	private static final String DEFAULT_SINGLE_MODE = "false";

@@ -238,7 +238,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 
 	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(
 			String VehicleId, String TripId) {
-		return getCache().getIfPresent(hash(VehicleId, TripId));
+			return getCache().getIfPresent(hash(VehicleId, TripId));
 	}
 
 	@Override
@@ -252,7 +252,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 	}
 	private boolean enableCheckPredictionLatency() {
 		if (_checkPredictionLatency == null) {
-			refreshConfig();
+            refreshConfig();
 		}
 		return _checkPredictionLatency;
 	}

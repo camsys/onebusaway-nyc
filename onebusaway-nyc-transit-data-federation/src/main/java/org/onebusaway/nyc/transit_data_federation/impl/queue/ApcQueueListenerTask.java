@@ -126,7 +126,7 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
 
     @Override
     public Integer getQueuePort() {
-        return _configurationService.getConfigurationValueAsInteger("tds.apcQueueOutputPort", 5576);
+        return _configurationService.getConfigurationValueAsInteger("tds.apcQueueOutputPort", 9092);
     }
 
     @Override

@@ -235,7 +235,8 @@ public abstract class KafkaQueueListenerTask implements IQueueListenerTask{
 	}
 	@Override
 	public String getQueueHost() {
-		return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
+		//return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
+		return "localhost";
 	}
 
 	@Override
@@ -245,7 +246,8 @@ public abstract class KafkaQueueListenerTask implements IQueueListenerTask{
 
 	@Override
 	public Integer getQueuePort() {
-		return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5564);
+		//return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5564);
+		return 9092;
 	}
 
 }

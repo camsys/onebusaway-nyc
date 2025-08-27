@@ -44,14 +44,14 @@ limitations under the License.
     <bean id="publisher" class="org.onebusaway.nyc.queue.KafkaPublisher">
         <property name="topic" value="bhs_queue" />
         <property name="protocol" value="http" />
-        <property name="host" value="localhost" />
+        <property name="host" value="*" />
         <property name="port" value="9092" />
     </bean>
 
     <bean id="high_freq_publisher" class="org.onebusaway.nyc.queue.KafkaPublisher">
         <property name="topic" value="bhs_high_freq_queue" />
         <property name="protocol" value="http" />
-        <property name="host" value="localhost" />
+        <property name="host" value="*" />
         <property name="port" value="9092" />
     </bean>
 

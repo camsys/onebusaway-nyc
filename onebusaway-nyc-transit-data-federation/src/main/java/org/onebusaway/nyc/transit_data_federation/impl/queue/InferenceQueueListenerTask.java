@@ -58,20 +58,17 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 
 	@Override
 	public String getQueueHost() {
-		//return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
-		return "localhost";
+		return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
 	}
 
 	@Override
 	public String getQueueName() {
-		//return _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
-		return "inference_queue";
+		return _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
 	}
 
 	@Override
 	public Integer getQueuePort() {
-		//return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5564);
-		return 9092;
+		return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 9092);
 	}
 
 	@SuppressWarnings("deprecation")

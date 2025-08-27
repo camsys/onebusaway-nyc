@@ -297,7 +297,7 @@ public class ApcIntegrationServiceImpl extends ApcQueueListenerTask {
              * in order to populate route cache we need route + direction
              * route + direction ensure the data expires at the end of a trip
              * By using the timestamp of the record we index into the correct trip!
-             */
+            */
             AgencyAndId vehicleAgencyAndId = new AgencyAndId(data.getAgencyId(),data.getVehicle());
             TargetTime target = new TargetTime(System.currentTimeMillis(), data.getTimestamp());
             BlockLocation blockLocation = blockLocationService.getLocationForVehicleAndTime(

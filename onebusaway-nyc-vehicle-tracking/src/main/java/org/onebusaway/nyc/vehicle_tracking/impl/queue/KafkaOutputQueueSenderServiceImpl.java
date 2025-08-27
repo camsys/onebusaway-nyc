@@ -294,7 +294,7 @@ public class KafkaOutputQueueSenderServiceImpl implements OutputQueueSenderServi
   public String getQueueName() {
     //return _configurationService.getConfigurationValueAsString(
         //"inference-engine.outputQueueName", "bhs_queue");
-    return "inference_queue";
+    return "bhs_queue";
   }
 
   public Integer getQueuePort() {

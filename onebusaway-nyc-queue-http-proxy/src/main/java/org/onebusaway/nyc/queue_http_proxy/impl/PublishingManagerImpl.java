@@ -38,7 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
-public class PublishingManagerImpl implements PublishingManager {
+public class PublishingManagerImpl implements PublishingManager{
 
     private static Logger _log = LoggerFactory.getLogger(PublishingManagerImpl.class);
 
@@ -47,6 +47,7 @@ public class PublishingManagerImpl implements PublishingManager {
     private Map<String, Date> lastKnownVehicleRecords = new ConcurrentHashMap<>(10000);
 
     private Map<String, RecordOverride> recordOverrides = new ConcurrentHashMap<>();
+
 
     private String highFrequencyVehiclesList;
 
@@ -68,6 +69,7 @@ public class PublishingManagerImpl implements PublishingManager {
     private ThreadPoolTaskScheduler _taskScheduler;
 
     protected DNSResolver _resolver = null;
+
 
     public PublishingManagerImpl() {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SXXX");
@@ -176,7 +178,6 @@ public class PublishingManagerImpl implements PublishingManager {
     }
 
     private void processMessage(String vehicleId, Date vehicleTimestamp, String message) throws ExecutionException {
-
         highFreqPublisher.send(message);
 
         vehicleTimestamp = getFixedVehicleTimestamp(vehicleTimestamp);

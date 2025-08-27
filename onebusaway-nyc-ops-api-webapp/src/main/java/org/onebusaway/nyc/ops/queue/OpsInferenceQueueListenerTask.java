@@ -74,7 +74,7 @@ public class OpsInferenceQueueListenerTask extends
 
   @Autowired
   public void setInferencePersistenceService(
-          InferencePersistenceService pService) {
+      InferencePersistenceService pService) {
     this.persister = pService;
   }
 
@@ -84,7 +84,7 @@ public class OpsInferenceQueueListenerTask extends
   }
 
   @Refreshable(dependsOn = {
-          "tds.inputQueueHost", "tds.inputQueuePort", "tds.inputQueueName"})
+      "tds.inputQueueHost", "tds.inputQueuePort", "tds.inputQueueName"})
   @Override
   public void startListenerThread() {
     if (_initialized == true) {
@@ -100,7 +100,7 @@ public class OpsInferenceQueueListenerTask extends
       return;
     }
     _log.info("inference archive listening on " + host + ":" + port
-            + ", queue=" + queueName);
+        + ", queue=" + queueName);
     try {
       initializeQueue(host, queueName, port);
       _log.warn("queue config:" + queueName + " COMPLETE");
@@ -115,20 +115,20 @@ public class OpsInferenceQueueListenerTask extends
   @Override
   // this method must throw exceptions to force a transaction rollback
   protected void processResult(NycQueuedInferredLocationBean inferredResult,
-                               String contents) {
+      String contents) {
     long timeReceived = System.currentTimeMillis();
     ArchivedInferredLocationRecord locationRecord = null;
 
     if (_log.isDebugEnabled())
       _log.debug("vehicle=" + inferredResult.getVehicleId() + ":"
-              + new Date(inferredResult.getRecordTimestamp()));
+          + new Date(inferredResult.getRecordTimestamp()));
 
     boolean validInferredResult = validationService.validateInferenceRecord(inferredResult);
 
     if (validInferredResult) {
       locationRecord = new ArchivedInferredLocationRecord(inferredResult,
-              contents, timeReceived);
-      persister.persist(locationRecord, contents);
+          contents, timeReceived);
+        persister.persist(locationRecord, contents);
     } else {
       discardRecord(inferredResult.getVehicleId(), contents);
     }
@@ -147,13 +147,13 @@ public class OpsInferenceQueueListenerTask extends
   @Override
   public String getQueueHost() {
     return _configurationService.getConfigurationValueAsString(
-            "tds.inputQueueHost", null);
+        "tds.inputQueueHost", null);
   }
 
   @Override
   public String getQueueName() {
     return _configurationService.getConfigurationValueAsString(
-            "tds.inputQueueName", null);
+        "tds.inputQueueName", null);
   }
 
   public String getQueueDisplayName() {
@@ -163,7 +163,7 @@ public class OpsInferenceQueueListenerTask extends
   @Override
   public Integer getQueuePort() {
     return _configurationService.getConfigurationValueAsInteger(
-            "tds.inputQueuePort", 5567);
+        "tds.inputQueuePort", 9092);
   }
 
   public void logStatus() {
@@ -188,20 +188,20 @@ public class OpsInferenceQueueListenerTask extends
 
     // make parsing lenient
     _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-            false);
+        false);
 
-    // get current state from backup ops api or archiver
+   // get current state from backup ops api or archiver
     try {
-      _log.info("Attempting to set initial state");
-      List<CcAndInferredLocationRecord> lastKnownRecords = _locationService.getAllLastKnownRecords();
-      _locationDao.saveOrUpdateRecords(lastKnownRecords);
-    } catch (Exception e) {
-      _log.error("Failed to set initial state", e);
-    }
+    	_log.info("Attempting to set initial state");
+		List<CcAndInferredLocationRecord> lastKnownRecords = _locationService.getAllLastKnownRecords();
+		_locationDao.saveOrUpdateRecords(lastKnownRecords);
+	} catch (Exception e) {
+		_log.error("Failed to set initial state", e);
+	}
 
     if (_statusTask == null) {
-      _statusTask = (ScheduledFuture<StatusThread>) _taskScheduler.scheduleWithFixedDelay(new StatusThread(),
-              STATUS_INTERVAL_MINUTES * 60 * 1000);
+    	_statusTask = (ScheduledFuture<StatusThread>) _taskScheduler.scheduleWithFixedDelay(new StatusThread(),
+        STATUS_INTERVAL_MINUTES * 60 * 1000);
     }
 
   }

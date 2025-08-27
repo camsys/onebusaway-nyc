@@ -130,7 +130,7 @@ public class InputQueueListenerTask implements InputTask, IQueueListenerTask {
     @Override
   public Integer getQueuePort() {
     return _configurationService.getConfigurationValueAsInteger(
-        "inference-engine.inputQueuePort", 5563);
+        "inference-engine.inputQueuePort", 9092);
   }
 
     @Override

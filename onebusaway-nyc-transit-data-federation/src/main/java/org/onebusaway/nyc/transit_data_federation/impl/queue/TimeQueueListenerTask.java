@@ -59,7 +59,7 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 
 	@Override
 	public Integer getQueuePort() {
-		return _configurationService.getConfigurationValueAsInteger("tds.timePredictionQueueOutputPort", 5569);
+		return _configurationService.getConfigurationValueAsInteger("tds.timePredictionQueueOutputPort", 9092);
 	}
 
 	@Override
