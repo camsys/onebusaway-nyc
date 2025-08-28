@@ -123,7 +123,6 @@ public class KafkaOutputQueueSenderServiceImpl implements OutputQueueSenderServi
 
     @Override
     public void run() {
-      int errorCount = 0;
       while (!Thread.currentThread().isInterrupted()) {
         try {
           String r = _outputBuffer.take();
