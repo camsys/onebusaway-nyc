@@ -44,6 +44,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Sends inference output to the inference output queue.
@@ -122,16 +123,20 @@ public class KafkaOutputQueueSenderServiceImpl implements OutputQueueSenderServi
 
     @Override
     public void run() {
+      int errorCount = 0;
       while (!Thread.currentThread().isInterrupted()) {
+        try {
+          String r = _outputBuffer.take();
+          producerRecord = new ProducerRecord<>(_topicName, r);;
+          producer.send(producerRecord);
+        } catch (InterruptedException ie) {
+          return;
+        }
 
-        if (processedCount > _countInterval) {
-          long timeInterval = (new Date().getTime() - markTimestamp.getTime());
-          _log.warn("Inference output queue(primary="
-              + _isPrimaryInferenceInstance + "): processed " + _countInterval + " messages in "
-              + (timeInterval / 1000)
-              + " seconds; (" + (1000.0 * processedCount/timeInterval) + ") records/second.  "
-              + "current queue length is " + _outputBuffer.size());
-
+        if (processedCount > 1000) {
+          long timeDiff = TimeUnit.MILLISECONDS.toSeconds (System.currentTimeMillis() - markTimestamp.getTime());
+          _log.info("HTTP Proxy output queue {}: processed 1000 messages in {} seconds; current queue length is {}",
+                  this._topicName, timeDiff, _outputBuffer.size());
           markTimestamp = new Date();
           processedCount = 0;
         }
@@ -286,21 +291,18 @@ public class KafkaOutputQueueSenderServiceImpl implements OutputQueueSenderServi
   }
 
   public String getQueueHost() {
-    //return _configurationService.getConfigurationValueAsString(
-        //"inference-engine.outputQueueHost", "localhost");
-    return "localhost";
+    return _configurationService.getConfigurationValueAsString(
+        "inference-engine.outputQueueHost", null);
   }
 
   public String getQueueName() {
-    //return _configurationService.getConfigurationValueAsString(
-        //"inference-engine.outputQueueName", "bhs_queue");
-    return "bhs_queue";
+    return _configurationService.getConfigurationValueAsString(
+        "inference-engine.outputQueueName", "bhs_queue");
   }
 
   public Integer getQueuePort() {
-    //return _configurationService.getConfigurationValueAsInteger(
-        //"inference-engine.outputQueuePort", 9092);
-    return 9092;
+    return _configurationService.getConfigurationValueAsInteger(
+        "inference-engine.outputQueuePort", 9092);
   }
 
   @Override

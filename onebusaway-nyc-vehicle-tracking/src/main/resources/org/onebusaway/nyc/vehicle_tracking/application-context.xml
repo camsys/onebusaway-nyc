@@ -55,7 +55,5 @@
   <bean id="cloudWatchService" class="org.onebusaway.nyc.vehicle_tracking.impl.monitoring.CloudWatchServiceImpl" />
 	
   <bean id="nullBlockStateMap" class="org.onebusaway.nyc.vehicle_tracking.impl.monitoring.NullBlockStateRouteMap" />
-
-  <bean id="listener" class="org.onebusaway.nyc.queue.KafkaQueueListenerTask" />
   
 </beans>
