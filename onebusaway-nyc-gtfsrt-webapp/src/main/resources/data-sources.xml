@@ -56,21 +56,21 @@
     </bean>
 
     <!-- Input Queue Configuration -->
-    <bean id="inferenceInputQueue" abstract="true"
+    <bean id="inferenceInputQueue"
           class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask"
             destroy-method="destroy"
     />
 
     <!--  Time Queue Configuration -->
     <!--  This option integrates with an external time prediction queue -->
-    <bean id="timeInputQueue" abstract="true"
+    <bean id="timeInputQueue"
             class="org.onebusaway.nyc.transit_data_federation.impl.predictions.QueuePredictionIntegrationServiceImpl"
             destroy-method="destroy">
         <property name="checkPredictionAge" value="false"/>
     </bean>
     
     <!-- APC Queue Configuration -->
-    <bean id="apcInputQueue"  abstract="true" class="org.onebusaway.nyc.transit_data_federation.impl.nyc.ApcIntegrationServiceImpl">
+    <bean id="apcInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.nyc.ApcIntegrationServiceImpl">
         <property name="status" value="ENABLED"/>
     </bean>
 
