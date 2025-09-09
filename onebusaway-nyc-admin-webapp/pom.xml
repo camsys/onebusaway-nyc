@@ -135,7 +135,7 @@
 		<!-- DB dependencies -->
 		<dependency>
 			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
+			<artifactId>mysql-connector-j</artifactId>
 		</dependency>
 
 		<!-- AWS S3 integration -->
