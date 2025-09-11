@@ -93,76 +93,18 @@ import org.apache.struts2.rest.handler.XStreamHandler;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.*;
 
 public class CustomXStreamHandler extends XStreamHandler {
 
-
-  // Only CDATA these fields when they appear inside <situation> ... </situation>
-  private static final Set<String> SITUATION_CDATA_FIELDS = new HashSet<>(
-      Arrays.asList("summary", "description")
-  );
-
-  /**
-   * CDATA only for selected fields inside a <situation> element
-   */
-  private XStream createCdataAwareXStreamStrict() {
-    XStream xstream = new XStream(new XppDriver() {
-      @Override
-      public HierarchicalStreamWriter createWriter(Writer out) {
-        return new PrettyPrintWriter(out) {
-          private final Deque<String> path = new ArrayDeque<>();
-          private boolean cdata = false;
-
-          private boolean isInSituation() {
-            for (String n : path) {
-              if ("situation".equals(n)) return true;
-            }
-            return false;
-          }
-
-          @Override
-          public void startNode(String name, @SuppressWarnings("rawtypes") Class clazz) {
-            cdata = isInSituation() && SITUATION_CDATA_FIELDS.contains(name);
-            path.push(name);
-            super.startNode(name, clazz);
-          }
-
-          @Override
-          public void endNode() {
-            super.endNode();
-            path.pop();
-            cdata = false;
-          }
-
-          @Override
-          protected void writeText(QuickWriter writer, String text) {
-            if (cdata && text != null && !text.isEmpty()) {
-              String safe = text.replace("]]>", "]]]]><![CDATA[>");
-              writer.write("<![CDATA[");
-              writer.write(safe);
-              writer.write("]]>");
-            } else {
-              super.writeText(writer, text);
-            }
-          }
-        };
-      }
-    });
-
-    xstream.setMode(XStream.NO_REFERENCES);
-    return xstream;
-  }
-
   @Override
   protected XStream createXStream(ActionInvocation actionInvocation) {
-    XStream xstream = createCdataAwareXStreamStrict();
+    XStream xstream = XStreamFactory.createWithPolicy(new SituationPolicy());
     processXStreamAliases(xstream);
     return xstream;
   }
 
   protected XStream createTestXStream() {
-    XStream xstream = createCdataAwareXStreamStrict();
+    XStream xstream = XStreamFactory.createWithPolicy(new SituationPolicy());
     processXStreamAliases(xstream);
     return xstream;
   }
