@@ -553,7 +553,7 @@ public class IndexAction extends SessionedIndexAction {
     });
 
     if (aDirectionWithServiceAlerts != null) {
-      footer += "\nC " + result.getShortName() + " for *alerts";
+      footer += "\nA " + result.getShortName() + " for *alerts";
     }
 
     RouteDirection aVehicleWithAPC = (RouteDirection)CollectionUtils.find(result.getDirections(), new Predicate() {
@@ -843,7 +843,7 @@ public class IndexAction extends SessionedIndexAction {
       footer += stopResult.getIdWithoutAgency() + "+ROUTE for bus info\n";
     }
 
-    String alertsFooterText = "C+ROUTE for *svc alert\n";
+    String alertsFooterText = "A+ROUTE for *svc alert\n";
     String occupancyFooterText = "O for #occupancy\n";
 
     // worst case for footer length
