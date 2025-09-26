@@ -66,9 +66,7 @@
 			&amp;&amp; getSurveyLinkText() != null &amp;&amp; !getSurveyLinkText().isEmpty()
 			&amp;&amp; getSurveyLinkUrl() != null &amp;&amp; !getSurveyLinkUrl().isEmpty()}">
 			<div id="mobile-survey">
-				<p>
-					${surveyText} <a href="${surveyLinkUrl}">${surveyLinkText}</a>
-				</p>
+				<p>We have a new look! Try the Beta <a href="https://bustime-beta.mta.info/about-beta">here &gt;&gt;</a></p>
 			</div>
 		</s:if>
     	<p>
