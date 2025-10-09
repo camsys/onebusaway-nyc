@@ -537,7 +537,7 @@ public class IndexAction extends SessionedIndexAction {
   // whether a route has scheduled service or not--always returns a message that fits into one SMS.
   private String routeResponse(RouteResult result) throws Exception {
     String header = result.getShortName() + "\n\n";
-
+    String survey = "";
     String footer = "\nSend:\n";
     footer += "STOPCODE or INTERSECTION\n";
     footer += "Best: Also add '" + result.getShortName() + "'\n";
@@ -572,7 +572,7 @@ public class IndexAction extends SessionedIndexAction {
       footer += "\nO for #occupancy";
     }
 
-    footer += "\n" + StringUtils.abbreviate(getAdFooter(), MAX_FOOTER_CHARACTER_COUNT);
+    survey += "\n" + StringUtils.abbreviate(getAdFooter(), MAX_FOOTER_CHARACTER_COUNT);
 
     // find biggest headsign
     int routeDirectionTruncationLength = -1;
@@ -582,7 +582,11 @@ public class IndexAction extends SessionedIndexAction {
 
     // try to fit the entire headsign, but if we can't, start chopping from the longest one down
     String body = null;
-    while(body == null || header.length() + body.length() + footer.length() >= MAX_SMS_CHARACTER_COUNT) {
+    while(body == null || header.length() + body.length() + footer.length() + survey.length() >= MAX_SMS_CHARACTER_COUNT) {
+      if(body!=null && survey.length() > 0){
+        survey = "";
+        continue;
+      }
       body = "";
       for(RouteDirection routeDirection : result.getDirections()) {
         String headsign = routeDirection.getDestination();
@@ -629,7 +633,7 @@ public class IndexAction extends SessionedIndexAction {
       }
     }
 
-    return header + body + footer;
+    return header + body + footer + survey;
   }
 
   private String locationDisambiguationResponse(int offset) throws Exception {
