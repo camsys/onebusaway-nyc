@@ -201,9 +201,9 @@ public class IndexAction extends SessionedIndexAction {
           // paginated service alerts
         } else if("ServiceAlertResult".equals(_searchResults.getResultType())) {
           if(commandString != null && commandString.equals("N")) {
-            _response = serviceAlertResponse(_searchResultsCursor);
+            _response = serviceAlertResponse(_searchResultsCursor, _lastQuery);
           } else {
-            _response = serviceAlertResponse(0);
+            _response = serviceAlertResponse(0, _lastQuery);
           }
           break;
 
@@ -417,7 +417,7 @@ public class IndexAction extends SessionedIndexAction {
   /**
    * RESPONSE GENERATION METHODS
    */
-  private String serviceAlertResponse(int offset) throws Exception {
+  private String serviceAlertResponse(int offset, String searchterm) throws Exception {
     if(offset >= _searchResults.getMatches().size()) {
       return errorResponse("No more.");
     }
@@ -434,7 +434,7 @@ public class IndexAction extends SessionedIndexAction {
 
       // if the alert alone is too long, we have to chop it
       if(textToAdd.length() > MAX_SMS_CHARACTER_COUNT - footer.length() - 5) {
-        textToAdd = textToAdd.substring(0, MAX_SMS_CHARACTER_COUNT - footer.length() - 22) + "... more at MTA.info\n\n";
+        textToAdd = textToAdd.substring(0, MAX_SMS_CHARACTER_COUNT - footer.length() - 41) + "... more at bustime.mta.info/#"+ searchterm +"\n\n";
       }
 
       if(body.length() + footer.length() + textToAdd.length() <= MAX_SMS_CHARACTER_COUNT) {
