@@ -65,7 +65,7 @@ public abstract class AbstractSearchResultFactoryImpl implements SearchResultFac
     populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, true);
   }
 
-  private boolean setDescription(Set<String> serviceAlertDescriptions, List<NaturalLanguageStringBean> descriptions, boolean htmlizeNewlines) {
+  protected boolean setDescription(Set<String> serviceAlertDescriptions, List<NaturalLanguageStringBean> descriptions, boolean htmlizeNewlines) {
     boolean descriptionsAdded = false;
     if (descriptions != null) {
       for (NaturalLanguageStringBean description : descriptions) {

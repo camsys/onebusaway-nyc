@@ -86,6 +86,12 @@ public class IndexAction extends SessionedIndexAction {
 
   private String failureMessage = "request not filled";
 
+//  todo: if OBANYC-3699 is fixed, we can remove this config
+  private boolean _nextAlertIsBroken = true;
+  public void setNextAlertIsBroken(boolean nextAlertIsBroken) {
+    _nextAlertIsBroken = nextAlertIsBroken;
+  }
+
   @Override
   public void initializeSession(String sessionId) {
 
@@ -423,6 +429,8 @@ public class IndexAction extends SessionedIndexAction {
     }
 
     // worst case in terms of footer length
+    String abbreviationIndicator = "...";
+    String fullAlertLocation = "\n\nmore at bustime.mta.info/#"+ searchterm +"\n\n";
     String footer = "Send:\n";
     footer += "N for next alert\n";
 
@@ -432,15 +440,28 @@ public class IndexAction extends SessionedIndexAction {
       ServiceAlertResult serviceAlert = (ServiceAlertResult)_searchResults.getMatches().get(i);
       String textToAdd = serviceAlert.getAlert() + "\n\n";
 
-      // if the alert alone is too long, we have to chop it
-      if(textToAdd.length() > MAX_SMS_CHARACTER_COUNT - footer.length() - 5) {
-        textToAdd = textToAdd.substring(0, MAX_SMS_CHARACTER_COUNT - footer.length() - 41) + "... more at bustime.mta.info/#"+ searchterm +"\n\n";
-      }
+      if(_nextAlertIsBroken)
+      {
+        if(textToAdd.length() > MAX_SMS_CHARACTER_COUNT - fullAlertLocation.length()) {
+          textToAdd = textToAdd.substring(0, MAX_SMS_CHARACTER_COUNT - fullAlertLocation.length() - abbreviationIndicator.length()) + abbreviationIndicator;
+        }
 
-      if(body.length() + footer.length() + textToAdd.length() <= MAX_SMS_CHARACTER_COUNT) {
-        body += textToAdd;
-      } else {
-        break;
+        if(body.length() + fullAlertLocation.length() + textToAdd.length() <= MAX_SMS_CHARACTER_COUNT) {
+          body += textToAdd;
+        } else {
+          break;
+        }
+      }
+      else{
+        if(textToAdd.length() > MAX_SMS_CHARACTER_COUNT - fullAlertLocation.length() - footer.length()) {
+          textToAdd = textToAdd.substring(0, MAX_SMS_CHARACTER_COUNT - fullAlertLocation.length() - footer.length() - abbreviationIndicator.length()) + abbreviationIndicator;
+        }
+
+        if(body.length() + fullAlertLocation.length() + footer.length() + textToAdd.length() <= MAX_SMS_CHARACTER_COUNT) {
+          body += textToAdd;
+        } else {
+          break;
+        }
       }
 
       i++;
@@ -456,9 +477,11 @@ public class IndexAction extends SessionedIndexAction {
     }
 
     if(i < _searchResults.getMatches().size()) {
-      return body + footer;
+      if(_nextAlertIsBroken)
+        return body + fullAlertLocation;
+      return body + fullAlertLocation + footer;
     } else {
-      return body;
+      return body + fullAlertLocation ;
     }
   }
 

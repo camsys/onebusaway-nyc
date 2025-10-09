@@ -75,6 +75,21 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 	}
 
 	@Override
+	protected void populateServiceAlerts(Set<String> serviceAlertSummaries,
+										 List<ServiceAlertBean> serviceAlertBeans, boolean htmlizeNewlines) {
+		if (serviceAlertBeans == null)
+			return;
+		for (ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
+			boolean summariesAdded = false;
+			summariesAdded = setDescription(serviceAlertSummaries,
+					serviceAlertBean.getSummaries(), htmlizeNewlines);
+			if (!summariesAdded) {
+				serviceAlertSummaries.add("(no description)");
+			}
+		}
+	}
+
+	@Override
 	public SearchResult getRouteResult(RouteBean routeBean) {    
 		List<RouteDirection> directions = new ArrayList<RouteDirection>();
 
@@ -101,7 +116,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 				}
 
 				// service alerts for this route + direction
-				List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
+				List<NaturalLanguageStringBean> serviceAlertSummaries = new ArrayList<NaturalLanguageStringBean>();
 				List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRoute(routeBean.getId());
 				serviceAlertBeans = serviceAlertBeans.stream().filter(
 						serviceAlertBean->{
@@ -111,9 +126,9 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 							});
 						}).collect(Collectors.toList());
 
-				populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, HTMLIZE_NEWLINES);
+				populateServiceAlerts(serviceAlertSummaries, serviceAlertBeans, HTMLIZE_NEWLINES);
 
-				directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, null, serviceAlertDescriptions));
+				directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, null, serviceAlertSummaries));
 			}
 		}
 
