@@ -578,7 +578,7 @@ public class IndexAction extends SessionedIndexAction {
     });
 
     if (aDirectionWithServiceAlerts != null) {
-      footer += "\nA " + result.getShortName() + " for *alerts";
+      footer += "\nA+" + result.getShortName() + " for *alerts";
     }
 
     RouteDirection aVehicleWithAPC = (RouteDirection)CollectionUtils.find(result.getDirections(), new Predicate() {
