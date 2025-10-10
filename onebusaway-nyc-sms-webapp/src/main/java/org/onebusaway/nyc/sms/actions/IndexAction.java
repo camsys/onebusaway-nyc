@@ -169,7 +169,7 @@ public class IndexAction extends SessionedIndexAction {
             _response = errorResponse("No results.");
             break;
 
-          } else if (commandString != null && commandString.equals("C")) {
+          } else if (commandString != null && (commandString.equals("C") || commandString.equals("A"))) {
             // find a unique set of service alerts for the route found
             Set<String> alerts = new HashSet<String>();
             for (RouteDirection direction : route.getDirections()) {
@@ -578,7 +578,7 @@ public class IndexAction extends SessionedIndexAction {
     });
 
     if (aDirectionWithServiceAlerts != null) {
-      footer += "\nC " + result.getShortName() + " for *alerts";
+      footer += "\nA " + result.getShortName() + " for *alerts";
     }
 
     RouteDirection aVehicleWithAPC = (RouteDirection)CollectionUtils.find(result.getDirections(), new Predicate() {
@@ -872,7 +872,7 @@ public class IndexAction extends SessionedIndexAction {
       footer += stopResult.getIdWithoutAgency() + "+ROUTE for bus info\n";
     }
 
-    String alertsFooterText = "C+ROUTE for *svc alert\n";
+    String alertsFooterText = "A+ROUTE for *svc alert\n";
     String occupancyFooterText = "O for #occupancy\n";
 
     // worst case for footer length
@@ -1081,9 +1081,12 @@ public class IndexAction extends SessionedIndexAction {
 
     query = query.trim();
 
-    // if this is a command prefix, one with a parameter, the command is "C", the query is the
+    // if this is a command prefix, one with a parameter, the command is "C" or "A", the query is the
     // "parameter".
     if(query.toUpperCase().startsWith("C ") || query.toUpperCase().startsWith("C+")) {
+      return query.substring(2);
+    }
+    if(query.toUpperCase().startsWith("A ") || query.toUpperCase().startsWith("A+")) {
       return query.substring(2);
     }
 
@@ -1112,6 +1115,9 @@ public class IndexAction extends SessionedIndexAction {
 
     if (query.toUpperCase().startsWith("C ") || query.toUpperCase().startsWith("C+")) {
       return "C";
+    }
+    if (query.toUpperCase().startsWith("A ") || query.toUpperCase().startsWith("A+")) {
+      return "A";
     }
 
     // if we have nearby stops and the user wants to see them
