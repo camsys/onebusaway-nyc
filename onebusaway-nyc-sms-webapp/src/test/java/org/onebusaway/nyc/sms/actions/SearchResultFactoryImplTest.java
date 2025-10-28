@@ -100,7 +100,7 @@ public class SearchResultFactoryImplTest {
 	@Test
 	public void testGetRouteResultServiceAlertWithDescriptionsOnly() {
 		RouteResult result = runGetRouteResult(createServiceAlerts(new String[] {
-				TEST_DESCRIPTION, TEST_DESCRIPTION2}, new String[] {TEST_SUMMARY}));
+				TEST_DESCRIPTION, TEST_DESCRIPTION2}, new String[] {""}));
 		List<NaturalLanguageStringBean> alerts = result.getDirections().get(0).getSerivceAlerts();
 		assertEquals(2, alerts.size());
 		for (NaturalLanguageStringBean a : alerts) {
@@ -125,7 +125,7 @@ public class SearchResultFactoryImplTest {
 				new String[] {TEST_DESCRIPTION}, new String[] {TEST_SUMMARY}));
 		List<NaturalLanguageStringBean> alerts = result.getDirections().get(0).getSerivceAlerts();
 		assertEquals(1, alerts.size());
-		assertEquals(TEST_DESCRIPTION, alerts.get(0).getValue());
+		assertEquals(TEST_SUMMARY, alerts.get(0).getValue());
 	}
 
 	// getStopResult tests
@@ -143,7 +143,7 @@ public class SearchResultFactoryImplTest {
 	@Test
 	public void testGetStopResultServiceAlertWithDescriptionsOnly() {
 		StopResult result = runGetStopResult(createServiceAlerts(new String[] {
-				TEST_DESCRIPTION, TEST_DESCRIPTION2}, new String[] {TEST_SUMMARY}));
+				TEST_DESCRIPTION, TEST_DESCRIPTION2}, new String[] {""}));
 		List<NaturalLanguageStringBean> alerts = result.getRoutesAvailable().get(0).getDirections().get(
 				0).getSerivceAlerts();
 		assertEquals(2, alerts.size());
@@ -159,7 +159,7 @@ public class SearchResultFactoryImplTest {
 		List<NaturalLanguageStringBean> alerts = result.getRoutesAvailable().get(0).getDirections().get(
 				0).getSerivceAlerts();
 		assertEquals(1, alerts.size());
-		assertEquals(TEST_LONG_DESCRIPTION, alerts.get(0).getValue());
+		assertEquals(TEST_SUMMARY, alerts.get(0).getValue());
 	}
 
 	@Test
@@ -179,7 +179,7 @@ public class SearchResultFactoryImplTest {
 		List<NaturalLanguageStringBean> alerts = result.getRoutesAvailable().get(0).getDirections().get(
 				0).getSerivceAlerts();
 		assertEquals(1, alerts.size());
-		assertEquals(TEST_DESCRIPTION, alerts.get(0).getValue());
+		assertEquals(TEST_SUMMARY, alerts.get(0).getValue());
 	}
 
 	// Support methods

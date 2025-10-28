@@ -81,8 +81,18 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 			return;
 		for (ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
 			boolean summariesAdded = false;
-			summariesAdded = setDescription(serviceAlertSummaries,
-					serviceAlertBean.getSummaries(), htmlizeNewlines);
+			if(serviceAlertBean.getSummaries() == null ||
+				serviceAlertBean.getSummaries().isEmpty() ||
+				serviceAlertBean.getSummaries().size() == 0 ||
+				serviceAlertBean.getSummaries().stream().anyMatch(summary -> summary == null || summary.getValue().equals("")))
+			{
+				summariesAdded = setDescription(serviceAlertSummaries,
+						serviceAlertBean.getDescriptions(), htmlizeNewlines);;
+			}
+			else {
+				summariesAdded = setDescription(serviceAlertSummaries,
+						serviceAlertBean.getSummaries(), htmlizeNewlines);
+			}
 			if (!summariesAdded) {
 				serviceAlertSummaries.add("(no description)");
 			}
