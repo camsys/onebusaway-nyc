@@ -64,8 +64,6 @@
 	<div id="footer">
 		<s:if test="%{getShowSurvey()}">
 			<div id="mobile-survey">
-				<p><b>The Fall 2025 Customers Count survey is live!</b> Share your feedback <a href="https://nymta.qualtrics.com/jfe/form/SV_3UHtJEXWxt4PdNI?link=14">here</a> for a chance to win a $100 OMNY card.</p>
-				<br />
 				<p>We have a new look! Try the Beta <a href="https://bustime-beta.mta.info">here &gt;&gt;</a></p>
 			</div>
 			<br />
