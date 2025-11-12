@@ -144,6 +144,13 @@
                 </exclusions>
     	</dependency>
 
+        <!-- new s3 integration -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.12.500</version>
+        </dependency>
+
     	<!--  s3 integration -->
     	<dependency>
       		<groupId>com.amazonaws</groupId>
