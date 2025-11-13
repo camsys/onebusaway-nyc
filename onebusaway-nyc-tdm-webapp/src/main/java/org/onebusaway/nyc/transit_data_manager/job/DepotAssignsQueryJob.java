@@ -53,23 +53,18 @@ public class DepotAssignsQueryJob extends QuartzJobBean {
 
     private ConfigurationService _configurationService;
     private String _depotFileDir;
-    private HttpDepotAssignsSource _httpSource;
-    private S3DepotAssignsSource _s3Source;
+    private DepotAssignsSource _depotAssignsSource;
 
     public void setConfigurationService(ConfigurationService configurationService) {
         _configurationService = configurationService;
     }
 
+    public void setDepotAssignsSource(DepotAssignsSource depotAssignsSource) {
+        _depotAssignsSource = depotAssignsSource;
+    }
+
     public void setDepotFileDir(String depotFileDir) {
         _depotFileDir = depotFileDir;
-    }
-
-    public void setHttpSource(HttpDepotAssignsSource httpSource) {
-        _httpSource = httpSource;
-    }
-
-    public void setS3Source(S3DepotAssignsSource s3Source) {
-        _s3Source = s3Source;
     }
 
     @Override
@@ -77,22 +72,8 @@ public class DepotAssignsQueryJob extends QuartzJobBean {
         processDepotAssignments();
     }
 
-    private void initializeSourcesIfNeeded() {
-        if (_httpSource == null) {
-            _log.info("HttpDepotAssignsSource not injected, creating instance");
-            _httpSource = new HttpDepotAssignsSource();
-            _httpSource.setConfigurationService(_configurationService);
-        }
-
-        if (_s3Source == null) {
-            _log.info("S3DepotAssignsSource not injected, creating instance");
-            _s3Source = new S3DepotAssignsSource();
-            _s3Source.setConfigurationService(_configurationService);
-        }
-    }
-
     private void processDepotAssignments() {
-        DepotAssignsSource source = getConfiguredSource();
+        DepotAssignsSource source = _depotAssignsSource;
 
         if (source == null) {
             _log.error("No depot assigns source is configured. Please configure in data sources xml.");
@@ -127,25 +108,6 @@ public class DepotAssignsQueryJob extends QuartzJobBean {
             _log.error("Error processing xml input from {} source", source.getSourceType(), e);
             e.printStackTrace();
         }
-    }
-
-    private DepotAssignsSource getConfiguredSource() {
-        // Check which source was injected
-        if (_s3Source != null) {
-            if (!_s3Source.isAvailable()) {
-                _log.error("S3 source is injected but not properly configured. Check S3 bucket and key configuration.");
-                return null;
-            }
-            return _s3Source;
-        } else if (_httpSource != null) {
-            if (!_httpSource.isAvailable()) {
-                _log.error("HTTP source is injected but not properly configured. Check URL configuration.");
-                return null;
-            }
-            return _httpSource;
-        }
-
-        return null;
     }
 
     public String getFormattedFilePathDate(Date date) {
