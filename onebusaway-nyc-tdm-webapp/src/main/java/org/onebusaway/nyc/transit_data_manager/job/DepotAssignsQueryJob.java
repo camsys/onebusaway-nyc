@@ -17,8 +17,6 @@
 package org.onebusaway.nyc.transit_data_manager.job;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -36,106 +34,94 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
- * 	Quartz job to invoke Depot Assign web service every hour.
+ * Quartz job to invoke Depot Assign fetching every hour.
+ * Supports both HTTP and S3 sources - configured via Spring XML by commenting/uncommenting the source bean.
  *
  */
 public class DepotAssignsQueryJob extends QuartzJobBean {
-    public static final int DEFAULT_CONNECTION_TIMEOUT = 5 * 1000;
+
+    private static final Logger _log = LoggerFactory.getLogger(DepotAssignsQueryJob.class);
+
+    public static final String FILE_NAME_PREFIX = "depot_assignments_";
+    public static final int DEFAULT_MINIMUM_LINES = 5000;
+
     private ConfigurationService _configurationService;
     private String _depotFileDir;
-    public int DEFAULT_MINIMUM_LINES = 5000;
-    private int _connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
-    public static final String FILE_NAME_PREFIX = "depot_assignments_";
+    private DepotAssignsSource _depotAssignsSource;
 
-    @Autowired
     public void setConfigurationService(ConfigurationService configurationService) {
         _configurationService = configurationService;
     }
 
-    @Autowired
+    public void setDepotAssignsSource(DepotAssignsSource depotAssignsSource) {
+        _depotAssignsSource = depotAssignsSource;
+    }
+
     public void setDepotFileDir(String depotFileDir) {
         _depotFileDir = depotFileDir;
     }
 
-    private static Logger _log = LoggerFactory.getLogger(DepotAssignsQueryJob.class);
-
-
-    public String getUrl(){
-        return _configurationService.getConfigurationValueAsString("tdm.depotAssigns.url", null);
-    }
-
-    public int getConnectionTimeout(){
-        return _configurationService.getConfigurationValueAsInteger(
-                "tdm.depotAssigns.connectionTimeout", DEFAULT_CONNECTION_TIMEOUT);
-    }
-
     @Override
     protected void executeInternal(JobExecutionContext executionContext) throws JobExecutionException {
-        processDepotAssignmentsFromURL();
+        processDepotAssignments();
     }
 
-    public String getFormattedFilePathDate(Date date){
+    private void processDepotAssignments() {
+        DepotAssignsSource source = _depotAssignsSource;
+
+        if (source == null) {
+            _log.error("No depot assigns source is configured. Please configure in data sources xml.");
+            return;
+        }
+
+        String filePath = getFilePath(System.getProperty(_depotFileDir), new Date());
+        if (StringUtils.isBlank(filePath)) {
+            _log.warn("FilePath location not configured, exiting");
+            return;
+        }
+
+        _log.info("Using {} source to fetch depot assignments", source.getSourceType());
+
+        try {
+            InputStream input = source.fetchDepotAssignments();
+
+            DOMSource domSource = getXmlDOMSourceFromStream(input);
+            File depotAssignsFile = saveDOMSourceToXmlFile(domSource, filePath);
+
+            validateDepotAssignsFile(depotAssignsFile);
+
+        } catch (SAXException e) {
+            _log.error("Error parsing xml into document from input stream", e);
+        } catch (ParserConfigurationException e) {
+            _log.error("Error parsing xml into document from input stream", e);
+        } catch (IOException e) {
+            _log.error("Error processing xml input from {} source", source.getSourceType(), e);
+        } catch (TransformerException e) {
+            _log.error("Error transforming xml input to xml file {}", filePath, e);
+        } catch (Exception e) {
+            _log.error("Error processing xml input from {} source", source.getSourceType(), e);
+            e.printStackTrace();
+        }
+    }
+
+    public String getFormattedFilePathDate(Date date) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         return dateFormat.format(date);
     }
 
-    public String getFilePath(String filePath, Date date){
-        return filePath + File.separator + FILE_NAME_PREFIX + getFormattedFilePathDate(date) +".xml";
+    public String getFilePath(String filePath, Date date) {
+        return filePath + File.separator + FILE_NAME_PREFIX + getFormattedFilePathDate(date) + ".xml";
     }
 
-    private void processDepotAssignmentsFromURL(){
-        String url = getUrl();
-        int connectionTimeout = getConnectionTimeout();
-        String filePath = getFilePath(System.getProperty(_depotFileDir), new Date());
-        if (StringUtils.isBlank(url)) {
-            _log.warn("Depot assigns URL not configured, exiting");
-            return;
-        }
-        if(StringUtils.isBlank(filePath)){
-            _log.warn("FilePath location not configured, exiting");
-            return;
-        }
-        try{
-            InputStream input = getXmlInputStream(url, connectionTimeout);
-            DOMSource domSource = getXmlDOMSourceFromStream(input);
-            File depotAssignsFile = saveDOMSourceToXmlFile(domSource, filePath);
-            validateDepotAssignsFile(depotAssignsFile);
-        } catch (SAXException e) {
-            _log.error("Error parsing xml into document from input stream}", url, e);
-        } catch (ParserConfigurationException e) {
-            _log.error("Error parsing xml into document from input stream}", url, e);
-        } catch (IOException e) {
-            _log.error("Error processing xml input from url {}", url, e);
-        } catch (TransformerException e) {
-            _log.error("Error tranforming xml input to xml file {}", filePath, e);
-        } catch (Exception e) {
-            _log.error("Error processing xml input from url {}", url, e);
-            e.printStackTrace();
-        }
-
-    }
-
-    public InputStream getXmlInputStream(String url, int connectionTimeout) throws IOException {
-        long start = System.currentTimeMillis();
-        HttpURLConnection connection = null;
-        connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setConnectTimeout(connectionTimeout);
-        connection.setReadTimeout(connectionTimeout);
-        InputStream inputStream = connection.getInputStream();
-        _log.debug("retrieved " + getUrl() + " in " + (System.currentTimeMillis() - start) + " ms");
-        return inputStream;
-
-    }
-
-    public DOMSource getXmlDOMSourceFromStream(InputStream inputStream) throws IOException, SAXException, ParserConfigurationException {
+    public DOMSource getXmlDOMSourceFromStream(InputStream inputStream)
+            throws IOException, SAXException, ParserConfigurationException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = dbf.newDocumentBuilder();
         Document document = docBuilder.parse(inputStream);
@@ -156,28 +142,28 @@ public class DepotAssignsQueryJob extends QuartzJobBean {
     public boolean validateDepotAssignsFile(File file) throws IOException {
         int lines = getNumberOfLinesForFile(file);
         int minimumLines = getMinimumLines();
-        if (lines < minimumLines){
-            _log.error("Insufficient lines. (Lines:" + lines + ", Minimum: " + minimumLines + ")");
+
+        if (lines < minimumLines) {
+            _log.error("Insufficient lines. (Lines: {}, Minimum: {})", lines, minimumLines);
             file.delete();
             return false;
         } else {
-            _log.info(file.getAbsoluteFile()+"(Lines:" + lines + ", Minimum: " + minimumLines + ")");
+            _log.info("{} (Lines: {}, Minimum: {})", file.getAbsoluteFile(), lines, minimumLines);
             return true;
         }
-
     }
 
     public int getNumberOfLinesForFile(File file) throws IOException {
-        LineNumberReader  lnr = null;
-        try{
+        LineNumberReader lnr = null;
+        try {
             lnr = new LineNumberReader(new FileReader(file));
             lnr.skip(Long.MAX_VALUE);
             return lnr.getLineNumber();
         } catch (Exception e) {
             _log.error("Unable to read file {}", file.getAbsolutePath());
             return 0;
-        } finally{
-            if(lnr != null){
+        } finally {
+            if (lnr != null) {
                 lnr.close();
             }
         }
@@ -187,8 +173,8 @@ public class DepotAssignsQueryJob extends QuartzJobBean {
         if (_configurationService != null) {
             try {
                 return _configurationService.getConfigurationValueAsInteger("tdm.minimumLines", DEFAULT_MINIMUM_LINES);
-            } catch (RemoteConnectFailureException e){
-                _log.error("default minimum lines lookup failed:", e);
+            } catch (RemoteConnectFailureException e) {
+                _log.error("Default minimum lines lookup failed:", e);
                 return DEFAULT_MINIMUM_LINES;
             }
         }
