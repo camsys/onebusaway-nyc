@@ -40,7 +40,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
- * 	Quartz job to invoke Depot Assign web service every hour.
+ * Quartz job to invoke Depot Assign fetching every hour.
+ * Supports both HTTP and S3 sources - configured via Spring XML by commenting/uncommenting the source bean.
  *
  */
 public class DepotAssignsQueryJob extends QuartzJobBean {
@@ -73,8 +74,6 @@ public class DepotAssignsQueryJob extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext executionContext) throws JobExecutionException {
-        initializeSourcesIfNeeded();
-
         processDepotAssignments();
     }
 
@@ -96,7 +95,7 @@ public class DepotAssignsQueryJob extends QuartzJobBean {
         DepotAssignsSource source = getConfiguredSource();
 
         if (source == null) {
-            _log.error("No depot assigns source is configured. Please configure either HTTP or S3 source.");
+            _log.error("No depot assigns source is configured. Please configure in data sources xml.");
             return;
         }
 
@@ -131,32 +130,19 @@ public class DepotAssignsQueryJob extends QuartzJobBean {
     }
 
     private DepotAssignsSource getConfiguredSource() {
-        String sourceType = _configurationService.getConfigurationValueAsString("tdm.depotAssigns.source", "auto");
-
-        _log.debug("Configured source type: {}", sourceType);
-
-        if ("s3".equalsIgnoreCase(sourceType)) {
-            if (_s3Source.isAvailable()) {
-                return _s3Source;
-            } else {
-                _log.warn("S3 source is configured but not available. Check S3 configuration.");
+        // Check which source was injected
+        if (_s3Source != null) {
+            if (!_s3Source.isAvailable()) {
+                _log.error("S3 source is injected but not properly configured. Check S3 bucket and key configuration.");
                 return null;
             }
-        } else if ("http".equalsIgnoreCase(sourceType)) {
-            if (_httpSource.isAvailable()) {
-                return _httpSource;
-            } else {
-                _log.warn("HTTP source is configured but not available. Check HTTP configuration.");
+            return _s3Source;
+        } else if (_httpSource != null) {
+            if (!_httpSource.isAvailable()) {
+                _log.error("HTTP source is injected but not properly configured. Check URL configuration.");
                 return null;
             }
-        } else {
-            if (_s3Source.isAvailable()) {
-                return _s3Source;
-            } else if (_httpSource.isAvailable()) {
-                return _httpSource;
-            } else {
-                _log.debug("No sources available");
-            }
+            return _httpSource;
         }
 
         return null;

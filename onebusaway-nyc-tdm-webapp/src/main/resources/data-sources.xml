@@ -162,7 +162,7 @@
 			<map>
 				<entry key="configurationService" value-ref="configurationService"/>
 				<entry key="depotFileDir" value-ref="depotFileDir"/>
-				<entry key="httpSource" value-ref="httpDepotAssignsSource"/>
+<!--			<entry key="httpSource" value-ref="httpDepotAssignsSource"/>-->
 				<entry key="s3Source" value-ref="s3DepotAssignsSource"/>
 			</map>
 		</property>
