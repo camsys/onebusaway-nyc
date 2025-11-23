@@ -21,8 +21,8 @@
 
 	<!-- 0 or more appender elements -->
 	<Appenders>
-		<RollingFile name="ROLL" fileName="/var/lib/obanyc/log/queue-broker.log"
-					 filePattern="/var/lib/obanyc/log/queue-broker.%d{yyyy-MM-dd}-%i.log.gz">
+		<RollingFile name="ROLL" fileName="/var/lib/obanyc/log/${env:BROKER_INSTANCE:-queue-broker}.log"
+					 filePattern="/var/lib/obanyc/log/${env:BROKER_INSTANCE:-queue-broker}.%d{yyyy-MM-dd}-%i.log.gz">
 			<PatternLayout>
 				<Pattern>%d{ISO8601} %-5p [%F:%L] : %m%n</Pattern>
 			</PatternLayout>
