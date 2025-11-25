@@ -64,9 +64,6 @@
 	<div id="footer">
 		<s:if test="%{getShowSurvey()}">
 			<div id="mobile-survey">
-				<p><b>The Bus Time SMS service is currently unavailable due to a technical issue with our third-party vendor.
-					You may continue to use the Bus Time web page on your smart phone or desktop or download the official
-					MTA app for real-time arrival information.</b></p>
 				<p>We have a new look! Try the Beta <a href="https://bustime-beta.mta.info">here &gt;&gt;</a></p>
 			</div>
 			<br />
