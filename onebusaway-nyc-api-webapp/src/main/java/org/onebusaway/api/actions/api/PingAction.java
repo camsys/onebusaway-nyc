@@ -63,29 +63,14 @@ public class PingAction extends ActionSupport {
 		return null;
 		
 	}
-
-	private boolean hasAgenciesWithCoverage() {
-		try {
-			// Hard stop after 2 seconds to prevent Ping from hanging Tomcat
-			long start = System.currentTimeMillis();
-
-			List<AgencyWithCoverageBean> agencies = _tds.getAgenciesWithCoverage();
-
-			long elapsed = System.currentTimeMillis() - start;
-			if (elapsed > 2000) {
-				_log.warn("PingAction: getAgenciesWithCoverage took {} ms", elapsed);
-			}
-
-			if (agencies == null || agencies.isEmpty()) {
-				_log.error("PingAction: no agencies with coverage");
-				return false;
-			}
-
-			return true;
-		} catch (Exception ex) {
-			_log.error("PingAction: Hessian call to TransitDataService FAILED", ex);
-			return false;   // degrade gracefully
+	
+	private boolean hasAgenciesWithCoverage(){
+		List<AgencyWithCoverageBean> count = _tds.getAgenciesWithCoverage();
+		if (count == null || count.isEmpty()) {
+			_log.error("No agencies with coverage");
+			return false;
 		}
+		_log.debug(count.size() + "agencies with coverage found");
+		return true;
 	}
-
 }
