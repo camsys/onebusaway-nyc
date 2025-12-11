@@ -66,8 +66,6 @@
 			&amp;&amp; getSurveyLinkText() != null &amp;&amp; !getSurveyLinkText().isEmpty()
 			&amp;&amp; getSurveyLinkUrl() != null &amp;&amp; !getSurveyLinkUrl().isEmpty()}">
 			<div id="mobile-survey">
-				<p><u>Note:</u> The Bx90 and L91 shuttle routes have been renamed to T113 and T426, effective August 31st, 2025.</p>
-				<br />
 				<p>We have a new look! Try the Beta <a href="https://bustime-beta.mta.info">here &gt;&gt;</a></p>
 			</div>
 		</s:if>
