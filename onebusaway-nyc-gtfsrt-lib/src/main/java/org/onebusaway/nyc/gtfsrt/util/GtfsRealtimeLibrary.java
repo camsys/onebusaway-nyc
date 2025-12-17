@@ -18,6 +18,7 @@ package org.onebusaway.nyc.gtfsrt.util;
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.joda.time.LocalDate;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_manager.util.NycSiriUtil;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
@@ -28,10 +29,15 @@ import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class GtfsRealtimeLibrary {
+
+    private static Logger _log = LoggerFactory.getLogger(GtfsRealtimeLibrary.class);
+
     public static TripDescriptor.Builder makeTripDescriptor(TripBean tb, TripStatusBean status) {
         TripDescriptor.Builder trip = TripDescriptor.newBuilder();
         trip.setTripId(id(tb.getId()));
@@ -115,7 +121,11 @@ public class GtfsRealtimeLibrary {
 
         if (alert.getAllAffects() != null) {
             for (SituationAffectsBean affects : alert.getAllAffects()) {
-                rtAlert.addInformedEntity(informedEntity(affects));
+                try {
+                    rtAlert.addInformedEntity(informedEntity(affects));
+                }catch(Exception e) {
+                    _log.error("unable to add informed entity: " + affects.getRouteId());
+                }
             }
         }
 
