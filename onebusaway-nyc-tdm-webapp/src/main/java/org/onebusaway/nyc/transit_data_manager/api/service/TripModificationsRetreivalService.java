@@ -16,17 +16,12 @@
 
 package org.onebusaway.nyc.transit_data_manager.api.service;
 
+import com.google.transit.realtime.GtfsRealtime;
 import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 
-import java.io.IOException;
 import java.util.List;
 
-public interface CapiRetrievalService {
-    String getLocation();
+public interface TripModificationsRetreivalService {
 
-    List<CancelledTripBean> getCancelledTripBeans();
-
-    void setCancelledTripBeans(List<CancelledTripBean> cancelledTripsBeans);
-
-    void updateCancelledTripBeans() throws IOException;
+    GtfsRealtime.FeedMessage getTripModifications();
 }
