@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -66,46 +67,50 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		String currentValue = _configurationKeyToValueMap.get(configKey);
 		_configurationKeyToValueMap.put(configKey, configValue);
 
-		if(currentValue == null || !configValue.equals(currentValue)) {	
+		if(currentValue == null || !configValue.equals(currentValue)) {
 			_log.info("Invoking refresh method for config key " + configKey);
 
-			//_refreshService.refresh(configKey);
+			_refreshService.refresh(configKey);
 		}
 	}
 
 	public void refreshConfiguration() throws Exception {
-		List<JsonObject> configurationItems = 
+		List<JsonObject> configurationItems =
 				_transitDataManagerApiLibrary.getItemsForRequest("config", "list");
 
 		for(JsonObject configItem : configurationItems) {
 			String configKey = configItem.get("key").getAsString();
-			String configValue = configItem.get("value").getAsString();           
+			String configValue = configItem.get("value").getAsString();
 
 			updateConfigurationMap(configKey, configValue);
-		} 
+		}
 	}
 
 	private class UpdateThread implements Runnable {
 		@Override
-		public void run() {			
-			try {				
+		public void run() {
+			try {
 				refreshConfiguration();
 			} catch(Exception e) {
 				_log.error("Error updating configuration from TDM: " + e.getMessage());
 				e.printStackTrace();
 			}
-		}		
+		}
 	}
 
 	@SuppressWarnings("unused")
 	@PostConstruct
 	private void startUpdateProcess() throws Exception {
-		getConfiguration();  // this will fail for the TDM
+		try{
+			getConfiguration();  // this will fail for the TDM
+		} catch(Exception e){
+			_log.error("Error updating configuration from TDM: " + e.getMessage());
+		}
 		// wait one minute before looking up configuration
 		// especially important when on the TDM
-		_taskScheduler.schedule(new UpdateThread(), new Date(System.currentTimeMillis() + 60 * 1000)); // in 1 minute
-		// schedule update for every 5 minutes
-		_taskScheduler.scheduleWithFixedDelay(new UpdateThread(), 5 * 60 * 1000); // 5m
+		_taskScheduler.schedule(new UpdateThread(), new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1)));
+		// schedule update for every 3 minutes
+		_taskScheduler.scheduleWithFixedDelay(new UpdateThread(),  TimeUnit.MINUTES.toMillis(3));
 	}
 
 	@Override
