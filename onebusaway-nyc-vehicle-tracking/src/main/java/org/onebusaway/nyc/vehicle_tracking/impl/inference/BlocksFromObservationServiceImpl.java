@@ -242,7 +242,7 @@ public class BlocksFromObservationServiceImpl implements
         distanceAlong);
     AgencyAndId tripId = bs.getBlockLocation().getActiveTrip().getTrip().getId();
     if(_nycTransitDataService.isTripCancelled(tripId)){
-      _log.info("skipping cancelled trip " + tripId + " in particle creation for " + obs.getOpAssignedRunId());
+      _log.debug("skipping cancelled trip " + tripId + " in particle creation for " + obs.getOpAssignedRunId());
       return null;
     }
     return new BlockStateObservation(bs, obs, false);
