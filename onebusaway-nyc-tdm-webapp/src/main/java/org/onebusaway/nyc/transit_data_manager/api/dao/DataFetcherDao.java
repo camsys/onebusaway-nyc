@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package org.onebusaway.nyc.transit_data_manager.api.service;
-
-import org.onebusaway.transit_data.model.trips.CancelledTripBean;
+package org.onebusaway.nyc.transit_data_manager.api.dao;
 
 import java.io.IOException;
-import java.util.List;
+import java.io.InputStream;
 
-public interface CapiRetrievalService {
-    String getLocation();
-
-    List<CancelledTripBean> getCancelledTripBeans();
-
-    void setCancelledTripBeans(List<CancelledTripBean> cancelledTripsBeans);
-
-    void updateCancelledTripBeans() throws IOException;
+public interface DataFetcherDao {
+    InputStream fetchData() throws IOException;
 }

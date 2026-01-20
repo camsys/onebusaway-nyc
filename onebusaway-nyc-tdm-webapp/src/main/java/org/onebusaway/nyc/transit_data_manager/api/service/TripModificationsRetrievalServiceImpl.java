@@ -16,15 +16,12 @@
 
 package org.onebusaway.nyc.transit_data_manager.api.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.transit_data_manager.api.IncomingNycCancelledTripBeansContainer;
 import org.onebusaway.nyc.transit_data_manager.api.dao.DataFetcherDao;
 import org.onebusaway.nyc.transit_data_manager.api.datafetcher.DataFetcherFactory;
 import org.onebusaway.nyc.transit_data_manager.api.datafetcher.DataFetcherConnectionData;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,32 +33,34 @@ import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Service
-public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletContextAware {
+public class TripModificationsRetrievalServiceImpl implements TripModificationsRetreivalService, ServletContextAware {
 
-    private static final Logger log = LoggerFactory.getLogger(CapiRetrievalServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(TripModificationsRetrievalServiceImpl.class);
 
-    private static final String CONFIG_CAPI_ENABLED = "tdm.enableCapi";
-    private static final String CONFIG_CAPI_URL = "tdm.capiUrl";
-    private static final String CONFIG_CAPI_TIMEOUT = "tdm.capiConnectionTimeout";
-    private static final String CONFIG_CAPI_UPDATE_INTERVAL = "tdm.capiRefreshInterval";
-    private static final String CONFIG_CAPI_CACHE_TIMEOUT = "tdm.capiCacheTimeout";
+    private static final String CONFIG_TRIP_MODS_URL = "tdm.tripModificationsUrl";
+    private static final String CONFIG_TRIP_MODS_TIMEOUT = "tdm.tripModificationsConnectionTimeout";
+    private static final String CONFIG_TRIP_MODS_ENABLED = "tdm.tripModificationsEnabled";
+    private static final String CONFIG_TRIP_MODS_UPDATE_INTERVAL = "tdm.tripModificationsUpdateInterval";
+    private static final String CONFIG_TRIP_MODS_CACHE_TIMEOUT = "tdm.tripModificationCacheTimeout";
 
 
     private static final long DEFAULT_CONNECTION_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(5);
     private static final long DEFAULT_UPDATE_INTERVAL_MS = TimeUnit.SECONDS.toMillis(60);
-    private static final long DEFAULT_CACHE_EXPIRATION_MS = TimeUnit.MINUTES.toMillis(120);
+    private static final long DEFAULT_CACHE_EXPIRATION_MS = TimeUnit.SECONDS.toMillis(120);
 
     private final ConfigurationService configurationService;
     private final ThreadPoolTaskScheduler taskScheduler;
 
-    private boolean enabled = true;
     private String feedUrl;
+    private boolean enabled;
     private int connectionTimeoutMs;
     private long updateIntervalMs;
     private long cacheExpirationMs;
@@ -69,20 +68,14 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
     private final DataFetcherFactory dataFetcherFactory;
     private DataFetcherConnectionData dataFetcherConnectionData;
 
-    List<CancelledTripBean> _cancelledTripBeans;
-
-    private ObjectReader _objectReader = new ObjectMapper()
-            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
-            .setTimeZone(Calendar.getInstance().getTimeZone())
-            .readerFor(IncomingNycCancelledTripBeansContainer.class);
-
+    private FeedMessage tripModifications;
     private long lastUpdateTimestamp = 0;
 
     // Lock for thread-safe cache updates
     private final ReentrantReadWriteLock cacheLock = new ReentrantReadWriteLock();
 
     @Autowired
-    public CapiRetrievalServiceImpl(
+    public TripModificationsRetrievalServiceImpl(
             ConfigurationService configurationService,
             DataFetcherFactory dataFetcherFactory,
             ThreadPoolTaskScheduler taskScheduler) {
@@ -93,35 +86,41 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
 
     @PostConstruct
     public void setup() {
-        log.info("Initializing CapiRetrievalService");
+        log.info("Initializing TripModificationsRetrievalService");
         refreshConfig();
         scheduleUpdates();
     }
 
-    @Refreshable(dependsOn = {CONFIG_CAPI_ENABLED, CONFIG_CAPI_URL,CONFIG_CAPI_TIMEOUT,
-            CONFIG_CAPI_UPDATE_INTERVAL, CONFIG_CAPI_CACHE_TIMEOUT})
+    @Refreshable(dependsOn = {CONFIG_TRIP_MODS_URL, CONFIG_TRIP_MODS_TIMEOUT, CONFIG_TRIP_MODS_ENABLED,
+            CONFIG_TRIP_MODS_UPDATE_INTERVAL, CONFIG_TRIP_MODS_CACHE_TIMEOUT})
     public synchronized void refreshConfig() {
         if (configurationService == null) {
             log.warn("Configuration service not available");
             return;
         }
 
-        this.enabled = configurationService.getConfigurationValueAsBoolean(CONFIG_CAPI_ENABLED, false);
+        this.enabled = configurationService.getConfigurationValueAsBoolean(CONFIG_TRIP_MODS_ENABLED, false);
 
-        this.feedUrl = configurationService.getConfigurationValueAsString(CONFIG_CAPI_URL, null);
+        this.feedUrl = configurationService.getConfigurationValueAsString(CONFIG_TRIP_MODS_URL, null);
 
-        this.connectionTimeoutMs = configurationService.getConfigurationValueAsInteger(CONFIG_CAPI_URL,
-                (int) DEFAULT_CONNECTION_TIMEOUT_MS);
+        this.connectionTimeoutMs = configurationService.getConfigurationValueAsInteger(
+                CONFIG_TRIP_MODS_TIMEOUT,
+                (int) DEFAULT_CONNECTION_TIMEOUT_MS
+        );
 
         this.updateIntervalMs = configurationService.getConfigurationValueAsInteger(
-                CONFIG_CAPI_UPDATE_INTERVAL, (int) DEFAULT_UPDATE_INTERVAL_MS);
+                CONFIG_TRIP_MODS_UPDATE_INTERVAL,
+                (int) DEFAULT_UPDATE_INTERVAL_MS
+        );
 
         this.cacheExpirationMs = configurationService.getConfigurationValueAsInteger(
-                CONFIG_CAPI_CACHE_TIMEOUT, (int) DEFAULT_CACHE_EXPIRATION_MS);
+                CONFIG_TRIP_MODS_CACHE_TIMEOUT,
+                (int) DEFAULT_CACHE_EXPIRATION_MS
+        );
 
         dataFetcherConnectionData.setUrl(this.feedUrl);
-        dataFetcherConnectionData.setConnectionTimeout(this.connectionTimeoutMs);
-        dataFetcherConnectionData.setReadTimeout(this.connectionTimeoutMs);
+        dataFetcherConnectionData.setConnectionTimeout((int) this.connectionTimeoutMs);
+        dataFetcherConnectionData.setReadTimeout((int) this.connectionTimeoutMs);
 
         // Determine which data fetcher to use based on URL scheme
         this.currentFetcher = dataFetcherFactory.getDataFetcher(dataFetcherConnectionData);
@@ -142,10 +141,10 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
 
     private void scheduleDataUpdates() {
         if (taskScheduler != null) {
-            taskScheduler.scheduleWithFixedDelay(this::updateCancelledTripBeans, updateIntervalMs);
-            log.info("Scheduled capi updates every {}ms", updateIntervalMs);
+            taskScheduler.scheduleWithFixedDelay(this::updateTripModifications, updateIntervalMs);
+            log.info("Scheduled trip modifications updates every {}ms", updateIntervalMs);
         } else {
-            log.warn("Task scheduler not available - Capi will not auto-update");
+            log.warn("Task scheduler not available - trip modifications will not auto-update");
         }
     }
 
@@ -154,74 +153,41 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
         log.debug("Update interval changed, new tasks will use updated interval");
     }
 
-    public void updateCancelledTripBeans() {
-        try {
-            InputStream inputStream = fetchFeed();
-            List<CancelledTripBean> cancelledTripBeans = convertCapiInputToCancelledTripBeans(inputStream);
-            setCancelledTripBeans(cancelledTripBeans);
-        }catch(Exception e) {
-            log.error("Error while trying to fetch data from Capi {}", dataFetcherConnectionData.getUrl(), e);
+    /**
+     * Periodic update task that fetches and processes trip modifications.
+     */
+    private void updateTripModifications() {
+        if (!enabled) {
+            log.debug("Trip modifications disabled, clearing data");
+            setTripModifications(null);
+            return;
         }
-    }
 
+        log.debug("Refreshing trip modifications...");
 
-    private List<CancelledTripBean> convertCapiInputToCancelledTripBeans(InputStream input) {
-        log.debug("reading from stream...");
         try {
-            IncomingNycCancelledTripBeansContainer beansContainer = _objectReader.readValue(input, IncomingNycCancelledTripBeansContainer.class);
-            if (beansContainer != null && beansContainer.getBeans() != null) {
-                log.debug("parsed " + beansContainer.getBeans().size() + " records");
+            FeedMessage feedMessage = fetchFeed();
+            if (feedMessage != null) {
+                // Process the feed message and extract trip modifications
+                //List<Object> modifications = processFeedMessage(feedMessage);
+                setTripModifications(feedMessage);
+                log.debug("Refresh complete - {} modifications loaded", feedMessage.getEntityCount());
             } else {
-                log.debug("empty beanContainer");
+                log.warn("Failed to fetch feed, keeping existing data");
             }
-            List<CancelledTripBean> validBeans = new ArrayList<>();
-            assert beansContainer != null;
-            for (CancelledTripBean bean : beansContainer.getBeans()) {
-                /*if (isValid(bean)) {
-                    validBeans.add(bean);
-                }*/
-                validBeans.add(bean);
-            }
-            if(!beansContainer.getBeans().isEmpty() && validBeans.isEmpty()){
-                log.warn("Found {} cancelled trips but none of them were valid", beansContainer.getBeans().size());
-            }
-            log.debug("found {} valid beans", validBeans.size());
-            return validBeans;
-
-        } catch (Exception any) {
-            log.error("issue parsing json: " + any, any);
-        }
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public String getLocation() {
-        return dataFetcherConnectionData.getUrl();
-    }
-
-    @Override
-    public List<CancelledTripBean> getCancelledTripBeans(){
-        // Check if cache is expired
-        if (isCacheExpired()) {
-            log.debug("Cache expired, fetching fresh cancelled trips");
-            refreshCacheIfNeeded();
-        }
-        cacheLock.readLock().lock();
-        try {
-            return _cancelledTripBeans;
-        } finally {
-            cacheLock.readLock().unlock();
+        } catch (Exception e) {
+            log.error("Error updating trip modifications", e);
         }
     }
 
     /**
-     * Fetches the CAPI feed from the configured URL using the appropriate data fetcher.
+     * Fetches the GTFS-RT feed from the configured URL using the appropriate data fetcher.
      *
-     * @return InputStream or null if fetch fails
+     * @return FeedMessage or null if fetch fails
      */
-    private InputStream fetchFeed() {
+    private FeedMessage fetchFeed() {
         if (feedUrl == null || feedUrl.trim().isEmpty()) {
-            log.warn("Capi feed URL not configured");
+            log.warn("Trip modifications feed URL not configured");
             return null;
         }
 
@@ -230,26 +196,61 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
             return null;
         }
 
-        log.info("Fetching Capi feed from: {} using {}", feedUrl,
+        log.info("Fetching GTFS-RT feed from: {} using {}", feedUrl,
                 currentFetcher.getClass().getSimpleName());
 
         try (InputStream inputStream = currentFetcher.fetchData()) {
 
             if (inputStream == null) {
-                log.error("No response received from Capi feed");
+                log.error("No response received from trip modifications feed");
                 return null;
             }
 
-            log.info("Successfully fetched Capi feed");
-
-            return inputStream;
+            FeedMessage feedMessage = FeedMessage.parseFrom(inputStream);
+            log.info("Successfully fetched GTFS-RT feed with {} entities",
+                    feedMessage.getEntityCount());
+            return feedMessage;
 
         } catch (IOException e) {
-            log.error("Failed to fetch Capi feed from {}: {}", feedUrl, e.getMessage(), e);
+            log.error("Failed to fetch GTFS-RT feed from {}: {}", feedUrl, e.getMessage(), e);
             return null;
         }
     }
 
+    /**
+     * Processes the feed message and extracts trip modifications.
+     * Override this method to implement actual processing logic.
+     *
+     * @param feedMessage the GTFS-RT feed message
+     * @return list of trip modifications
+     */
+    protected List<Object> processFeedMessage(FeedMessage feedMessage) {
+        // TODO: Implement actual processing logic
+        // This is a placeholder - replace with actual trip modification extraction
+        log.debug("Processing feed message with {} entities", feedMessage.getEntityCount());
+        return Collections.emptyList();
+    }
+
+    /**
+     * Gets the current trip modifications.
+     * If the cache has expired (older than 60 seconds), fetches fresh data.
+     *
+     * @return list of trip modifications
+     */
+    @Override
+    public FeedMessage getTripModifications() {
+        // Check if cache is expired
+        if (isCacheExpired()) {
+            log.debug("Cache expired, fetching fresh trip modifications");
+            refreshCacheIfNeeded();
+        }
+        cacheLock.readLock().lock();
+        try {
+            return tripModifications;
+        } finally {
+            cacheLock.readLock().unlock();
+        }
+    }
 
     /**
      * Checks if the cache has expired.
@@ -257,7 +258,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
      * @return true if cache is older than 60 seconds
      */
     private boolean isCacheExpired() {
-        long age = System.currentTimeMillis() - lastUpdateTimestamp;
+        long age = System.currentTimeMillis() - cacheExpirationMs;
         return age > cacheExpirationMs;
     }
 
@@ -271,7 +272,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
                 // Double-check expiration after acquiring lock
                 if (isCacheExpired() && enabled) {
                     log.debug("Performing on-demand cache refresh");
-                    updateCancelledTripBeans();
+                    updateTripModifications();
                 }
             } finally {
                 cacheLock.writeLock().unlock();
@@ -283,24 +284,24 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
     }
 
     /**
-     * Sets the capi and updates the cache timestamp.
+     * Sets the trip modifications and updates the cache timestamp.
      *
-     * @param cancelledTripBeans list of cancelled trip beans
+     * @param feedMessage list of trip modifications
      */
-    @Override
-    public void setCancelledTripBeans(List<CancelledTripBean> cancelledTripBeans) {
+    protected void setTripModifications(FeedMessage feedMessage) {
         cacheLock.writeLock().lock();
         try {
-            _cancelledTripBeans = cancelledTripBeans;
+            this.tripModifications = feedMessage;
             this.lastUpdateTimestamp = System.currentTimeMillis();
-            log.debug("Capi cache updated at timestamp {}", lastUpdateTimestamp);
+            log.debug("Cache updated with {} modifications at timestamp {}",
+                    feedMessage != null ? feedMessage.getEntityCount() : 0, lastUpdateTimestamp);
         } finally {
             cacheLock.writeLock().unlock();
         }
     }
 
     /**
-     * Checks if capi is enabled.
+     * Checks if trip modifications are enabled.
      *
      * @return true if enabled
      */
@@ -338,18 +339,18 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
     @Override
     public void setServletContext(ServletContext servletContext) {
         if (servletContext != null) {
-            String credentialsUsername = servletContext.getInitParameter("capi.user");
-            log.info("servlet context provided capi.user=" + credentialsUsername);
+            String credentialsUsername = servletContext.getInitParameter("tripmods.user");
+            log.info("servlet context provided tripmods.user=" + credentialsUsername);
 
-            String credentialsPassword = servletContext.getInitParameter("capi.password");
+            String credentialsPassword = servletContext.getInitParameter("tripmods.password");
             if (credentialsPassword != null) {
-                log.info("servlet context provided capi.password=[REDACTED]");
+                log.info("servlet context provided tripmods.password=[REDACTED]");
             }
 
             Map<String, String> credentialsAuthHeaderMap = new HashMap<>();
-            String credentialsAuthHeader = servletContext.getInitParameter("capi.authHeader");
+            String credentialsAuthHeader = servletContext.getInitParameter("tripmods.authHeader");
             if (credentialsAuthHeader != null) {
-                log.info("servlet context provided capi.header=" + credentialsAuthHeader);
+                log.info("servlet context provided tripmods.header=" + credentialsAuthHeader);
                 credentialsAuthHeaderMap.put(credentialsAuthHeader, credentialsPassword);
             }
 
