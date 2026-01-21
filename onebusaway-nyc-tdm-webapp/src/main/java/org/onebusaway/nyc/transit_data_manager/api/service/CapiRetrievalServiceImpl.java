@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -81,6 +82,9 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
     // Lock for thread-safe cache updates
     private final ReentrantReadWriteLock cacheLock = new ReentrantReadWriteLock();
 
+    // Scheduled task for periodic updates
+    private ScheduledFuture<?> scheduledTask;
+
     @Autowired
     public CapiRetrievalServiceImpl(
             ConfigurationService configurationService,
@@ -95,7 +99,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
     public void setup() {
         log.info("Initializing CapiRetrievalService");
         refreshConfig();
-        scheduleUpdates();
+        scheduleDataUpdates();
     }
 
     @Refreshable(dependsOn = {CONFIG_CAPI_ENABLED, CONFIG_CAPI_URL,CONFIG_CAPI_TIMEOUT,
@@ -106,6 +110,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
             return;
         }
 
+        boolean oldEnabled = this.enabled;
         this.enabled = configurationService.getConfigurationValueAsBoolean(CONFIG_CAPI_ENABLED, false);
 
         this.feedUrl = configurationService.getConfigurationValueAsString(CONFIG_CAPI_URL, null);
@@ -113,6 +118,7 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
         this.connectionTimeoutMs = configurationService.getConfigurationValueAsInteger(CONFIG_CAPI_URL,
                 (int) DEFAULT_CONNECTION_TIMEOUT_MS);
 
+        long oldUpdateIntervalMs = this.updateIntervalMs;
         this.updateIntervalMs = configurationService.getConfigurationValueAsInteger(
                 CONFIG_CAPI_UPDATE_INTERVAL, (int) DEFAULT_UPDATE_INTERVAL_MS);
 
@@ -130,28 +136,28 @@ public class CapiRetrievalServiceImpl implements CapiRetrievalService, ServletCo
                 feedUrl != null ? feedUrl : "not set", enabled, updateIntervalMs,
                 currentFetcher != null ? currentFetcher.getClass().getSimpleName() : "none");
 
-        // Reschedule updates if interval changed
-        rescheduleUpdatesIfNeeded();
-    }
+        if(oldEnabled != this.enabled || oldUpdateIntervalMs != this.updateIntervalMs) {
+            rescheduleUpdates();
+        }
 
-
-    private void scheduleUpdates() {
-        // Schedule data updates
-        scheduleDataUpdates();
     }
 
     private void scheduleDataUpdates() {
-        if (taskScheduler != null) {
-            taskScheduler.scheduleWithFixedDelay(this::updateCancelledTripBeans, updateIntervalMs);
+        if (taskScheduler != null && enabled) {
+            scheduledTask = taskScheduler.scheduleWithFixedDelay(this::updateCancelledTripBeans, updateIntervalMs);
             log.info("Scheduled capi updates every {}ms", updateIntervalMs);
         } else {
-            log.warn("Task scheduler not available - Capi will not auto-update");
+            log.warn("Task scheduler not available or Capi disabled - Capi will not auto-update");
         }
     }
 
-    // TODO
-    private void rescheduleUpdatesIfNeeded() {
-        log.debug("Update interval changed, new tasks will use updated interval");
+    private void rescheduleUpdates() {
+        if (scheduledTask != null && !scheduledTask.isCancelled()) {
+            boolean cancelled = scheduledTask.cancel(false);
+            log.info("Cancelled existing scheduled task: {}", cancelled);
+            scheduledTask = null;
+        }
+        scheduleDataUpdates();
     }
 
     public void updateCancelledTripBeans() {

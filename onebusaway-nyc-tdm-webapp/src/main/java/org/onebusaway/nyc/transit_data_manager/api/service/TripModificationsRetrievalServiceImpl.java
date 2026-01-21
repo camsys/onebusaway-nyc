@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -74,6 +75,9 @@ public class TripModificationsRetrievalServiceImpl implements TripModificationsR
     // Lock for thread-safe cache updates
     private final ReentrantReadWriteLock cacheLock = new ReentrantReadWriteLock();
 
+    // Scheduled task for periodic updates
+    private ScheduledFuture<?> scheduledTask;
+
     @Autowired
     public TripModificationsRetrievalServiceImpl(
             ConfigurationService configurationService,
@@ -88,7 +92,7 @@ public class TripModificationsRetrievalServiceImpl implements TripModificationsR
     public void setup() {
         log.info("Initializing TripModificationsRetrievalService");
         refreshConfig();
-        scheduleUpdates();
+        scheduleDataUpdates();
     }
 
     @Refreshable(dependsOn = {CONFIG_TRIP_MODS_URL, CONFIG_TRIP_MODS_TIMEOUT, CONFIG_TRIP_MODS_ENABLED,
@@ -99,6 +103,7 @@ public class TripModificationsRetrievalServiceImpl implements TripModificationsR
             return;
         }
 
+        boolean oldEnabled = this.enabled;
         this.enabled = configurationService.getConfigurationValueAsBoolean(CONFIG_TRIP_MODS_ENABLED, false);
 
         this.feedUrl = configurationService.getConfigurationValueAsString(CONFIG_TRIP_MODS_URL, null);
@@ -108,6 +113,7 @@ public class TripModificationsRetrievalServiceImpl implements TripModificationsR
                 (int) DEFAULT_CONNECTION_TIMEOUT_MS
         );
 
+        long oldUpdateIntervalMs = this.updateIntervalMs;
         this.updateIntervalMs = configurationService.getConfigurationValueAsInteger(
                 CONFIG_TRIP_MODS_UPDATE_INTERVAL,
                 (int) DEFAULT_UPDATE_INTERVAL_MS
@@ -129,24 +135,30 @@ public class TripModificationsRetrievalServiceImpl implements TripModificationsR
                 feedUrl != null ? feedUrl : "not set", enabled, updateIntervalMs,
                 currentFetcher != null ? currentFetcher.getClass().getSimpleName() : "none");
 
-        // Reschedule updates if interval changed
-        rescheduleUpdatesIfNeeded();
-    }
-
-
-    private void scheduleUpdates() {
-        // Schedule data updates
-        scheduleDataUpdates();
+        if(oldEnabled != this.enabled || oldUpdateIntervalMs != this.updateIntervalMs) {
+            rescheduleUpdates();
+        }
     }
 
     private void scheduleDataUpdates() {
-        if (taskScheduler != null) {
+        if (taskScheduler != null && enabled) {
             taskScheduler.scheduleWithFixedDelay(this::updateTripModifications, updateIntervalMs);
             log.info("Scheduled trip modifications updates every {}ms", updateIntervalMs);
         } else {
             log.warn("Task scheduler not available - trip modifications will not auto-update");
         }
     }
+
+    private void rescheduleUpdates() {
+        if (scheduledTask != null && !scheduledTask.isCancelled()) {
+            boolean cancelled = scheduledTask.cancel(false);
+            log.info("Cancelled existing scheduled task: {}", cancelled);
+            scheduledTask = null;
+        }
+        scheduleDataUpdates();
+    }
+
+
 
     // TODO
     private void rescheduleUpdatesIfNeeded() {
