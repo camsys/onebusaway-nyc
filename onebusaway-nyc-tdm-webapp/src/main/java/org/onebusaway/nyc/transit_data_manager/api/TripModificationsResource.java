@@ -27,8 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -53,15 +55,15 @@ public class TripModificationsResource {
         _tripModificationsService = tripModificationsService;
     }
 
-    @Path("/list")
+    @Path("/feed")
     @GET
     public Response getTripModifications(
-            @javax.ws.rs.QueryParam("debug") @javax.ws.rs.DefaultValue("false") boolean debug) {
+            @QueryParam("format") @DefaultValue("pb") String format) {
 
         try {
             var feed = _tripModificationsService.getTripModifications();
 
-            if (debug) {
+            if (format.equals("json")) {
                 String json = com.google.protobuf.util.JsonFormat
                         .printer()
                         .includingDefaultValueFields()
@@ -69,7 +71,7 @@ public class TripModificationsResource {
 
                 return Response.ok(json, "application/json").build();
             }
-            else{
+            else {
                 byte[] protoBytes = feed.toByteArray();
 
                 return Response.ok(protoBytes, "application/x-protobuf")
