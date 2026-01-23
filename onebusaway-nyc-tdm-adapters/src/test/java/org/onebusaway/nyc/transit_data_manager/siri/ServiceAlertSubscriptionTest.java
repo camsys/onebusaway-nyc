@@ -45,7 +45,7 @@ public class ServiceAlertSubscriptionTest extends ServiceAlertSubscription {
   String EXPECTED_XML = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Siri xmlns:ns2=\"http://www.ifopt.org.uk/acsb\" "
       + "xmlns:ns4=\"http://datex2.eu/schema/1_0/1_0\" xmlns:ns3=\"http://www.ifopt.org.uk/ifopt\" xmlns=\"http://www.siri.org.uk/siri\">"
       + "<ServiceDelivery><ProducerRef>test</ProducerRef><SituationExchangeDelivery><Situations><PtSituationElement><SituationNumber>"
-      + "MTA NYC_101</SituationNumber><Summary xml:lang=\"EN\"><![CDATA[summary]]></Summary><Description xml:lang=\"EN\"><![CDATA[description]]></Description><Affects>"
+      + "MTA NYC_101</SituationNumber><Summary xml:lang=\"EN\">summary</Summary><Description xml:lang=\"EN\">description</Description><Affects>"
       + "<VehicleJourneys><AffectedVehicleJourney><LineRef>test route id</LineRef></AffectedVehicleJourney></VehicleJourneys></Affects>"
       + "</PtSituationElement><PtSituationElement><SituationNumber>MTA NYCT_1000</SituationNumber><Progress>closed</Progress></PtSituationElement>"
       + "<PtSituationElement><SituationNumber>MTA NYCT_1001</SituationNumber><Progress>closed</Progress></PtSituationElement></Situations>"
