@@ -75,15 +75,9 @@ public class SiriXmlSerializer {
     outputAsString = outputAsString.replaceAll("<siriExtensionWrapper>", "");
     outputAsString = outputAsString.replaceAll("</siriExtensionWrapper>", "");
 
-    outputAsString = outputAsString.replaceAll(
-        "(?s)<Summary([^>]*)>(.*?)</Summary>",
-        "<Summary$1><![CDATA[$2]]></Summary>"
-    );
+    outputAsString = outputAsString.replaceAll("(?s)<Summary>(.*?)</Summary>", "<Summary><![CDATA[$1]]></Summary>");
+    outputAsString = outputAsString.replaceAll("(?s)<Description>(.*?)</Description>", "<Description><![CDATA[$1]]></Description>");
 
-    outputAsString = outputAsString.replaceAll(
-        "(?s)<Description([^>]*)>(.*?)</Description>",
-        "<Description$1><![CDATA[$2]]></Description>"
-    );
     return outputAsString;
   }
   
