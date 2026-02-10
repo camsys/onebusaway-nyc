@@ -267,10 +267,10 @@ public class TripModificationsRetrievalServiceImpl implements TripModificationsR
     /**
      * Checks if the cache has expired.
      *
-     * @return true if cache is older than 60 seconds
+     * @return true if cache is older than cacheExpirationMs
      */
     private boolean isCacheExpired() {
-        long age = System.currentTimeMillis() - cacheExpirationMs;
+        long age = System.currentTimeMillis() - lastUpdateTimestamp;
         return age > cacheExpirationMs;
     }
 
