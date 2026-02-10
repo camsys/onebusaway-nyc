@@ -66,7 +66,7 @@ public class TripModificationsResource {
             if (format.equals("json")) {
                 String json = com.google.protobuf.util.JsonFormat
                         .printer()
-                        .includingDefaultValueFields()
+                        .preservingProtoFieldNames()
                         .print(feed);
 
                 return Response.ok(json, "application/json").build();
