@@ -66,20 +66,6 @@ public class HttpDataFetcherDao implements DataFetcherDao {
             return null;
         }
 
-        if ((httpAuthHeaders == null || httpAuthHeaders.isEmpty())
-                && username != null && !username.isBlank()
-                && password != null && !password.isBlank()) {
-
-            URI uri = URI.create(url);
-            String authQueryParam = username + "=" + password;
-
-            String existingQuery = uri.getQuery();
-            authQueryParam = (existingQuery == null || existingQuery.isEmpty())
-                    ? "?" + authQueryParam
-                    : "&" + authQueryParam;
-            url += authQueryParam;
-        }
-
         HttpURLConnection connection = null;
         try {
             connection = openConnection(url, connectionTimeout, readTimeout);
