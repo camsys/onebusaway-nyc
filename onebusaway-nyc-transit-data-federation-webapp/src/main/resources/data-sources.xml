@@ -125,7 +125,7 @@
     <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
 
     <bean id="gtfsTripModsClient" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.GtfsTripModificationsClientImpl">
-        <property name="gtfsTripModificationsUrl" value="${tdm.host}/api/trip-modifications/feed" />
+        <property name="gtfsTripModificationsUrl" value="${trip.modifications.url}" />
         <property name="refreshInterval" value="30" />
     </bean>
 
