@@ -18,6 +18,7 @@ package org.onebusaway.nyc.transit_data_manager.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.transit.realtime.GtfsRealtime;
 import org.onebusaway.nyc.transit_data_manager.api.service.CapiRetrievalService;
 import org.onebusaway.nyc.transit_data_manager.api.service.TripModificationsRetreivalService;
 import org.onebusaway.transit_data.model.trips.CancelledTripBean;
@@ -64,9 +65,10 @@ public class TripModificationsResource {
             var feed = _tripModificationsService.getTripModifications();
 
             if (format.equals("json")) {
+                _log.info(feed.toString());
+
                 String json = com.google.protobuf.util.JsonFormat
                         .printer()
-                        .preservingProtoFieldNames()
                         .print(feed);
 
                 return Response.ok(json, "application/json").build();
