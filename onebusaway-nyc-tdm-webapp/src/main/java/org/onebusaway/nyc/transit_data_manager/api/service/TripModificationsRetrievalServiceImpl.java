@@ -180,8 +180,6 @@ public class TripModificationsRetrievalServiceImpl implements TripModificationsR
         try {
             FeedMessage feedMessage = fetchFeed();
             if (feedMessage != null) {
-                // Process the feed message and extract trip modifications
-                //List<Object> modifications = processFeedMessage(feedMessage);
                 setTripModifications(feedMessage);
                 log.debug("Refresh complete - {} modifications loaded", feedMessage.getEntityCount());
             } else {

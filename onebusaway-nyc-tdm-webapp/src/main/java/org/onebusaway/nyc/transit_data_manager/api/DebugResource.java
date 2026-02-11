@@ -137,6 +137,34 @@ public class DebugResource {
         result.put(key, entry);
     }
 
+    @Path("/protobuf")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getProtobuf() throws JSONException {
+
+        JSONObject result = new JSONObject();
+
+        try {
+            URL location = com.google.protobuf.util.JsonFormat.class
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation();
+            result.put("protobuf", location.toURI().toString());
+
+        } catch (Exception e) {
+            _log.error("Unable to process protobuf request", e);
+            return Response.serverError()
+                    .entity("Failed to enumerate protobuf request")
+                    .type(MediaType.TEXT_PLAIN)
+                    .build();
+        }
+
+        return Response
+                .ok(result.toString(2))
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .build();
+    }
+
 
 
 

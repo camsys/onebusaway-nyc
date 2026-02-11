@@ -18,6 +18,7 @@
         <geotools.version>23.0</geotools.version>
         <gitDescribe>99999</gitDescribe>
         <gtfs-api-version>1.2.30</gtfs-api-version><!-- please keep this in sync with app-mods gtfs-api-version -->
+        <gtfs-realtime-bindings.version>0.0.9-cs-SNAPSHOT</gtfs-realtime-bindings.version>
         <hessian.version>4.0.38</hessian.version>
         <hsqldb.version>2.7.1</hsqldb.version>
         <jackson.version>2.13.5</jackson.version>
@@ -756,7 +757,21 @@
                 <artifactId>javax.annotation-api</artifactId>
                 <version>${javax.annotation.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.camsys</groupId>
+                <artifactId>gtfs-realtime-bindings</artifactId>
+                <version>${gtfs-realtime-bindings.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

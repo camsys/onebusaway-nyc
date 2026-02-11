@@ -187,12 +187,10 @@
         <dependency>
             <groupId>com.camsys</groupId>
             <artifactId>gtfs-realtime-bindings</artifactId>
-            <version>0.0.9-cs-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
-            <version>3.25.3</version>
         </dependency>
     </dependencies>
     <profiles>

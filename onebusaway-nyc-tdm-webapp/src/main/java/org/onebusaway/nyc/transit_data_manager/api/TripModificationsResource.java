@@ -33,22 +33,20 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Properties;
 
 @Path("/trip-modifications")
 @Component
-@Scope("request")
 public class TripModificationsResource {
 
     private static Logger _log = LoggerFactory.getLogger(TripModificationsResource.class);
 
     private TripModificationsRetreivalService _tripModificationsService;
 
-    private final ObjectMapper mapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
 
     @Autowired
     public void setTripModificationsRetrievalService(
@@ -64,13 +62,7 @@ public class TripModificationsResource {
         try {
             var feed = _tripModificationsService.getTripModifications();
 
-            Package pkg = com.google.protobuf.util.JsonFormat.class.getPackage();
-            System.out.println("JsonFormat package: " + pkg.getImplementationTitle() +
-                    " version: " + pkg.getImplementationVersion());
-
             if (format.equals("json")) {
-                _log.info(feed.toString());
-
                 String json = com.google.protobuf.util.JsonFormat
                         .printer()
                         .print(feed);
