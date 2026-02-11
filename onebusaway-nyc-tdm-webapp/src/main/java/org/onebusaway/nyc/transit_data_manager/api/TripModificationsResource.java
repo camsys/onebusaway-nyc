@@ -64,6 +64,10 @@ public class TripModificationsResource {
         try {
             var feed = _tripModificationsService.getTripModifications();
 
+            Package pkg = com.google.protobuf.util.JsonFormat.class.getPackage();
+            System.out.println("JsonFormat package: " + pkg.getImplementationTitle() +
+                    " version: " + pkg.getImplementationVersion());
+
             if (format.equals("json")) {
                 _log.info(feed.toString());
 
