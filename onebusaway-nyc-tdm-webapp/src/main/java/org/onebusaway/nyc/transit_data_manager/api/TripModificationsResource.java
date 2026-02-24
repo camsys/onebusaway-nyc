@@ -60,7 +60,7 @@ public class TripModificationsResource {
             @QueryParam("format") @DefaultValue("pb") String format) {
 
         try {
-            var feed = _tripModificationsService.getTripModifications();
+            GtfsRealtime.FeedMessage feed = _tripModificationsService.getTripModifications();
 
             if (format.equals("json")) {
                 String json = com.google.protobuf.util.JsonFormat
