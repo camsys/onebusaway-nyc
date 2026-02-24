@@ -17,7 +17,7 @@
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <geotools.version>23.0</geotools.version>
         <gitDescribe>99999</gitDescribe>
-        <gtfs-api-version>1.2.30</gtfs-api-version><!-- please keep this in sync with app-mods gtfs-api-version -->
+        <gtfs-api-version>1.3-cs-SNAPSHOT</gtfs-api-version><!-- please keep this in sync with app-mods gtfs-api-version -->
         <gtfs-realtime-bindings.version>0.0.9-cs-SNAPSHOT</gtfs-realtime-bindings.version>
         <hessian.version>4.0.38</hessian.version>
         <hsqldb.version>2.7.1</hsqldb.version>
@@ -768,9 +768,9 @@
                 <version>${protobuf.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.camsys</groupId>
-                <artifactId>gtfs-realtime-bindings</artifactId>
-                <version>${gtfs-realtime-bindings.version}</version>
+                <groupId>org.onebusaway</groupId>
+                <artifactId>onebusaway-gtfs-realtime-api</artifactId>
+                <version>${gtfs-api-version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

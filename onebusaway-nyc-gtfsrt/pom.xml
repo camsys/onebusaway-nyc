@@ -43,7 +43,6 @@
 		<dependency>
 			<groupId>org.onebusaway</groupId>
 			<artifactId>onebusaway-gtfs-realtime-api</artifactId>
-			<version>${gtfs-api-version}</version>
 		</dependency>
 		<dependency>
 			 <groupId>com.mysql</groupId>
