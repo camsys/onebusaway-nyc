@@ -16,6 +16,8 @@
 
 package org.onebusaway.nyc.transit_data_manager.api.service;
 
+import com.google.protobuf.util.JsonFormat;
+import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data_manager.api.dao.DataFetcherDao;
@@ -29,10 +31,15 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.ServletContextAware;
 
+import org.onebusaway.realtime.gtfsrt.util.GtfsRealtimeDeserializer;
+
+
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +47,8 @@ import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static org.onebusaway.realtime.gtfsrt.util.GtfsRealtimeDeserializer.parseFeedMessageFromProtobuf;
 
 @Service
 public class TripModificationsRetrievalServiceImpl implements TripModificationsRetreivalService, ServletContextAware {
@@ -216,9 +225,13 @@ public class TripModificationsRetrievalServiceImpl implements TripModificationsR
                 return null;
             }
 
-            FeedMessage feedMessage = FeedMessage.parseFrom(inputStream);
+            byte[] message = inputStream.readAllBytes();
+
+            FeedMessage feedMessage = GtfsRealtimeDeserializer.parseFeedMessage(message);
+
             log.info("Successfully fetched GTFS-RT feed with {} entities",
                     feedMessage.getEntityCount());
+
             return feedMessage;
 
         } catch (IOException e) {
