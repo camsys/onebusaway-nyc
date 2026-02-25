@@ -25,7 +25,6 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifExtract.model.BustrekDatum;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.stifExtract.model.Remark;
 import org.onebusaway.nyc.transit_data_federation.impl.nyc.BundleSearchServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.impl.nyc.NycRouteTypeService;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
@@ -63,11 +62,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 @Primary
 @Component(value = "nycTransitDataServiceImpl")
+@DependsOn("bundleManagementService")
 class NycTransitDataServiceImpl implements NycTransitDataService {
 	
 	private static Logger _log = LoggerFactory.getLogger(NycTransitDataServiceImpl.class);
@@ -134,7 +135,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 			return;
 		}
 	}*/
-	private void blockUntilBundleIsReady() {
+	public void blockUntilBundleIsReady() {
 		try {
 			while(_bundleManagementService != null && !_bundleManagementService.bundleIsReady()) {
 				_blockedRequestCounter++;

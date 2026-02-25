@@ -74,14 +74,18 @@ public interface NycTransitDataService extends TransitDataService {
 
 	void overrideCancelledTrips(List<CancelledTripBean> beans);
 
-	public boolean isVehicleStroller(AgencyAndId vehicleId);
-	public Set<AgencyAndId> getAllStrollerVehicles();
-	public void overrideStrollerVehicles(List<AgencyAndId> busIds);
+	boolean isVehicleStroller(AgencyAndId vehicleId);
+
+	Set<AgencyAndId> getAllStrollerVehicles();
+
+	void overrideStrollerVehicles(List<AgencyAndId> busIds);
 
 	/**
 	 * set of methods to check if route is of type express
 	 */
-	public boolean isRouteExpress(AgencyAndId routeId);
+	boolean isRouteExpress(AgencyAndId routeId);
 
-	public Set<AgencyAndId> getExpressRoutes();
+	Set<AgencyAndId> getExpressRoutes();
+
+	void blockUntilBundleIsReady();
 }
