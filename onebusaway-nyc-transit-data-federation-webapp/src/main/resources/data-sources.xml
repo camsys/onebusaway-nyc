@@ -123,11 +123,7 @@
 
     <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" />
     <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
-
-    <bean id="gtfsTripModsClient" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.GtfsTripModificationsClientImpl">
-        <property name="gtfsTripModificationsUrl" value="${trip.modifications.url}" />
-        <property name="refreshInterval" value="30" />
-    </bean>
+    
 
 <!--    <bean id="mta_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">-->
 <!--        <property name="alertsUrl" value=""/>-->
