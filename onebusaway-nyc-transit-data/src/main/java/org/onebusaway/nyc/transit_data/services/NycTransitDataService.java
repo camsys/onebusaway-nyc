@@ -15,12 +15,14 @@
  */
 package org.onebusaway.nyc.transit_data.services;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
@@ -88,4 +90,6 @@ public interface NycTransitDataService extends TransitDataService {
 	Set<AgencyAndId> getExpressRoutes();
 
 	void blockUntilBundleIsReady();
+
+	public Collection<TripModificationDiff> getAllTripModificationDiffs();
 }

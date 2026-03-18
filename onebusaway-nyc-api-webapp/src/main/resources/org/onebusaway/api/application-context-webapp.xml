@@ -39,6 +39,9 @@
 
   <context:component-scan base-package="org.onebusaway.api.impl" />
   <context:component-scan base-package="org.onebusaway.nyc.api.lib.impl" />
+  <!-- Trip modification diff support -->
+  <bean id="diffCache"
+        class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.impl.TripModificationDiffCacheImpl"/>
 
   <bean id="psaHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
     <property name="target" value="hibernateAnnotatedClasses" />

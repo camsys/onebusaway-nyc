@@ -48,6 +48,7 @@ import org.onebusaway.realtime.api.VehicleOccupancyRecord;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
@@ -153,6 +154,11 @@ public class MockTransitDataService implements NycTransitDataService {
 
     @Override
     public Set<AgencyAndId> getExpressRoutes() {
+        return null;
+    }
+
+    @Override
+    public Collection<TripModificationDiff> getAllTripModificationDiffs() {
         return null;
     }
 
