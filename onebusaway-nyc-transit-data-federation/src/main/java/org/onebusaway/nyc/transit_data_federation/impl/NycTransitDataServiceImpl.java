@@ -53,9 +53,11 @@ import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordQueryBean
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertRecordBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceTemplateImpl;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffService;
 import org.onebusaway.transit_data_federation.services.CancelledTripService;
 import org.onebusaway.transit_data_federation.services.StrollerVehicleService;
 import org.slf4j.Logger;
@@ -97,6 +99,9 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	@Autowired
 	@Qualifier("NycBundleSearchService")
 	private BundleSearchServiceImpl _bundleSearchService;
+
+	@Autowired
+	private TripModificationDiffService _tripModificationDiffService;
 
 
 	/*@Autowired(required = false)
@@ -804,5 +809,10 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 			return _nycRouteTypeService.getExpressRoutes();
 		}
 		return new HashSet<>();
+	}
+
+	@Override
+	public Collection<TripModificationDiff> getAllTripModificationDiffs() {
+		return _tripModificationDiffService.getAllActiveDiffs();
 	}
 }
