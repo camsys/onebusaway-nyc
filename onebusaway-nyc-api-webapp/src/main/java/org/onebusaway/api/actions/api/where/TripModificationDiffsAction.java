@@ -12,7 +12,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TripModificationDiffsAction extends ApiActionSupport {
@@ -29,6 +31,7 @@ public class TripModificationDiffsAction extends ApiActionSupport {
         super(V2);
     }
 
+    @Autowired
     public void setNycTransitDataService(NycTransitDataService service) {
         _service = service;
     }
@@ -51,19 +54,8 @@ public class TripModificationDiffsAction extends ApiActionSupport {
         }
 
         try {
-            List<TripModificationDiff> diffs = _service.getAllTripModificationDiffs()
-                    .stream()
-                    .filter(diff -> {
-                        if (_serviceDate == null) return true;
-                        try {
-                            LocalDate date = LocalDate.parse(_serviceDate, SERVICE_DATE_FORMAT);
-                            return diff.getEffectiveServiceDate().equals(date.format(SERVICE_DATE_FORMAT));
-                        } catch (DateTimeParseException e) {
-                            _log.warn("Invalid serviceDate param: {}", _serviceDate);
-                            return false;
-                        }
-                    })
-                    .collect(Collectors.toList());
+            final Optional<String> formattedServiceDate = getFormattedServiceDate();
+            List<TripModificationDiff> diffs = getTripModDiffs(formattedServiceDate);
 
             if (diffs.isEmpty())
                 return setResourceNotFoundResponse();
@@ -74,5 +66,32 @@ public class TripModificationDiffsAction extends ApiActionSupport {
             _log.error("Error retrieving trip modification diffs", e);
             return setExceptionResponse();
         }
+    }
+
+    List<TripModificationDiff> getTripModDiffs(Optional<String> formattedServiceDate) {
+        return _service.getAllTripModificationDiffs()
+                .stream()
+                .filter(tripDiff -> matchesServiceDate(tripDiff, formattedServiceDate))
+                .collect(Collectors.toList());
+    }
+
+    private boolean matchesServiceDate(TripModificationDiff tripDiff,
+                                       Optional<String> formattedServiceDate) {
+        return tripDiff.getEffectiveServiceDate() == null
+                || formattedServiceDate
+                .map(date -> date.equals(tripDiff.getEffectiveServiceDate()))
+                .orElse(true);
+    }
+
+    Optional<String> getFormattedServiceDate() {
+        if (_serviceDate != null) {
+            try {
+                LocalDate localDate = LocalDate.parse(_serviceDate, SERVICE_DATE_FORMAT);
+                return Optional.of(localDate.format(SERVICE_DATE_FORMAT));
+            } catch (DateTimeParseException e) {
+                _log.warn("Invalid serviceDate param: {}", _serviceDate);
+            }
+        }
+        return Optional.empty();
     }
 }
