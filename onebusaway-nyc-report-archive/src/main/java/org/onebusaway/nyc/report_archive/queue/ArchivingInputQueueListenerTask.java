@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.queue.QueueListenerTask;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.report.impl.CcLocationCache;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
@@ -34,11 +34,13 @@ import org.onebusaway.nyc.report.services.RecordValidationService;
 import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
 import org.onebusaway.nyc.report_archive.services.EmergencyStatusNotificationService;
 import org.onebusaway.nyc.report_archive.services.RealtimePersistenceService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-public class ArchivingInputQueueListenerTask extends QueueListenerTask {
+public abstract class ArchivingInputQueueListenerTask implements IQueueListenerTask {
 
   public static final int DELAY_THRESHOLD = 10 * 1000;
 
@@ -49,6 +51,16 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   private EmergencyStatusNotificationService emergencyStatusNotificationService;
 
   private CcLocationCache _ccLocationCache;
+
+  @Qualifier("configurationService")
+  @Autowired
+  private ConfigurationService _configurationService;
+
+  protected boolean _initialized = false;
+
+  @Autowired
+  @Qualifier("listener")
+  IQueueListenerTask _queueListenerTask;
 
   @Autowired
   public void setCcLocationCache(CcLocationCache cache) {
@@ -214,7 +226,7 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
 
   @PostConstruct
   public void setup() {
-    super.setup();
+    _queueListenerTask.setup();
     // make parsing lenient
     _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
         false);
@@ -225,7 +237,7 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
 
   @PreDestroy
   public void destroy() {
-    super.destroy();
+    _queueListenerTask.destroy();
   }
 
   /**

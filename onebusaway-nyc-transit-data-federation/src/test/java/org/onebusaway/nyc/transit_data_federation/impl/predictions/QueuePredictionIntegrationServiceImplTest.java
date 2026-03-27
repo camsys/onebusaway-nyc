@@ -56,7 +56,6 @@ public class QueuePredictionIntegrationServiceImplTest {
     when(config.getConfigurationValueAsString(anyString(), anyString()))
             .thenAnswer(AdditionalAnswers.returnsSecondArg());
 
-    service = new QueuePredictionIntegrationServiceImpl();
     service.setConfigurationService(config);
     service.setTransitDataService(tds);
     service.setCache(CacheBuilder.newBuilder().<String, List<TimepointPredictionRecord>>build());

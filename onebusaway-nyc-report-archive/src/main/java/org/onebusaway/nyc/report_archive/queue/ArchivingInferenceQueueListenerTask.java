@@ -21,19 +21,26 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.report.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report.services.InferencePersistenceService;
 import org.onebusaway.nyc.report.services.CcAndInferredLocationDao;
 import org.onebusaway.nyc.report.services.RecordValidationService;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListenerTask;
+import org.onebusaway.nyc.transit_data_federation.impl.queue.interfaces.InferenceQueueListenerInterface;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-public class ArchivingInferenceQueueListenerTask extends
-    InferenceQueueListenerTask {
+public abstract class ArchivingInferenceQueueListenerTask implements
+        InferenceQueueListenerInterface, IQueueListenerTask {
+
+  protected boolean _initialized = false;
 
   private static Logger _log = LoggerFactory.getLogger(ArchivingInferenceQueueListenerTask.class);
 
@@ -43,6 +50,11 @@ public class ArchivingInferenceQueueListenerTask extends
 
   private InferencePersistenceService persister;
 
+  private final ObjectMapper _mapper = new ObjectMapper();
+
+  @Autowired
+  @Qualifier("listener")
+  IQueueListenerTask _queueListenerTask;
 
   @Autowired
   public void setLocationDao(CcAndInferredLocationDao locationDao) {
@@ -80,7 +92,8 @@ public class ArchivingInferenceQueueListenerTask extends
     _log.info("inference archive listening on " + host + ":" + port
         + ", queue=" + queueName);
     try {
-      initializeQueue(host, queueName, port);
+
+      _queueListenerTask.initializeQueue(host, queueName, port);;
       _log.warn("queue config:" + queueName + " COMPLETE");
     } catch (InterruptedException ie) {
       _log.error("queue " + queueName + " interrupted");
@@ -90,7 +103,6 @@ public class ArchivingInferenceQueueListenerTask extends
     }
   }
 
-  @Override
   // this method must throw exceptions to force a transaction rollback
   protected void processResult(NycQueuedInferredLocationBean inferredResult,
       String contents) {
@@ -122,33 +134,13 @@ public class ArchivingInferenceQueueListenerTask extends
     _locationDao.handleException(contents, e, new Date());
   }
 
-  @Override
-  public String getQueueHost() {
-    return _configurationService.getConfigurationValueAsString(
-        "tds.inputQueueHost", null);
-  }
-
-  @Override
-  public String getQueueName() {
-    return _configurationService.getConfigurationValueAsString(
-        "tds.inputQueueName", null);
-  }
-
   public String getQueueDisplayName() {
     return "archive_inference";
   }
 
-  @Override
-  public Integer getQueuePort() {
-    return _configurationService.getConfigurationValueAsInteger(
-        "tds.inputQueuePort", 5567);
-  }
-
-
-
   @PostConstruct
   public void setup() {
-    super.setup();
+    _queueListenerTask.setup();
 
     // make parsing lenient
     _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
@@ -157,7 +149,7 @@ public class ArchivingInferenceQueueListenerTask extends
 
   @PreDestroy
   public void destroy() {
-    super.destroy();
+    _queueListenerTask.destroy();
   }
 
 }

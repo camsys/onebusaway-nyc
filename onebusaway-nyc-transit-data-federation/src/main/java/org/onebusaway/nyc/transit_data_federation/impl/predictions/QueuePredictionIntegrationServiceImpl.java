@@ -29,6 +29,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.TimeQueueListenerTask;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -56,7 +57,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * @author sheldonabrown
  *
  */
-public class QueuePredictionIntegrationServiceImpl extends
+public abstract class QueuePredictionIntegrationServiceImpl extends
 		TimeQueueListenerTask implements PredictionIntegrationService {
 
 	private static final int DEFAULT_CACHE_TIMEOUT = 2 * 60; // seconds
@@ -74,7 +75,6 @@ public class QueuePredictionIntegrationServiceImpl extends
 	@Autowired
 	private ConfigurationService _configurationService;
 
-
 	private Cache<String, List<TimepointPredictionRecord>> _cache = null;
 
 	private Boolean _checkPredictionAge;
@@ -84,6 +84,11 @@ public class QueuePredictionIntegrationServiceImpl extends
 	private int predictionRecordCountInterval = 2000;
 	private long predictionRecordAverageLatency = 0;
 	private Long _serviceTime = null; // leave empty for now, set for tests
+
+	protected boolean _initialized = false;
+	@Autowired
+	@Qualifier("listener")
+	IQueueListenerTask _queueListenerTask;
 
 	public void setCheckPredictionAge(Boolean checkAge) {
 		_checkPredictionAge = checkAge;
@@ -247,9 +252,15 @@ public class QueuePredictionIntegrationServiceImpl extends
 	}
 
 	public void destroy() {
-		super.destroy();
+		_queueListenerTask.destroy();
 		_log.warn("destroy called!");
 	}
+
+	@Override
+	public void setup() {
+
+	}
+
 	private boolean enableCheckPredictionLatency() {
 		if (_checkPredictionLatency == null) {
             refreshConfig();

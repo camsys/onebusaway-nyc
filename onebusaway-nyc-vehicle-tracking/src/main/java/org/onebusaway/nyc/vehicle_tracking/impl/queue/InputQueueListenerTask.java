@@ -16,10 +16,13 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.queue.QueueListenerTask;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
@@ -28,9 +31,21 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-public abstract class InputQueueListenerTask extends QueueListenerTask implements InputTask{
+public class InputQueueListenerTask implements InputTask, IQueueListenerTask {
   
   InputService _inputService;
+
+  protected static Logger _log = LoggerFactory
+          .getLogger(InputQueueListenerTask.class);
+
+  protected boolean _initialized = false;
+
+  @Autowired
+  private ConfigurationService _configurationService;
+
+  @Autowired
+  @Qualifier("listener")
+  IQueueListenerTask _queueListenerTask;
 
   @SuppressWarnings("deprecation")
   public InputQueueListenerTask() {
@@ -52,7 +67,17 @@ public abstract class InputQueueListenerTask extends QueueListenerTask implement
     return _inputService.deserializeMessage(contents);
   }
 
-  @Override
+    @Override
+    public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
+
+    }
+
+    @Override
+    public boolean processMessage(String address, byte[] buff) throws Exception {
+        return false;
+    }
+
+    @Override
   @Refreshable(dependsOn = {
       "inference-engine.inputQueueHost", "inference-engine.inputQueuePort",
       "inference-engine.inputQueueName"})
@@ -61,6 +86,7 @@ public abstract class InputQueueListenerTask extends QueueListenerTask implement
       _log.warn("Configuration service tried to reconfigure inference input queue service; this service is not reconfigurable once started.");
       return;
     }
+
 
     final String host = getQueueHost();
     final String queueName = getQueueName();
@@ -74,7 +100,7 @@ public abstract class InputQueueListenerTask extends QueueListenerTask implement
     _log.info("realtime archive listening on " + host + ":" + port + ", queue="
         + queueName);
     try {
-      initializeQueue(host, queueName, port);
+        _queueListenerTask.initializeQueue(host, queueName, port);
     } catch (final InterruptedException ie) {
       return;
     }
@@ -96,23 +122,34 @@ public abstract class InputQueueListenerTask extends QueueListenerTask implement
         "inference-engine.inputQueueName", null);
   }
 
-  @Override
+    @Override
+    public String getQueueDisplayName() {
+        return null;
+    }
+
+    @Override
   public Integer getQueuePort() {
     return _configurationService.getConfigurationValueAsInteger(
         "inference-engine.inputQueuePort", 5563);
   }
 
-  @Override
+    @Override
+    public void startDNSCheckThread() {
+
+    }
+
+    @Override
   @PostConstruct
   public void setup() {
-	
-    super.setup();
+
+    _queueListenerTask.setup();
+
   }
 
   @Override
   @PreDestroy
   public void destroy() {
-    super.destroy();
+    _queueListenerTask.destroy();
   }
 
 }

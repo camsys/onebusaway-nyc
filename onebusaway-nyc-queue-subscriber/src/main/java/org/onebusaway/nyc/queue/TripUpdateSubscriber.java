@@ -20,7 +20,7 @@ import com.google.transit.realtime.GtfsRealtime.*;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.zeromq.ZMQ;
 
-public class TripUpdateSubscriber {
+public class TripUpdateSubscriber implements ITripUpdateSubscriber{
 	private static final String HOST_KEY = "mq.host";
 	private static final String PORT_KEY = "mq.port";
 	private static final String TOPIC_KEY = "mq.topic";
@@ -33,7 +33,7 @@ public class TripUpdateSubscriber {
 	private static final String DEFAULT_OUTPUT = ".";
 	private static final String DEFAULT_SINGLE_MODE = "false";
 
-	public static void main(String[] args) {
+	public void main(String[] args) {
 
 		String route = System.getProperty(ROUTE_KEY);
 		String outputDir = System.getProperty(OUTPUT_DIR_KEY, DEFAULT_OUTPUT);

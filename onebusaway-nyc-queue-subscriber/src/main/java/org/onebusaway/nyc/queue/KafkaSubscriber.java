@@ -16,31 +16,41 @@
 
 package org.onebusaway.nyc.queue;
 
-import org.zeromq.ZMQ;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Properties;
+import java.util.concurrent.Executors;
 
-public class Subscriber implements ISubscriber{
+public class KafkaSubscriber implements ISubscriber{
 	public static final String HOST_KEY = "mq.host";
 	public static final String PORT_KEY = "mq.port";
 	public static final String TOPIC_KEY = "mq.topic";
 	public static final String PBDIR_KEY = "pb.dir";
 	public static final String PB_LIMIT_KEY = "pb.limit";
-	private static final String DEFAULT_HOST = "queue.staging.obanyc.com";
-	private static final int DEFAULT_PORT = 5563;
+	private static final String DEFAULT_HOST = "localhost";
+	private static final int DEFAULT_PORT = 9092;
 	private static final String DEFAULT_TOPIC = "bhs_queue";
 	private static final int DEFAULT_PB_LIMIT = -1;
 
-	public void main(String[] args) {
+	protected static KafkaConsumer<String, String> consumer;
 
-    // Prepare our context and subscriber
-    ZMQ.Context context = ZMQ.context(1);
-    ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
+	protected static Properties properties = new Properties();
+
+	public void main(String[] args) {
 
     String host = DEFAULT_HOST;
     if (System.getProperty(HOST_KEY) != null) {
@@ -55,9 +65,9 @@ public class Subscriber implements ISubscriber{
 			}
 		}
 		String topic = DEFAULT_TOPIC;
-		if (System.getProperty(TOPIC_KEY) != null) {
-			topic = System.getProperty(TOPIC_KEY);
-		}
+		//if (System.getProperty(TOPIC_KEY) != null) {
+		//	topic = System.getProperty(TOPIC_KEY);
+		//}
 
 		String pbdir = null;
 		if (System.getProperty(PBDIR_KEY) != null) {
@@ -74,23 +84,37 @@ public class Subscriber implements ISubscriber{
 		}
 
 		String bind = "tcp://" + host + ":" + port;
-		subscriber.connect(bind);
-		subscriber.subscribe(topic.getBytes());
+
+		if (properties.isEmpty() ||
+				properties.getProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG).isBlank() ||
+				properties.getProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG).isEmpty()) {
+			setProperties(bind, topic);
+		}
+
+
+		consumer = new KafkaConsumer<>(properties);
+		consumer.subscribe(Arrays.asList(topic));
 		System.out.println("listening on " + bind);
 		int nprocess = 0;
 		while (true) {
 			// Read envelope with address
-			String address = new String(subscriber.recv(0));
-			// Read message contents
-			byte[] contents = subscriber.recv(0);
-			if (pbdir == null)
-				process(address, new String(contents));
-			else
-				processToDir(pbdir, address, contents);
+			ConsumerRecords<String, String> records =
+					consumer.poll(Duration.ofMillis(100));
+			for (ConsumerRecord<String, String> record : records) {
+				System.out.println("Key: " + record.key() + ", Value: " + record.value());
+				System.out.println("Partition: " + record.partition() + ", Offset:" + record.offset());
+				String address = record.key();
+				// Read message contents
+				byte[] contents = record.value().getBytes();
+				if (pbdir == null)
+					process(address, new String(contents));
+				else
+					processToDir(pbdir, address, contents);
 
-			nprocess++;
-			if (pblimit > 0 && nprocess >= pblimit)
-				break;
+				nprocess++;
+				if (pblimit > 0 && nprocess >= pblimit)
+					break;
+			}
 		}
 	}
 	private static void process(String address, String contents) {
@@ -121,6 +145,24 @@ public class Subscriber implements ISubscriber{
 			return dateFormatter.format(date);
 		}
 		return null;
+	}
+
+	private static void setProperties(String bind, String queueName){
+
+		try {
+
+			properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bind);
+			properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bind);
+			properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+			properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+			properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+			properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+			properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, queueName);
+			properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+		}catch(Exception e){
+			System.out.println("exception = " + e + "");
+		}
+
 	}
 
 }

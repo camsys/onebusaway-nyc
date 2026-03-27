@@ -115,7 +115,6 @@ public class InferenceInputQueueListenerTaskTest {
 
 	@Before
 	public void setupApiLibrary() throws Exception {
-		task = new InferenceInputQueueListenerTask();
 		task.setConfigurationService(service);
 		listener = mock(VehicleLocationListener.class);
 		pService =  mock(QueuePredictionIntegrationServiceImpl.class);

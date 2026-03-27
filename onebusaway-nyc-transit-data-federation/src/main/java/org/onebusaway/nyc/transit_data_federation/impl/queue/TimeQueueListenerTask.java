@@ -17,11 +17,22 @@
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.queue.QueueListenerTask;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-public abstract class TimeQueueListenerTask extends QueueListenerTask {
+public class TimeQueueListenerTask implements IQueueListenerTask {
+
+	@Autowired
+	protected ConfigurationService _configurationService;
+	protected boolean _initialized = false;
+
+	@Autowired
+	@Qualifier("listener")
+	IQueueListenerTask _queueListenerTask;
 
 		public enum Status {
 			ENABLED, // read from queue
@@ -29,7 +40,10 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 			DISABLED; // totally disabled
 		};
 
-  protected abstract void processResult(FeedMessage message);
+  protected void processResult(FeedMessage message){};
+
+	@Override
+	public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {}
 
 	@Override
 	public boolean processMessage(String address, byte[] buff) {
@@ -120,7 +134,13 @@ public abstract class TimeQueueListenerTask extends QueueListenerTask {
 	  if (!useTimePredictionsIfAvailable()) {
 	    _log.error("time predictions disabled -- exiting");
 	    return;
-	  } 
-	  super.startDNSCheckThread();
+	  }
+		_queueListenerTask.startDNSCheckThread();
 	}
+
+	@Override
+	public void destroy() {}
+
+	@Override
+	public void setup() {}
 }

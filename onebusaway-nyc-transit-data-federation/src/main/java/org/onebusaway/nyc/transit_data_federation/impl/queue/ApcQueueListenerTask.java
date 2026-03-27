@@ -16,23 +16,35 @@
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.queue.QueueListenerTask;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Base class for attaching to APC Queue.
  */
-public abstract class ApcQueueListenerTask extends QueueListenerTask {
+public class ApcQueueListenerTask implements IQueueListenerTask {
+
+    protected boolean _initialized = false;
+
+    @Autowired
+    protected ConfigurationService _configurationService;
 
     public enum Status {
         ENABLED, // read from queue
         TESTING, // don't read from queue, but allow cache to be read.
         DISABLED; // totally disabled
     };
+
+    @Autowired
+    @Qualifier("listener")
+    IQueueListenerTask _queueListenerTask;
 
     private Status status = Status.ENABLED;
 
@@ -42,7 +54,7 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
             .getLogger(ApcQueueListenerTask.class);
 
 
-    protected abstract void processResult(NycVehicleLoadBean message, String contents);
+    protected void processResult(NycVehicleLoadBean message, String contents){};
 
 
     public Boolean useApcIfAvailable() {
@@ -50,6 +62,9 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
         return _configurationService.getConfigurationValueAsBoolean("tds.useApc", Boolean.FALSE);
     }
 
+
+    @Override
+    public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {}
 
     @Override
     public boolean processMessage(String contents, byte[] buff) throws Exception {        
@@ -101,7 +116,7 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
         _log.info("apc input queue listening on " + host + ":" + port + ", queue=" + queueName);
 
         try {
-            initializeQueue(host, queueName, port);
+            _queueListenerTask.initializeQueue(host, queueName, port);
         } catch (InterruptedException ie) {
             return;
         }
@@ -136,6 +151,11 @@ public abstract class ApcQueueListenerTask extends QueueListenerTask {
             return;
         }
         _log.info("starting DNS check for APC queue " + getQueueName());
-        super.startDNSCheckThread();
+        _queueListenerTask.startDNSCheckThread();;
     }
+
+    @Override
+    public void destroy() {}
+    @Override
+    public void setup() {}
 }

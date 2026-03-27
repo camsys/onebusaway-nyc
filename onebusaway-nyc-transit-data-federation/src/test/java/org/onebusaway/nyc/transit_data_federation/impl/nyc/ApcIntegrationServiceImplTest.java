@@ -44,7 +44,6 @@ public class ApcIntegrationServiceImplTest {
         //feed is object map key:vehicleId, value: ApcData
         String url = "http://example.com/feed"; // we mock out the results, this isn't used
         Map<AgencyAndId, VehicleOccupancyRecord> map = new HashMap<AgencyAndId, VehicleOccupancyRecord>();
-        ApcIntegrationServiceImpl impl = new ApcIntegrationServiceImpl();
         ApcLoadLevelCalculator calculator = new ApcLoadLevelCalculator();
         final HttpClient httpClient = Mockito.mock(HttpClient.class);
         HttpResponse response = Mockito.mock(HttpResponse.class);

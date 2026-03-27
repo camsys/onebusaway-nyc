@@ -19,17 +19,15 @@ package org.onebusaway.nyc.queue_broker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
-import zmq.SocketBase;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Simple Brokering impelmented in ZeroMQ. Listen for anything on one socket,
  * and send it back out on another socket.
  */
-public class SimpleBroker implements ISimpleBroker {
-  Logger logger = LoggerFactory.getLogger(SimpleBroker.class);
+public class KafkaSimpleBroker implements ISimpleBroker {
+  Logger logger = LoggerFactory.getLogger(KafkaSimpleBroker.class);
 
   private static final int DEFAULT_IN_PORT = 5566;
   private static final int DEFAULT_OUT_PORT = 5567;
@@ -39,7 +37,7 @@ public class SimpleBroker implements ISimpleBroker {
   private int outPort;
 
   public void main(String[] args) {
-    SimpleBroker broker = new SimpleBroker();
+    KafkaSimpleBroker broker = new KafkaSimpleBroker();
     if (args.length > 0) {
       broker.setInPort(Integer.parseInt(args[0]));
     } else {
@@ -54,7 +52,7 @@ public class SimpleBroker implements ISimpleBroker {
     broker.run();
   }
 
-  public SimpleBroker() {
+  public KafkaSimpleBroker() {
     logger.info("Starting up SimpleBroker");
   }
 

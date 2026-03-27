@@ -16,20 +16,12 @@
 
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
-import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.context.ServletContextAware;
-
-import tcip_final_3_0_5_1.CPTVehicleIden;
-import tcip_final_3_0_5_1.CcLocationReport;
-
-import java.util.ArrayList;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
@@ -41,11 +33,17 @@ import javax.servlet.ServletContext;
  * @author jmaki
  *
  */
-public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
-    implements PartitionedInputQueueListener, ServletContextAware {
+public class PartitionedInputQueueListenerTask
+        implements PartitionedInputQueueListener, ServletContextAware, IQueueListenerTask {
   
   private String _depotPartitionKey;
-  
+
+  InputService _inputService;
+
+  @Autowired
+  @Qualifier("listener")
+  IQueueListenerTask _queueListenerTask;
+
   @Override
   public void setServletContext(ServletContext servletContext) {
     // check for depot partition keys in the servlet context
@@ -66,28 +64,49 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   }
 
   @Override
+  public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
+
+  }
+
+  @Override
   public boolean processMessage(String address, byte[] buff) throws Exception{
 	  return _inputService.processMessage(address, buff);
   }
-  
+
+  @Override
+  public void startListenerThread() {}
+
+  @Override
+  public String getQueueHost() {return null;}
+
+  @Override
+  public String getQueueName() {return null;}
+
   @Override
   public String getQueueDisplayName() {
     return "PartitionedInputQueueListenerTask";
   }
 
   @Override
+  public Integer getQueuePort() {return null;}
+
+  @Override
+  public void startDNSCheckThread() {}
+
+  @Override
   @PostConstruct
   public void setup() {
 	_inputService.setDepotPartitionKey(_depotPartitionKey);
-    super.setup();
+    _queueListenerTask.setup();
   }
 
   @Override
   @PreDestroy
   public void destroy() {
-    super.destroy();
+    _inputService.setDepotPartitionKey(_depotPartitionKey);
+    _queueListenerTask.destroy();
   }
 
-  
+
 
 }

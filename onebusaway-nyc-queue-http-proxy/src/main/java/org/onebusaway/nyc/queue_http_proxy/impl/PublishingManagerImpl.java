@@ -20,10 +20,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.queue.IPublisher;
 import org.onebusaway.nyc.queue_http_proxy.model.RecordOverride;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -35,7 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
-public class PublishingManagerImpl implements PublishingManager{
+public class PublishingManagerImpl implements PublishingManager {
 
     private static Logger _log = LoggerFactory.getLogger(PublishingManagerImpl.class);
 
@@ -44,7 +47,6 @@ public class PublishingManagerImpl implements PublishingManager{
     private Map<String, Date> lastKnownVehicleRecords = new ConcurrentHashMap<>(10000);
 
     private Map<String, RecordOverride> recordOverrides = new ConcurrentHashMap<>();
-
 
     private String highFrequencyVehiclesList;
 
@@ -66,7 +68,6 @@ public class PublishingManagerImpl implements PublishingManager{
     private ThreadPoolTaskScheduler _taskScheduler;
 
     protected DNSResolver _resolver = null;
-
 
     public PublishingManagerImpl() {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SXXX");
@@ -175,6 +176,7 @@ public class PublishingManagerImpl implements PublishingManager{
     }
 
     private void processMessage(String vehicleId, Date vehicleTimestamp, String message) throws ExecutionException {
+
         highFreqPublisher.send(message);
 
         vehicleTimestamp = getFixedVehicleTimestamp(vehicleTimestamp);

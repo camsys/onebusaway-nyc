@@ -75,7 +75,6 @@ public class OpsInferenceQueueListenerTaskTest {
 		when(inferredResult.getInferredLatitude()).thenReturn(1D);
 		when(inferredResult.getInferredLongitude()).thenReturn(-1D);
 		
-		inferenceQueueListenertask = new OpsInferenceQueueListenerTask();
 		inferenceQueueListenertask.setLocationDao(locationDao);
 		inferenceQueueListenertask.setLocationService(locationService);
 		inferenceQueueListenertask.setValidationService(validationService);

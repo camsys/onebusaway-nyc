@@ -21,23 +21,8 @@ package org.onebusaway.nyc.queue;
  * is not attempting to be JMS. This is merely hiding the details of ZeroMQ for
  * easier testing.
  */
-public interface IPublisher {
+public interface ISubscriber {
 
-	void setTopic(String topic);
+	void main(String[] args);
 
-	void setProtocol(String protocol);
-
-	void setHost(String host);
-
-	void setPort(int port);
-
-	void init();
-
-	void close();
-
-	void reset();
-
-	void send(byte[] message);
-
-	void send(String message);
 }

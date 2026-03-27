@@ -17,6 +17,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
@@ -36,12 +37,12 @@ import javax.annotation.PreDestroy;
  * 
  * @author jmaki
  */
-public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
-    implements PartitionedInputQueueListener {
+public abstract class SingleVehicleInputQueueListenerTask
+    implements PartitionedInputQueueListener, IQueueListenerTask {
 
+  InputService _inputService;
   @Autowired
   @Qualifier("singleVehicleInputService")
-  @Override
   public void setInputService(InputService inputService){
 	  _inputService = inputService;
   }
@@ -54,18 +55,6 @@ public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
   @Override
   public boolean processMessage(String address, byte[] buff) throws Exception {
     return _inputService.processMessage(address, buff);
-  }
-
-  @Override
-  @PostConstruct
-  public void setup() {
-    super.setup();
-  }
-
-  @Override
-  @PreDestroy
-  public void destroy() {
-    super.destroy();
   }
 
   @Override

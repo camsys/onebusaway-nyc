@@ -144,27 +144,11 @@ public class OpsInferenceQueueListenerTask extends
     _locationDao.handleException(contents, e, new Date());
   }
 
-  @Override
-  public String getQueueHost() {
-    return _configurationService.getConfigurationValueAsString(
-        "tds.inputQueueHost", null);
-  }
-
-  @Override
-  public String getQueueName() {
-    return _configurationService.getConfigurationValueAsString(
-        "tds.inputQueueName", null);
-  }
 
   public String getQueueDisplayName() {
     return "archive_inference";
   }
 
-  @Override
-  public Integer getQueuePort() {
-    return _configurationService.getConfigurationValueAsInteger(
-        "tds.inputQueuePort", 5567);
-  }
   
   public void logStatus() {
     _log.info("obanyc_inferredlocation records count : " + _locationDao.getArchiveInferredLocationCount());
@@ -179,7 +163,6 @@ public class OpsInferenceQueueListenerTask extends
       logStatus();
     }
   }
-
 
   @SuppressWarnings("unchecked")
   @PostConstruct

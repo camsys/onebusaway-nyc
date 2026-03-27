@@ -23,9 +23,11 @@ import com.amazonaws.services.cloudwatch.model.MetricDatum;
 import com.amazonaws.services.cloudwatch.model.PutMetricDataRequest;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.queue.QueueListenerTask;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycVehicleLoadBean;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.Date;
 
@@ -41,7 +43,7 @@ import java.util.Date;
  *  -Dapc.value=my_cloudwatch_secret \
  *  >apc.log 2>&1 &
  */
-public class ApcMonitor extends QueueListenerTask {
+public class ApcMonitor implements IQueueListenerTask {
 
     public static final String DEFAULT_ENV = "Obanyc:qa";
     public static final String DEFAULT_KEY = "my_cw_key";
@@ -51,7 +53,15 @@ public class ApcMonitor extends QueueListenerTask {
     public static final String DEFAULT_DISPLAY_NAME = DEFAULT_NAME;
     public static final int DEFAULT_PORT = 5576;
 
+    @Autowired
+    @Qualifier("listener")
+    IQueueListenerTask _queueListenerTask;
+    protected boolean _initialized = false;
+
     private AmazonCloudWatchClient cloudWatch = new AmazonCloudWatchClient(new BasicAWSCredentials(getKey(), getValue()));
+
+    @Override
+    public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {}
 
     @Override
     public boolean processMessage(String contents, byte[] buff) throws Exception {
@@ -79,7 +89,8 @@ public class ApcMonitor extends QueueListenerTask {
 
         System.out.println("connecting to " + queueName + " queue at " + host  + ":" + port);
         try {
-            initializeQueue(host, queueName, port);
+            _queueListenerTask.initializeQueue(host, queueName, port);
+            
         } catch (InterruptedException ie) {
             return;
         }
@@ -125,6 +136,15 @@ public class ApcMonitor extends QueueListenerTask {
         return DEFAULT_PORT;
     }
 
+    @Override
+    public void startDNSCheckThread() {}
+
+    @Override
+    public void destroy() {}
+
+    @Override
+    public void setup() {}
+
 
     private void processResult(NycVehicleLoadBean message, String contents) {
         VehicleOccupancyRecord vor = toVehicleOccupancyRecord(message);
@@ -134,10 +154,9 @@ public class ApcMonitor extends QueueListenerTask {
     }
 
 
-    public static void main(String[] args) {
+    public void main(String[] args) {
         System.out.println("starting up....");
-        ApcMonitor monitor = new ApcMonitor();
-        monitor.setup();
+        _queueListenerTask.setup();
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 Thread.sleep(1000);

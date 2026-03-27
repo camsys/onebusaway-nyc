@@ -46,6 +46,8 @@
         <struts.version>2.5.33</struts.version>
         <xwiki.integration.version>1.0.1</xwiki.integration.version>
         <xwiki.version>2.3.1</xwiki.version>
+        <publisher.queue.type>KafkaPublisher</publisher.queue.type>
+        <subscriber.queue.type>KafkaSubscriber</subscriber.queue.type>
     </properties>
 
     <repositories>

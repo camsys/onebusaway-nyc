@@ -27,16 +27,18 @@ import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.queue.QueueListenerTask;
+import org.onebusaway.nyc.queue.IQueueListenerTask;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.report.impl.CcLocationCache;
 import org.onebusaway.nyc.report.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report.services.RecordValidationService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-public class OpsInputQueueListenerTask extends QueueListenerTask {
+public abstract class OpsInputQueueListenerTask implements IQueueListenerTask {
 
   public static final int DELAY_THRESHOLD = 10 * 1000;
 
@@ -51,6 +53,10 @@ public class OpsInputQueueListenerTask extends QueueListenerTask {
     _ccLocationCache = cache;
   }
 
+  @Qualifier("configurationService")
+  @Autowired
+  private ConfigurationService _configurationService;
+
   @Autowired
   public void setValidationService(RecordValidationService validationService) {
     this.validationService = validationService;
@@ -60,6 +66,12 @@ public class OpsInputQueueListenerTask extends QueueListenerTask {
   private String _zoneOffset = null;
   private String _systemTimeZone = null;
   private long zoneOffsetWindow = System.currentTimeMillis();
+
+  protected boolean _initialized = false;
+
+  @Autowired
+  @Qualifier("listener")
+  IQueueListenerTask _queueListenerTask;
 
   public OpsInputQueueListenerTask() {
     /*
@@ -183,7 +195,7 @@ public class OpsInputQueueListenerTask extends QueueListenerTask {
 
   @PostConstruct
   public void setup() {
-    super.setup();
+    _queueListenerTask.setup();
     // make parsing lenient
     _mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
         false);
@@ -194,7 +206,7 @@ public class OpsInputQueueListenerTask extends QueueListenerTask {
 
   @PreDestroy
   public void destroy() {
-    super.destroy();
+    _queueListenerTask.destroy();
   }
 
   /**

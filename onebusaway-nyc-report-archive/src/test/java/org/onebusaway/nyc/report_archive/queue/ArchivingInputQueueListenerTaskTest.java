@@ -34,7 +34,17 @@ public class ArchivingInputQueueListenerTaskTest {
   CcLocationReportDao dao;
   
   @InjectMocks
-  ArchivingInputQueueListenerTask t = new ArchivingInputQueueListenerTask();
+  ArchivingInputQueueListenerTask t = new ArchivingInputQueueListenerTask() {
+    @Override
+    public void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
+
+    }
+
+    @Override
+    public void startDNSCheckThread() {
+
+    }
+  };
 
   @Test
   public void testProcessMessage() throws IOException {

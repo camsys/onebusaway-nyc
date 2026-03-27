@@ -66,7 +66,6 @@ public abstract class TripUpdateTest {
         TripUpdateFeedBuilderImpl feedBuilder = new TripUpdateFeedBuilderImpl();
         _feedBuilder = feedBuilder;
 
-        _predictionIntegrationService = new QueuePredictionIntegrationServiceImpl();
         _predictionIntegrationService.setTransitDataService(_transitDataService);
         _predictionIntegrationService.setConfigurationService(new MockConfigurationService());
     }

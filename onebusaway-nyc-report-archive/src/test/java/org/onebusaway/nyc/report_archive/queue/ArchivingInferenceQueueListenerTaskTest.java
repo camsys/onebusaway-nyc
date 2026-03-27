@@ -71,7 +71,6 @@ public class ArchivingInferenceQueueListenerTaskTest {
 		when(inferredResult.getInferredLatitude()).thenReturn(1D);
 		when(inferredResult.getInferredLongitude()).thenReturn(-1D);
 		
-		inferenceQueueListenertask = new ArchivingInferenceQueueListenerTask();
 		inferenceQueueListenertask.setLocationDao(locationDao);
 		inferenceQueueListenertask.setValidationService(validationService);
 		inferenceQueueListenertask.setInferencePersistenceService(persister);

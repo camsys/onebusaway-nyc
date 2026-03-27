@@ -17,27 +17,12 @@
 package org.onebusaway.nyc.queue;
 
 /**
- * Represents an interface to simply message queue publishing operations. This
- * is not attempting to be JMS. This is merely hiding the details of ZeroMQ for
- * easier testing.
+ * Represents an interface to simply listen to queue operations. This
+ * is not attempting to be JMS. This is merely allowing us to
  */
-public interface IPublisher {
+public interface ITripUpdateSubscriber {
 
-	void setTopic(String topic);
+	void main(String[] args);
 
-	void setProtocol(String protocol);
 
-	void setHost(String host);
-
-	void setPort(int port);
-
-	void init();
-
-	void close();
-
-	void reset();
-
-	void send(byte[] message);
-
-	void send(String message);
 }

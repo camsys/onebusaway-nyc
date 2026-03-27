@@ -26,6 +26,7 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
@@ -42,6 +43,7 @@ import com.amazonaws.services.cloudwatch.model.StandardUnit;
 public class CloudWatchServiceImpl implements CloudWatchService, ServletContextAware {
 
 	@Autowired
+	@Qualifier("configurationService")
 	ConfigurationService _configurationService;
 
 	AmazonCloudWatchClient cloudWatch;
