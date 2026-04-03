@@ -3,6 +3,7 @@ package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.GtfsTripModificationsClient;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.GtfsTripModificationsClientImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 @Component
-public class NycGtfsTripModificationsClientImpl extends GtfsTripModificationsClientImpl {
+public class NycGtfsTripModificationsClientImpl extends GtfsTripModificationsClientImpl implements GtfsTripModificationsClient {
 
     private static final String CONFIG_TRIP_MODS_REFRESH_INTERVAL = "tds.tripModificationsRefreshInterval";
 
@@ -32,9 +33,14 @@ public class NycGtfsTripModificationsClientImpl extends GtfsTripModificationsCli
     @Override
     @PostConstruct
     public void init() {
-        _nycTransitDataService.blockUntilBundleIsReady();
         refreshCache();
         super.init();
+    }
+
+    @Override
+    public void update() {
+        _nycTransitDataService.blockUntilBundleIsReady();
+        super.update();
     }
 
     @Refreshable(dependsOn = {CONFIG_TRIP_MODS_REFRESH_INTERVAL, CONFIG_TRIP_MODS_URL, CONFIG_TRIP_MODS_ENABLED})
