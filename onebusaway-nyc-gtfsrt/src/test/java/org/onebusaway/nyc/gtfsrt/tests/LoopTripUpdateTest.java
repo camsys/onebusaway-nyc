@@ -20,6 +20,7 @@ import org.onebusaway.collections.MappingLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +38,7 @@ public class LoopTripUpdateTest extends TripUpdateTest {
   }
 
   @Override
-  protected void assertStopTimeUpdatesMatchTprs(List<TimepointPredictionRecord> records, List<GtfsRealtime.TripUpdate.StopTimeUpdate> stus) {
+  protected void assertStopTimeUpdatesMatchTprs(Collection<TimepointPredictionRecord> records, List<GtfsRealtime.TripUpdate.StopTimeUpdate> stus) {
     assertEquals(records.size(), stus.size());
     Map<Integer, TimepointPredictionRecord> tprByStop = MappingLibrary.mapToValue(records, "stopSequence");
     for (GtfsRealtime.TripUpdate.StopTimeUpdate stu : stus) {

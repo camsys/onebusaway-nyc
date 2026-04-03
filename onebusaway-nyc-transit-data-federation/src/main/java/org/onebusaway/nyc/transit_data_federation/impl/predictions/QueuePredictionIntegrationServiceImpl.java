@@ -16,11 +16,7 @@
 
 package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -75,7 +71,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 	private ConfigurationService _configurationService;
 
 
-	private Cache<String, List<TimepointPredictionRecord>> _cache = null;
+	private Cache<String, Map<String, TimepointPredictionRecord>> _cache = null;
 
 	private Boolean _checkPredictionAge;
 	private Boolean _checkPredictionLatency;
@@ -89,7 +85,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 		_checkPredictionAge = checkAge;
 	}
 
-	private synchronized Cache<String, List<TimepointPredictionRecord>> getCache() {
+	private synchronized Cache<String, Map<String, TimepointPredictionRecord>> getCache() {
 		if (_cache == null) {
 
 			int timeout = _configurationService.getConfigurationValueAsInteger(CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
@@ -119,11 +115,11 @@ public class QueuePredictionIntegrationServiceImpl extends
 		if (_cache == null) return; // nothing to do
 		int timeout = _configurationService.getConfigurationValueAsInteger(CACHE_TIMEOUT_KEY, DEFAULT_CACHE_TIMEOUT);
 		_log.info("rebuilding prediction cache with " + _cache.size() + " entries after refresh with timeout=" + timeout + "...");
-		ConcurrentMap<String, List<TimepointPredictionRecord>> map = _cache.asMap();
+		ConcurrentMap<String, Map<String, TimepointPredictionRecord>> map = _cache.asMap();
 		_cache = CacheBuilder.newBuilder()
 				.expireAfterWrite(timeout, TimeUnit.SECONDS)
 				.build();
-		for (Entry<String, List<TimepointPredictionRecord>> entry : map.entrySet()) {
+		for (Entry<String, Map<String, TimepointPredictionRecord>> entry : map.entrySet()) {
 			_cache.put(entry.getKey(), entry.getValue());
 		}
 		_log.info("done");
@@ -147,7 +143,8 @@ public class QueuePredictionIntegrationServiceImpl extends
 		// convert FeedMessage to TimepointPredictionRecord
 		for (GtfsRealtime.FeedEntity entity : message.getEntityList()) {
 
-			List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();
+			Collection<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();
+			Map<String, TimepointPredictionRecord> predictionRecordsByStopId = new LinkedHashMap<>();
 
 			TripUpdate tu = entity.getTripUpdate();
 			if (!tu.getVehicle().getId().equals(vehicleId)
@@ -169,12 +166,13 @@ public class QueuePredictionIntegrationServiceImpl extends
 				if (scheduledTime != null) {
 					tpr.setTimepointScheduledTime(scheduledTime);
 					predictionRecords.add(tpr);
+					predictionRecordsByStopId.put(stu.getStopId(), tpr);
 				}
 			}
 
 			if (vehicleId != null) {
 				// place in cache if we were able to extract a vehicle id
-				getCache().put(hash(vehicleId, tripId), predictionRecords);
+				getCache().put(hash(vehicleId, tripId), predictionRecordsByStopId);
 			}
 
 		}
@@ -231,14 +229,29 @@ public class QueuePredictionIntegrationServiceImpl extends
 	}
 
 	@Override
-	public List<TimepointPredictionRecord> getPredictionsForTrip(
+	public Collection<TimepointPredictionRecord> getPredictionsForTrip(
+			TripStatusBean tripStatus) {
+		var result = getCache().getIfPresent(hash(tripStatus.getVehicleId(), tripStatus.getActiveTrip().getId()));
+		return result != null ? result.values() : Collections.emptyList();
+	}
+
+	@Override
+	public Map<String, TimepointPredictionRecord> getPredictionsForTripByStopId(
 			TripStatusBean tripStatus) {
 		return getCache().getIfPresent(hash(tripStatus.getVehicleId(), tripStatus.getActiveTrip().getId()));
 	}
 
-	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(
-			String VehicleId, String TripId) {
-			return getCache().getIfPresent(hash(VehicleId, TripId));
+	@Override
+	public Collection<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(
+			String vehicleId, String tripId) {
+			var result = getCache().getIfPresent(hash(vehicleId, tripId));
+			return result != null ? result.values() : Collections.emptyList();
+	}
+
+	@Override
+	public Map<String, TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripByStopId(
+			String vehicleId, String tripId) {
+		return getCache().getIfPresent(hash(vehicleId, tripId));
 	}
 
 	@Override
@@ -325,7 +338,7 @@ public class QueuePredictionIntegrationServiceImpl extends
 	}
 
 	// for testing
-	void setCache(Cache<String, List<TimepointPredictionRecord>> cache) {
+	void setCache(Cache<String, Map<String, TimepointPredictionRecord>> cache) {
 		_cache = cache;
 	}
 }

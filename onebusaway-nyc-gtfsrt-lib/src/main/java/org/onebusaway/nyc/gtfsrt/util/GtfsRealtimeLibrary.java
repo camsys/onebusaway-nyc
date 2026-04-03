@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.gtfsrt.util;
 
+import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.*;
 import org.joda.time.LocalDate;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -27,6 +28,7 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.slf4j.Logger;
@@ -38,38 +40,59 @@ public class GtfsRealtimeLibrary {
 
     private static Logger _log = LoggerFactory.getLogger(GtfsRealtimeLibrary.class);
 
-    public static TripDescriptor.Builder makeTripDescriptor(TripBean tb, TripStatusBean status) {
+    public static TripDescriptor.Builder makeTripDescriptor(TripBean tb,
+                                                            TripStatusBean status,
+                                                            TripModificationDiff tripModificationDiff) {
         TripDescriptor.Builder trip = TripDescriptor.newBuilder();
-        trip.setTripId(id(tb.getId()));
-        trip.setRouteId(id(tb.getRoute().getId()));
-        int direction = Integer.parseInt(tb.getDirectionId());
-        trip.setDirectionId(direction);
-
         // start date - YYYYMMDD
         LocalDate ld = new LocalDate(status.getServiceDate());
-        trip.setStartDate(ld.toString("yyyyMMdd"));
+        String startDate = ld.toString("yyyyMMdd");
+
+        if(tripModificationDiff != null){
+            trip.setModifiedTrip(makeModifiedTripSelector(tripModificationDiff, startDate));
+        } else {
+            trip.setTripId(id(tb.getId()));
+            trip.setRouteId(id(tb.getRoute().getId()));
+            int direction = Integer.parseInt(tb.getDirectionId());
+            trip.setDirectionId(direction);
+            trip.setStartDate(startDate);
+        }
 
         return trip;
     }
 
-    public static TripDescriptor.Builder makeTripDescriptor(TripBean tb, VehicleStatusBean vehicle) {
-        return makeTripDescriptor(tb, vehicle.getTripStatus());
+    public static TripDescriptor.ModifiedTripSelector.Builder makeModifiedTripSelector(
+            TripModificationDiff tripModificationDiff, String startDate) {
+        TripDescriptor.ModifiedTripSelector.Builder modifiedTripSelector = TripDescriptor.ModifiedTripSelector.newBuilder();
+        modifiedTripSelector.setModificationsId(tripModificationDiff.getEntityId());
+        modifiedTripSelector.setAffectedTripId(tripModificationDiff.getTripId());
+        modifiedTripSelector.setStartDate(startDate);
+        return modifiedTripSelector;
     }
 
-    public static TripDescriptor.Builder makeTripDescriptor(VehicleStatusBean vehicle) {
-        return makeTripDescriptor(vehicle.getTrip(), vehicle.getTripStatus());
+    public static TripDescriptor.Builder makeTripDescriptor(TripBean tb,
+                                                            VehicleStatusBean vehicle,
+                                                            TripModificationDiff tripModificationDiff) {
+        return makeTripDescriptor(tb, vehicle.getTripStatus(), tripModificationDiff);
+    }
+
+    public static TripDescriptor.Builder makeTripDescriptor(VehicleStatusBean vehicle,
+                                                            TripModificationDiff tripModificationDiff) {
+        return makeTripDescriptor(vehicle.getTrip(), vehicle.getTripStatus(), tripModificationDiff);
     }
 
     // create a ScheduleRelationship CANCELED for the trip
-    public static TripUpdate.Builder makeCanceledTrip(TripBean tb, TripStatusBean bean) {
+    public static TripUpdate.Builder makeCanceledTrip(TripBean tb, TripStatusBean bean, TripModificationDiff tripModificationDiff) {
         TripUpdate.Builder tripUpdate = TripUpdate.newBuilder();
-        tripUpdate.setTrip(makeCanceledTripDescriptor(tb, bean));
+        tripUpdate.setTrip(makeCanceledTripDescriptor(tb, bean, tripModificationDiff));
         tripUpdate.setTimestamp(System.currentTimeMillis());
         return tripUpdate;
     }
 
-    private static TripDescriptor.Builder makeCanceledTripDescriptor(TripBean trip, TripStatusBean bean) {
-        TripDescriptor.Builder builder = makeTripDescriptor(trip, bean);
+    private static TripDescriptor.Builder makeCanceledTripDescriptor(TripBean trip,
+                                                                     TripStatusBean bean,
+                                                                     TripModificationDiff tripModificationDiff) {
+        TripDescriptor.Builder builder = makeTripDescriptor(trip, bean, tripModificationDiff);
         builder.setScheduleRelationship(TripDescriptor.ScheduleRelationship.CANCELED);
         return builder;
     }
@@ -97,12 +120,17 @@ public class GtfsRealtimeLibrary {
     public static TripUpdate.StopTimeUpdate.Builder makeStopTimeUpdate(TimepointPredictionRecord tpr) {
         TripUpdate.StopTimeUpdate.Builder builder = TripUpdate.StopTimeUpdate.newBuilder();
         builder.setStopId(tpr.getTimepointId().getId());
-        builder.setArrival(makeStopTimeEvent(tpr.getTimepointPredictedArrivalTime()/1000));
-        builder.setDeparture(makeStopTimeEvent(tpr.getTimepointPredictedDepartureTime()/1000)); // TODO: different?
+        if(tpr.isSkipped()){
+            builder.setScheduleRelationship(GtfsRealtime.TripUpdate.StopTimeUpdate.ScheduleRelationship.SKIPPED);
+        } else {
+            builder.setArrival(makeStopTimeEvent(tpr.getTimepointPredictedArrivalTime()/1000));
+            builder.setDeparture(makeStopTimeEvent(tpr.getTimepointPredictedDepartureTime()/1000));
+        }
         if (tpr.getStopSequence() >= 0)
             builder.setStopSequence(tpr.getStopSequence());
         return builder;
     }
+
 
     public static TripUpdate.StopTimeEvent.Builder makeStopTimeEvent(long time) {
         return TripUpdate.StopTimeEvent.newBuilder()

@@ -66,8 +66,21 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
             FeedMessage.Builder builder = FeedMessage.newBuilder();
 
             for (FeedEntity.Builder entity : getEntities(time))
-                if (entity != null)
-                    builder.addEntity(entity);
+                if (entity != null) {
+                    if(entity.getTripUpdate() != null){
+                        if(entity.getTripUpdate().getTrip().getTripId() == null) {
+                            System.out.println("getFeedMessage: entityId=" + entity.getId());
+                        }
+                    }
+                    try {
+                        builder.addEntity(entity);
+                    } catch (Exception ex) {
+                        if(entity.getId().isBlank()){
+                            System.out.println("getFeedMessage: entityId is Blank");
+                        }
+                        ex.printStackTrace();
+                    }
+                }
 
             FeedHeader.Builder header = FeedHeader.newBuilder();
             header.setGtfsRealtimeVersion("1.0");

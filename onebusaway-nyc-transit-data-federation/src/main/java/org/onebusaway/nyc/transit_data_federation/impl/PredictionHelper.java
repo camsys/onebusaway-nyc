@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,9 +39,9 @@ public class PredictionHelper implements PredictionHelperService {
 
     private static Logger _log = LoggerFactory.getLogger(PredictionHelper.class);
     @Override
-    public List<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
-                                                                       TripStatusBean tripStatus) {
-        List<TimepointPredictionRecord> records = null;
+    public Collection<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
+                                                                             TripStatusBean tripStatus) {
+        Collection<TimepointPredictionRecord> records = null;
         _log.info("getPredictionRecordsForTrip called!");
         if (agencyId == null)
             return records;
@@ -49,7 +50,7 @@ public class PredictionHelper implements PredictionHelperService {
         if (!tripStatus.isPredicted())
             return records;
 
-        records = new ArrayList<TimepointPredictionRecord>();
+        records = new ArrayList<>();
 
         List<TimepointPredictionBean> beans = tripStatus.getTimepointPredictions();
 
@@ -83,10 +84,10 @@ public class PredictionHelper implements PredictionHelperService {
 
 
 
-    public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
+    public Collection<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
                                                                                  TripStatusBean tripStatus) {
 
-        List<TimepointPredictionRecord> records = null;
+        Collection<TimepointPredictionRecord> records = null;
         if (vehicleId == null) {
             _log.debug("rejecting for missing vehicle");
             return records;
@@ -108,7 +109,7 @@ public class PredictionHelper implements PredictionHelperService {
             return records;
         }
 
-        records = new ArrayList<TimepointPredictionRecord>();
+        records = new ArrayList<>();
         if (beans == null || beans.isEmpty()) {
             _log.debug("can't create a list of TPRs -- nothing to do!");
         }
