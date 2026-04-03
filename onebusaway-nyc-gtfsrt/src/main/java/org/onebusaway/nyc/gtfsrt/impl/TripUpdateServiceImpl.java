@@ -146,8 +146,9 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
         List<BlockTripBean> trips = block.getBlockConfiguration().getTrips();
         Map<AgencyAndId, TripModificationDiff> tripModificationDiffs = null;
         String timeZone = block.getBlockConfiguration().getTimeZone();
+        LocalDate serviceDate = null;
         try {
-            LocalDate serviceDate = getServiceLocalDate(block.getServiceDate(), timeZone);
+            serviceDate = getServiceLocalDate(block.getServiceDate(), timeZone);
             tripModificationDiffs = _transitDataService.getAllTripModificationDiffsById(serviceDate);
        }
         catch(Exception e){
@@ -193,7 +194,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
             entities.add(entity);
 
             // Show original Trip TripUpdate
-            if(hasTripModification){
+            if(hasTripModification && serviceDate != null){
                 Map<AgencyAndId, StopTimeSnapshot> originalTripStopTimes = tripModificationDiff.getOriginalStopTimes();
 
                 Collection<TimepointPredictionRecord> originalTripTimepointRecords = reconstructOriginalTripTimepointRecords(
