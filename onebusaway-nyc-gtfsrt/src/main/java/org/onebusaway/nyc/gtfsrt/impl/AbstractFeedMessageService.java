@@ -25,6 +25,8 @@ import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +37,8 @@ import java.util.List;
  * Includes shared logic for FeedMessageServices. Builds the FeedMessage given a list of FeedEntities.
  */
 public abstract class AbstractFeedMessageService implements FeedMessageService {
+
+    private static final Logger _log = LoggerFactory.getLogger(AbstractFeedMessageService.class);
 
     public static final int DEFAULT_CACHE_EXPIRY_SECONDS = 10;
 
@@ -65,22 +69,15 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
         if (_disableCache || isCacheExpired(time)) {
             FeedMessage.Builder builder = FeedMessage.newBuilder();
 
-            for (FeedEntity.Builder entity : getEntities(time))
+            for (FeedEntity.Builder entity : getEntities(time)) {
                 if (entity != null) {
-                    if(entity.getTripUpdate() != null){
-                        if(entity.getTripUpdate().getTrip().getTripId() == null) {
-                            System.out.println("getFeedMessage: entityId=" + entity.getId());
-                        }
-                    }
                     try {
                         builder.addEntity(entity);
                     } catch (Exception ex) {
-                        if(entity.getId().isBlank()){
-                            System.out.println("getFeedMessage: entityId is Blank");
-                        }
-                        ex.printStackTrace();
+                        _log.error("Unable to process entity {}", entity.getId(), ex);
                     }
                 }
+            }
 
             FeedHeader.Builder header = FeedHeader.newBuilder();
             header.setGtfsRealtimeVersion("1.0");
