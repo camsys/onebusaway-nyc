@@ -97,7 +97,9 @@ public class ScheduleBasedPredictionIntegrationServiceImpl implements Prediction
         Collection<TimepointPredictionRecord> predictionsForTrip = getPredictionsForTrip(tripId);
         return predictionsForTrip.stream().collect(Collectors.toMap(
                 record -> record.getTimepointId().toString(),
-                Function.identity()));
+                Function.identity(),
+                (existing, replacement) -> existing,
+                LinkedHashMap::new));
     }
 
     @Override
