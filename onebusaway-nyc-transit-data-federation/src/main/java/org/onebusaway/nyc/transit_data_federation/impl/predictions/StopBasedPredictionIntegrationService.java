@@ -69,6 +69,7 @@ class StopBasedPredictionIntegrationService implements PredictionIntegrationServ
         _predictionGenerationService.getPredictionsForVehicle(vehicleId));
   }
 
+
   @Override
   public Collection<TimepointPredictionRecord> getPredictionsForTrip(TripStatusBean tripStatus) {
     return _predictionRecordsByVehicle.get(tripStatus.getVehicleId());
@@ -76,7 +77,10 @@ class StopBasedPredictionIntegrationService implements PredictionIntegrationServ
 
   @Override
   public Map<String, TimepointPredictionRecord> getPredictionsForTripByStopId(TripStatusBean tripStatus) {
-    return Map.of();
+    return _predictionRecordsByVehicle.get(tripStatus.getVehicleId()).stream()
+            .collect(Collectors.toMap(
+                    record -> record.getTimepointId().toString(),
+                    Function.identity()));
   }
 
   public Collection<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String VehicleId, String TripId) {

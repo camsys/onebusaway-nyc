@@ -61,7 +61,8 @@ public class QueuePredictionIntegrationServiceImplTest {
     service = new QueuePredictionIntegrationServiceImpl();
     service.setConfigurationService(config);
     service.setTransitDataService(tds);
-    service.setCache(CacheBuilder.newBuilder().<String, Map<String, TimepointPredictionRecord>>build());
+    service.setPredictionsByStopIdCache(CacheBuilder.newBuilder().<String, Map<String, TimepointPredictionRecord>>build());
+    service.setPredictionsCache(CacheBuilder.newBuilder().<String, Collection<TimepointPredictionRecord>>build());
   }
 
   @Test
