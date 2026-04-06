@@ -37,6 +37,7 @@ import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data.model.trips.*;
 
 import java.lang.reflect.Method;
+import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -51,6 +52,7 @@ public class TripUpdateServiceImplTest {
   private NycTransitDataService tds;
   private PresentationService presentationService;
   private Method reconstructMethod;
+  private static final int FAR_FUTURE_SECONDS = Integer.MAX_VALUE / 2;
 
 
   @Before
@@ -89,7 +91,7 @@ public class TripUpdateServiceImplTest {
 
     reconstructMethod = TripUpdateServiceImpl.class.getDeclaredMethod(
             "reconstructOriginalTripTimepointRecords",
-            Collection.class, Map.class);
+            Collection.class, Map.class, LocalDate.class, String.class);
     reconstructMethod.setAccessible(true);
   }
 
@@ -243,13 +245,16 @@ public class TripUpdateServiceImplTest {
           Collection<StopTimeSnapshot> originalTripStopTimes,
           Map<String, TimepointPredictionRecord> tprsByStopId) throws Exception {
     return (Collection<TimepointPredictionRecord>) reconstructMethod.invoke(
-            service, originalTripStopTimes, tprsByStopId);
+            service, originalTripStopTimes, tprsByStopId,
+            LocalDate.now(), "America/New_York");
   }
 
   private StopTimeSnapshot makeSnapshot(String stopId, int gtfsSequence) {
     StopTimeSnapshot snapshot = new StopTimeSnapshot();
     snapshot.setStopId(stopId);
     snapshot.setGtfsSequence(gtfsSequence);
+    snapshot.setArrivalTime(FAR_FUTURE_SECONDS);
+    snapshot.setDepartureTime(FAR_FUTURE_SECONDS);
     return snapshot;
   }
 
