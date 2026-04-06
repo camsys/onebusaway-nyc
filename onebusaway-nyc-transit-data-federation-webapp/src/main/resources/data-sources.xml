@@ -123,7 +123,17 @@
 
     <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" />
     <bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
-    
+
+    <bean id="gtfsTripModsClient" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.GtfsTripModificationsClientImpl">
+        <property name="gtfsTripModificationsUrl" value="https://platform.remix.com/api/disruptions/mta_trip_mods_demo_us/gtfs_trip_mods" />
+        <property name="refreshInterval" value="30" />
+        <property name="enabled" value="true"/>
+    </bean>
+
+<!--    <bean id="gtfsTripModificationsClient" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.GtfsTripModificationsClientImpl">-->
+<!--        <property name="gtfsTripModificationsUrl" value="https://obanyc-trip-modifications.s3.us-east-1.amazonaws.com/gtfs_trip_modifications.pb"/>-->
+<!--        <property name="refreshInterval" value="30" />-->
+<!--    </bean>-->
 
 <!--    <bean id="mta_alerts" class="org.onebusaway.transit_data_federation.impl.realtime.gtfs_realtime.GtfsRealtimeSource">-->
 <!--        <property name="alertsUrl" value=""/>-->

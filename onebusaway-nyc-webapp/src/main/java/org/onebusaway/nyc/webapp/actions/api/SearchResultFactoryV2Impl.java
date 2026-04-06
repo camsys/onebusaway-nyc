@@ -24,9 +24,11 @@ import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.api.model.*;
 import org.onebusaway.transit_data.model.*;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
 
@@ -98,7 +100,12 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
             }
         }
 
-        return new RouteResult(routeBean, directions);
+        List<TripModificationDiff> diffs = _nycTransitDataService.getAllTripModificationDiffs()
+                .stream()
+                .filter(d -> routeBean.getId().equals(d.getRouteId()))
+                .collect(Collectors.toList());
+
+        return new RouteResult(routeBean, directions, diffs);
     }
 
 
@@ -166,7 +173,12 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
                 }
             }
 
-            RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions);
+            List<TripModificationDiff> diffs = _nycTransitDataService.getAllTripModificationDiffs()
+                    .stream()
+                    .filter(d -> routeBean.getId().equals(d.getRouteId()))
+                    .collect(Collectors.toList());
+
+            RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions, diffs);
             routesAtStop.add(routeAtStop);
         }
 
