@@ -100,7 +100,7 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
             return position;
         }
 
-        position.setTrip(makeTripDescriptor(status));
+        position.setTrip(makeTripDescriptor(status, null));
 
 
         if (status.getTripStatus().getNextStop() != null) {

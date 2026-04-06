@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -50,8 +51,8 @@ class DummyScheduleBasedPredictionGenerationServiceImpl implements PredictionGen
   private NycTransitDataService _transitDataService;
 
   @Override
-  public List<TimepointPredictionRecord> getPredictionsForVehicle(AgencyAndId vehicleId) {
-    List<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();
+  public Collection<TimepointPredictionRecord> getPredictionsForVehicle(AgencyAndId vehicleId) {
+    Collection<TimepointPredictionRecord> predictionRecords = new ArrayList<TimepointPredictionRecord>();
 
     VehicleStatusBean vehicleStatus = _transitDataService.getVehicleForAgency(AgencyAndId.convertToString(vehicleId), System.currentTimeMillis());
     if(vehicleStatus == null)

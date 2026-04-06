@@ -15,11 +15,15 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.Vehicle;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionGenerationService;
 import org.onebusaway.nyc.transit_data_federation.services.predictions.PredictionIntegrationService;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
@@ -52,12 +56,12 @@ class StopBasedPredictionIntegrationService implements PredictionIntegrationServ
     _predictionGenerationService = predictionGenerationService;
   }
 
-  public void acceptPredictionsForVehicle(AgencyAndId vehicleId, String tripId, List<TimepointPredictionRecord> tprs) {
+  public void acceptPredictionsForVehicle(AgencyAndId vehicleId, String tripId, Collection<TimepointPredictionRecord> tprs) {
     // no op
   }
 
-  private Map<String, List<TimepointPredictionRecord>> _predictionRecordsByVehicle =
-      new HashMap<String, List<TimepointPredictionRecord>>();
+  private Map<String, Collection<TimepointPredictionRecord>> _predictionRecordsByVehicle =
+      new HashMap<String, Collection<TimepointPredictionRecord>>();
   
   @Override
   public void updatePredictionsForVehicle(AgencyAndId vehicleId) {
@@ -65,13 +69,30 @@ class StopBasedPredictionIntegrationService implements PredictionIntegrationServ
         _predictionGenerationService.getPredictionsForVehicle(vehicleId));
   }
 
+
   @Override
-  public List<TimepointPredictionRecord> getPredictionsForTrip(TripStatusBean tripStatus) {
+  public Collection<TimepointPredictionRecord> getPredictionsForTrip(TripStatusBean tripStatus) {
     return _predictionRecordsByVehicle.get(tripStatus.getVehicleId());
   }
-  
-  public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String VehicleId, String TripId) {
+
+  @Override
+  public Map<String, TimepointPredictionRecord> getPredictionsForTripByStopId(TripStatusBean tripStatus) {
+    return _predictionRecordsByVehicle.get(tripStatus.getVehicleId()).stream()
+            .collect(Collectors.toMap(
+                    record -> record.getTimepointId().toString(),
+                    Function.identity()));
+  }
+
+  public Collection<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String VehicleId, String TripId) {
     return _predictionRecordsByVehicle.get(VehicleId);
+  }
+
+  @Override
+  public Map<String, TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripByStopId(String vehicleId, String tripId) {
+    return _predictionRecordsByVehicle.get(vehicleId).stream()
+            .collect(Collectors.toMap(
+                    record -> record.getTimepointId().toString(),
+                    Function.identity()));
   }
 
 }

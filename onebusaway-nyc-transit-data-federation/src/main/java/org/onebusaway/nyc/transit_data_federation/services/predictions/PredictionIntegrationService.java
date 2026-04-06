@@ -15,7 +15,9 @@
  */
 package org.onebusaway.nyc.transit_data_federation.services.predictions;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
@@ -43,16 +45,23 @@ public interface PredictionIntegrationService {
    * @param tripStatus
    * @return
    */
-  public List<TimepointPredictionRecord> getPredictionsForTrip(TripStatusBean tripStatus);
+  public Collection<TimepointPredictionRecord> getPredictionsForTrip(TripStatusBean tripStatus);
+
+  Map<String, TimepointPredictionRecord> getPredictionsForTripByStopId(
+          TripStatusBean tripStatus);
 
   /**
    * A method to return predictions in a format suitable for injection into the TDS for the given
    * vehicle status.
    * 
    * @param vehicleId
+   * @param tripId
    * @return
    */
-  public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String VehicleId, String TripId);
+  public Collection<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId, String tripId);
+
+  Map<String, TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripByStopId(
+          String vehicleId, String tripId);
 
   public boolean isEnabled();
 }

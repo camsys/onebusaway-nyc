@@ -33,10 +33,8 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.onebusaway.nyc.gtfsrt.tests.GtfsRtAssertLibrary.*;
@@ -93,12 +91,12 @@ public abstract class TripUpdateTest {
 
         for (String tripId : tripIds) {
 
-            List<TimepointPredictionRecord> records = _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripId);
+            Collection<TimepointPredictionRecord> records = _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripId);
             assertFalse(records.isEmpty());
 
             TripBean trip = _transitDataService.getTrip(tripId);
 
-            TripUpdate.Builder tripUpdate = _feedBuilder.makeTripUpdate(trip, status, records);
+            TripUpdate.Builder tripUpdate = _feedBuilder.makeTripUpdate(trip, status, records, null);
             assertTripDescriptorMatches(trip, tripUpdate.getTrip());
             assertDelayMatches(status, tripUpdate.getDelay());
             assertVehicleDescriptorMatches(vlrb, tripUpdate.getVehicle());
@@ -118,7 +116,7 @@ public abstract class TripUpdateTest {
         assertEquals(status.getTripStatus().getScheduleDeviation(), delay, TOLERANCE);
     }
 
-    protected void assertStopTimeUpdatesMatchTprs(List<TimepointPredictionRecord> records, List<TripUpdate.StopTimeUpdate> stus) {
+    protected void assertStopTimeUpdatesMatchTprs(Collection<TimepointPredictionRecord> records, List<TripUpdate.StopTimeUpdate> stus) {
         assertEquals(records.size(), stus.size());
         Map<AgencyAndId, TimepointPredictionRecord> tprByStop = MappingLibrary.mapToValue(records, "timepointId.id");
         for (TripUpdate.StopTimeUpdate stu : stus) {

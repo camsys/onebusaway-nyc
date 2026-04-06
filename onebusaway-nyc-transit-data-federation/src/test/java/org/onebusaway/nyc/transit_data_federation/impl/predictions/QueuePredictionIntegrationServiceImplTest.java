@@ -37,7 +37,9 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -59,7 +61,8 @@ public class QueuePredictionIntegrationServiceImplTest {
     service = new QueuePredictionIntegrationServiceImpl();
     service.setConfigurationService(config);
     service.setTransitDataService(tds);
-    service.setCache(CacheBuilder.newBuilder().<String, List<TimepointPredictionRecord>>build());
+    service.setPredictionsByStopIdCache(CacheBuilder.newBuilder().<String, Map<String, TimepointPredictionRecord>>build());
+    service.setPredictionsCache(CacheBuilder.newBuilder().<String, Collection<TimepointPredictionRecord>>build());
   }
 
   @Test
@@ -71,9 +74,14 @@ public class QueuePredictionIntegrationServiceImplTest {
             .setHeader(FeedHeader.newBuilder().setGtfsRealtimeVersion("1.0").setTimestamp(1))
             .build();
     service.processResult(msg);
-    List<TimepointPredictionRecord> records = service.getPredictionRecordsForVehicleAndTrip("vehicle1", "trip1");
+
+    Collection<TimepointPredictionRecord> records = service.getPredictionRecordsForVehicleAndTrip("vehicle1", "trip1");
+
+
+
+
     assertEquals(1, records.size());
-    TimepointPredictionRecord record = records.get(0);
+    TimepointPredictionRecord record = records.stream().findFirst().orElse(null);
     assertEquals(new AgencyAndId("1", "stop1"), record.getTimepointId());
     assertEquals(1, record.getStopSequence());
     assertEquals(1, record.getTimepointPredictedArrivalTime());
@@ -92,16 +100,16 @@ public class QueuePredictionIntegrationServiceImplTest {
             .build();
     service.processResult(msg);
 
-    List<TimepointPredictionRecord> records1 = service.getPredictionRecordsForVehicleAndTrip("vehicle1", "trip1");
+    Collection<TimepointPredictionRecord> records1 = service.getPredictionRecordsForVehicleAndTrip("vehicle1", "trip1");
     assertEquals(1, records1.size());
-    TimepointPredictionRecord record1 = records1.get(0);
+    TimepointPredictionRecord record1 = records1.stream().findFirst().orElse(null);
     assertEquals(new AgencyAndId("1", "stop1"), record1.getTimepointId());
     assertEquals(1, record1.getStopSequence());
     assertEquals(1, record1.getTimepointPredictedArrivalTime());
 
-    List<TimepointPredictionRecord> records2 = service.getPredictionRecordsForVehicleAndTrip("vehicle1", "trip2");
+    Collection<TimepointPredictionRecord> records2 = service.getPredictionRecordsForVehicleAndTrip("vehicle1", "trip2");
     assertEquals(1, records2.size());
-    TimepointPredictionRecord record2 = records2.get(0);
+    TimepointPredictionRecord record2 = records2.stream().findFirst().orElse(null);;
     assertEquals(new AgencyAndId("1", "stop2"), record2.getTimepointId());
     assertEquals(1, record2.getStopSequence());
     assertEquals(1, record2.getTimepointPredictedArrivalTime());

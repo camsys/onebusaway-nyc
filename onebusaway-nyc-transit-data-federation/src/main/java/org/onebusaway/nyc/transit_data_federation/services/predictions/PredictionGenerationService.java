@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.transit_data_federation.services.predictions;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -30,6 +31,6 @@ import org.onebusaway.realtime.api.TimepointPredictionRecord;
  */
 public interface PredictionGenerationService {
 
-  public List<TimepointPredictionRecord> getPredictionsForVehicle(AgencyAndId vehicleId);
+  public Collection<TimepointPredictionRecord> getPredictionsForVehicle(AgencyAndId vehicleId);
 
 }
