@@ -97,5 +97,5 @@ public interface NycTransitDataService extends TransitDataService {
 
 	Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById(LocalDate serviceDate);
 
-	Map<String, TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripByStopId(String vehicleId, String id);
+	Map<String, TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripByStopId(String vehicleId, String tripId);
 }
