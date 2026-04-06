@@ -27,6 +27,7 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +53,8 @@ public class PredictionsSupportServiceImpl implements PredictionsSupportService 
     public Map<String, SiriSupportPredictionTimepointRecord> getStopIdToPredictionRecordMap(TripStatusBean currentTripStatusBean){
         Map<String, SiriSupportPredictionTimepointRecord> stopIdToPredictionRecordMap = new HashMap<>();
 
-        List<TimepointPredictionRecord> currentTripPredictions = _nycTransitDataService.getPredictionRecordsForVehicleAndTripStatus(currentTripStatusBean.getVehicleId(), currentTripStatusBean);
-        List<TimepointPredictionRecord> nextTripPredictions = null;
+        Collection<TimepointPredictionRecord> currentTripPredictions = _nycTransitDataService.getPredictionRecordsForVehicleAndTripStatus(currentTripStatusBean.getVehicleId(), currentTripStatusBean);
+        Collection<TimepointPredictionRecord> nextTripPredictions = null;
 
         TripBean nextTripBean = null;
 

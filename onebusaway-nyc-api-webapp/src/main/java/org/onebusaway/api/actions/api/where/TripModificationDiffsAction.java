@@ -1,7 +1,23 @@
+/**
+ * Copyright (C) 2011 Brian Ferris <bdferris@onebusaway.org>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.onebusaway.api.actions.api.where;
 
 import org.apache.struts2.rest.DefaultHttpHeaders;
 import org.onebusaway.api.actions.api.ApiActionSupport;
+import org.onebusaway.nyc.presentation.impl.DateUtil;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.slf4j.Logger;
@@ -9,10 +25,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TripModificationDiffsAction extends ApiActionSupport {
@@ -29,6 +45,7 @@ public class TripModificationDiffsAction extends ApiActionSupport {
         super(V2);
     }
 
+    @Autowired
     public void setNycTransitDataService(NycTransitDataService service) {
         _service = service;
     }
@@ -51,19 +68,7 @@ public class TripModificationDiffsAction extends ApiActionSupport {
         }
 
         try {
-            List<TripModificationDiff> diffs = _service.getAllTripModificationDiffs()
-                    .stream()
-                    .filter(diff -> {
-                        if (_serviceDate == null) return true;
-                        try {
-                            LocalDate date = LocalDate.parse(_serviceDate, SERVICE_DATE_FORMAT);
-                            return diff.getEffectiveServiceDate().equals(date.format(SERVICE_DATE_FORMAT));
-                        } catch (DateTimeParseException e) {
-                            _log.warn("Invalid serviceDate param: {}", _serviceDate);
-                            return false;
-                        }
-                    })
-                    .collect(Collectors.toList());
+            Collection<TripModificationDiff> diffs = getTripModDiffs();
 
             if (diffs.isEmpty())
                 return setResourceNotFoundResponse();
@@ -74,5 +79,28 @@ public class TripModificationDiffsAction extends ApiActionSupport {
             _log.error("Error retrieving trip modification diffs", e);
             return setExceptionResponse();
         }
+    }
+
+    Collection<TripModificationDiff> getTripModDiffs() {
+        return _service.getAllTripModificationDiffs(getConvertedServiceDate());
+    }
+
+    private boolean matchesServiceDate(TripModificationDiff tripDiff,
+                                       Optional<String> formattedServiceDate) {
+        return tripDiff.getEffectiveServiceDate() == null
+                || formattedServiceDate
+                .map(date -> date.equals(tripDiff.getEffectiveServiceDate()))
+                .orElse(true);
+    }
+
+    private LocalDate getConvertedServiceDate() {
+        if (_serviceDate != null) {
+            try {
+                return LocalDate.parse(_serviceDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            } catch (DateTimeParseException e) {
+                _log.warn("Invalid serviceDate param: {}", _serviceDate);
+            }
+        }
+        return null;
     }
 }

@@ -27,10 +27,9 @@ import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * For testing: PredictionIntegrationService that just uses scheduled times as the "predictions"
@@ -47,17 +46,28 @@ public class ScheduleBasedPredictionIntegrationServiceImpl implements Prediction
     }
 
     @Override
-    public List<TimepointPredictionRecord> getPredictionsForTrip(TripStatusBean tripStatus) {
+    public Collection<TimepointPredictionRecord> getPredictionsForTrip(TripStatusBean tripStatus) {
         String tripId = tripStatus.getActiveTrip().getId();
         return getPredictionsForTrip(tripId);
     }
 
     @Override
-    public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String VehicleId, String TripId) {
+    public Map<String, TimepointPredictionRecord> getPredictionsForTripByStopId(TripStatusBean tripStatus) {
+        String tripId = tripStatus.getActiveTrip().getId();
+        return getPredictionsForTripByStopId(tripId);
+    }
+
+    @Override
+    public Collection<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String VehicleId, String TripId) {
         return getPredictionsForTrip(TripId);
     }
 
-    private List<TimepointPredictionRecord> getPredictionsForTrip(String tripId) {
+    @Override
+    public Map<String, TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripByStopId(String vehicleId, String tripId) {
+        return getPredictionsForTripByStopId(tripId);
+    }
+
+    private Collection<TimepointPredictionRecord> getPredictionsForTrip(String tripId) {
         TripDetailsQueryBean query = new TripDetailsQueryBean();
         query.setTripId(tripId);
         query.setTime(new Date().getTime()); // time in ms
@@ -66,7 +76,7 @@ public class ScheduleBasedPredictionIntegrationServiceImpl implements Prediction
             return Collections.emptyList();
         }
         TripDetailsBean tripDetails = response.getList().iterator().next();
-        List<TimepointPredictionRecord> predictions = new ArrayList<TimepointPredictionRecord>();
+        Collection<TimepointPredictionRecord> predictions = new ArrayList<TimepointPredictionRecord>();
         for(TripStopTimeBean stopTime : tripDetails.getSchedule().getStopTimes()) {
             TimepointPredictionRecord tpr = new TimepointPredictionRecord();
             tpr.setStopSequence(stopTime.getGtfsSequence());
@@ -81,6 +91,15 @@ public class ScheduleBasedPredictionIntegrationServiceImpl implements Prediction
             predictions.add(tpr);
         }
         return predictions;
+    }
+
+    private Map<String, TimepointPredictionRecord> getPredictionsForTripByStopId(String tripId) {
+        Collection<TimepointPredictionRecord> predictionsForTrip = getPredictionsForTrip(tripId);
+        return predictionsForTrip.stream().collect(Collectors.toMap(
+                record -> record.getTimepointId().toString(),
+                Function.identity(),
+                (existing, replacement) -> existing,
+                LinkedHashMap::new));
     }
 
     @Override

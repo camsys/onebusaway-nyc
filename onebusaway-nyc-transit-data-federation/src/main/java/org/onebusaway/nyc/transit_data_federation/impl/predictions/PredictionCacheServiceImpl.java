@@ -16,6 +16,7 @@
 
 package org.onebusaway.nyc.transit_data_federation.impl.predictions;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -43,11 +44,11 @@ public class PredictionCacheServiceImpl implements PredictionCacheService {
 	@Autowired
 	private ConfigurationService _configurationService;
 
-	private Cache<String, List<TimepointPredictionRecord>> _cache = null;
+	private Cache<String, Collection<TimepointPredictionRecord>> _cache = null;
 	
 	private PredictionCacheServiceImpl(){}
 
-	public Cache<String, List<TimepointPredictionRecord>> getCache() {
+	public Cache<String, Collection<TimepointPredictionRecord>> getCache() {
 		return _cache;
 	}
 	
@@ -58,7 +59,7 @@ public class PredictionCacheServiceImpl implements PredictionCacheService {
 	}
 	
 	@Override
-	public List<TimepointPredictionRecord> getPredictionsForTrip(
+	public Collection<TimepointPredictionRecord> getPredictionsForTrip(
 			TripStatusBean tripStatus) {
 		return getCache().getIfPresent(
 				hash(tripStatus.getVehicleId(), tripStatus.getActiveTrip()
@@ -66,10 +67,10 @@ public class PredictionCacheServiceImpl implements PredictionCacheService {
 	}
 	
 	@Override
-	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(
+	public Collection<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(
 			String VehicleId, String TripId) {
-		Cache<String, List<TimepointPredictionRecord>> cache = getCache();
-		List<TimepointPredictionRecord> records = cache.getIfPresent(hash(VehicleId, TripId));
+		Cache<String, Collection<TimepointPredictionRecord>> cache = getCache();
+		Collection<TimepointPredictionRecord> records = cache.getIfPresent(hash(VehicleId, TripId));
 		return records;
 	}
 

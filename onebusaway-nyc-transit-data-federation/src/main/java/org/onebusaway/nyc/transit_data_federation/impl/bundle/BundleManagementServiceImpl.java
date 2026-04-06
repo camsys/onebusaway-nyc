@@ -42,6 +42,7 @@ import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
+import org.onebusaway.nyc.transit_data_federation.impl.nyc.NycGtfsTripModificationsClientImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
@@ -147,6 +148,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
    @Autowired
    private CalendarService _calendarService;
 
+   @Autowired
+   private NycGtfsTripModificationsClientImpl _tripModificationsClient;
 	/******
 	 * Getters / Setters
 	 ******/
@@ -454,9 +457,13 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		_bundleAccessLock.lock();
 		removeAndRebuildCache();
 		_bundleAccessLock.unlock();
-
+		reapplyTripModifications();
 		_bundleIsReady = true;
 		_log.info("New bundle is now ready.");
+	}
+
+	private void reapplyTripModifications() {
+		_tripModificationsClient.reapplyTripModifications();
 	}
 
 	// some kind of event notification system camsys setup? 

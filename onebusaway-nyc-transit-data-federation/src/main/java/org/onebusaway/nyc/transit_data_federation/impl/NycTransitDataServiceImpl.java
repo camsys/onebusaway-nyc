@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -57,7 +58,6 @@ import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data.model.trips.*;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceTemplateImpl;
-import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.service.TripModificationDiffService;
 import org.onebusaway.transit_data_federation.services.CancelledTripService;
 import org.onebusaway.transit_data_federation.services.StrollerVehicleService;
 import org.slf4j.Logger;
@@ -70,7 +70,6 @@ import org.springframework.stereotype.Component;
 
 @Primary
 @Component(value = "nycTransitDataServiceImpl")
-@DependsOn("bundleManagementService")
 class NycTransitDataServiceImpl implements NycTransitDataService {
 	
 	private static Logger _log = LoggerFactory.getLogger(NycTransitDataServiceImpl.class);
@@ -99,9 +98,6 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	@Autowired
 	@Qualifier("NycBundleSearchService")
 	private BundleSearchServiceImpl _bundleSearchService;
-
-	@Autowired
-	private TripModificationDiffService _tripModificationDiffService;
 
 
 	/*@Autowired(required = false)
@@ -166,7 +162,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	 ****/
 
 	@Override
-	public List<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
+	public Collection<TimepointPredictionRecord> getPredictionRecordsForTrip(String agencyId,
 			TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
 		if (_predictionIntegrationService != null && _predictionIntegrationService.isEnabled()) {
@@ -175,7 +171,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 		return _transitDataService.getPredictionRecordsForTrip(agencyId, tripStatus);
 	}
 	
-	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripStatus(String vehicleId,
+	public Collection<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripStatus(String vehicleId,
 																					   TripStatusBean tripStatus) {
 		blockUntilBundleIsReady();
 		if (_predictionIntegrationService != null && _predictionIntegrationService.isEnabled()) {
@@ -184,13 +180,22 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 		return _transitDataService.getPredictionRecordsForTrip(vehicleId, tripStatus);
 	}
 
-	public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
+	public Collection<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId,
 																				 String tripId) {
 		blockUntilBundleIsReady();
 		if (_predictionIntegrationService != null && _predictionIntegrationService.isEnabled()) {
 			return _predictionIntegrationService.getPredictionRecordsForVehicleAndTrip(vehicleId, tripId);
 		}
 		return Collections.emptyList();
+	}
+
+	public Map<String, TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripByStopId(String vehicleId,
+																					   String tripId) {
+		blockUntilBundleIsReady();
+		if (_predictionIntegrationService != null && _predictionIntegrationService.isEnabled()) {
+			return _predictionIntegrationService.getPredictionRecordsForVehicleAndTripByStopId(vehicleId, tripId);
+		}
+		return Collections.emptyMap();
 	}
 
 	@Override
@@ -812,7 +817,17 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public Collection<TripModificationDiff> getAllTripModificationDiffs() {
-		return _tripModificationDiffService.getAllActiveDiffs();
+	public Collection<TripModificationDiff> getAllTripModificationDiffs(LocalDate serviceDate) {
+		return _transitDataService.getAllTripModificationDiffs(serviceDate);
+	}
+
+	@Override
+	public Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById(LocalDate serviceDate) {
+		return _transitDataService.getAllTripModificationDiffsById(serviceDate);
+	}
+
+	@Override
+	public Optional<TripModificationDiff> getTripModificationDiff(AgencyAndId tripId, LocalDate serviceDate) {
+		return _transitDataService.getTripModificationDiffs(tripId, serviceDate);
 	}
 }

@@ -54,6 +54,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import java.io.File;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.Assert.fail;
@@ -97,12 +98,12 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
-    public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripStatus(String vehicleId, TripStatusBean tripStatus) {
+    public Collection<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripStatus(String vehicleId, TripStatusBean tripStatus) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId, String tripId) {
+    public Collection<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(String vehicleId, String tripId) {
         throw new UnsupportedOperationException();
     }
 
@@ -154,11 +155,6 @@ public class MockTransitDataService implements NycTransitDataService {
 
     @Override
     public Set<AgencyAndId> getExpressRoutes() {
-        return null;
-    }
-
-    @Override
-    public Collection<TripModificationDiff> getAllTripModificationDiffs() {
         return null;
     }
 
@@ -583,7 +579,7 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
-    public List<TimepointPredictionRecord> getPredictionRecordsForTrip(String s, TripStatusBean tripStatusBean) {
+    public Collection<TimepointPredictionRecord> getPredictionRecordsForTrip(String s, TripStatusBean tripStatusBean) {
         throw new UnsupportedOperationException();
     }
 
@@ -609,6 +605,26 @@ public class MockTransitDataService implements NycTransitDataService {
 
     @Override
     public void blockUntilBundleIsReady() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Collection<TripModificationDiff> getAllTripModificationDiffs(LocalDate serviceDate) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Optional<TripModificationDiff> getTripModificationDiff(AgencyAndId tripId, LocalDate serviceDate) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById(LocalDate serviceDate) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Map<String, TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripByStopId(String vehicleId, String id) {
         throw new UnsupportedOperationException();
     }
 

@@ -16,6 +16,7 @@
 
 package org.onebusaway.nyc.transit_data_federation.services.predictions;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.google.common.cache.Cache;
@@ -24,11 +25,11 @@ import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 
 public interface PredictionCacheService {
-	Cache<String, List<TimepointPredictionRecord>> getCache();
+	Cache<String, Collection<TimepointPredictionRecord>> getCache();
 
-	List<TimepointPredictionRecord> getPredictionsForTrip(
+	Collection<TimepointPredictionRecord> getPredictionsForTrip(
 			TripStatusBean tripStatus);
 
-	List<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(
+	Collection<TimepointPredictionRecord> getPredictionRecordsForVehicleAndTrip(
 			String VehicleId, String TripId);
 }

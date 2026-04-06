@@ -26,6 +26,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.TimepointPredictionRecord;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
@@ -37,7 +38,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.onebusaway.nyc.gtfsrt.util.GtfsRealtimeLibrary.*;
 
@@ -80,10 +85,21 @@ public class  TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
     }
 
     @Override
-    public TripUpdate.Builder makeTripUpdate(TripBean trip, VehicleStatusBean vehicle, List<TimepointPredictionRecord> records) {
+    public TripUpdate.Builder makeTripUpdate(TripBean trip,
+                                             VehicleStatusBean vehicle,
+                                             Collection<TimepointPredictionRecord> records) {
+        return makeTripUpdate(trip, vehicle, records, null);
+    }
+
+    @Override
+    public TripUpdate.Builder makeTripUpdate(TripBean trip,
+                                             VehicleStatusBean vehicle,
+                                             Collection<TimepointPredictionRecord> records,
+                                             TripModificationDiff tripModificationDiff) {
+
         TripUpdate.Builder tripUpdate = TripUpdate.newBuilder();
 
-        tripUpdate.setTrip(makeTripDescriptor(trip, vehicle));
+        tripUpdate.setTrip(makeTripDescriptor(trip, vehicle, tripModificationDiff));
         tripUpdate.setVehicle(makeVehicleDescriptor(vehicle));
         tripUpdate.setTimestamp(vehicle.getLastUpdateTime()/1000);
 
@@ -98,6 +114,7 @@ public class  TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
             // we don't make predictions if its SPOOKING
             return tripUpdate;
         }
+
         for (TimepointPredictionRecord tpr : records) {
             tripUpdate.addStopTimeUpdate(makeStopTimeUpdate(tpr));
         }
@@ -109,7 +126,7 @@ public class  TripUpdateFeedBuilderImpl implements TripUpdateFeedBuilder {
     public GtfsRealtime.TripUpdate.Builder makeCanceledTrip(TripBean trip) {
         TripStatusBean empty = new TripStatusBean();
         empty.setServiceDate(System.currentTimeMillis());
-        return GtfsRealtimeLibrary.makeCanceledTrip(trip, empty);
+        return GtfsRealtimeLibrary.makeCanceledTrip(trip, empty, null);
     }
 
     // see appmods GtfsRealtimeTripLibrary:870
