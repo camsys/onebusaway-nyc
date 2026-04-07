@@ -120,7 +120,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
       if (_configurationKeyToValueMap.size() == 0) {
         _log.debug("No configuration values are present!");
       } else {
-        _log.debug("Have " + _configurationKeyToValueMap.size()
+        _log.trace("Have " + _configurationKeyToValueMap.size()
             + " configuration parameters.");
       }
 
