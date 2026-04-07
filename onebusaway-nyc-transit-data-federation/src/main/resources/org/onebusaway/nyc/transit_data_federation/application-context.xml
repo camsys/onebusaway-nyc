@@ -88,9 +88,7 @@
 	<context:component-scan base-package="org.onebusaway.transit_data_federation.impl" />
 
 	<bean id="refreshServiceImpl" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
-
-    <!-- GTFS Sometimes -->
-    <context:component-scan base-package="org.onebusaway.transit_data_federation.impl.realtime.gtfs_sometimes.impl"/>
+    
     <context:component-scan base-package="org.onebusaway.transit_data_federation.bundle.tasks.transit_graph"/>
 
     <context:component-scan base-package="org.onebusaway.alerts.impl"/>
