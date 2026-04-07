@@ -136,7 +136,7 @@ public class NycRouteTypeService {
 
     public SupplementalRouteType getRouteType(AgencyAndId routeId) {
         if(!_routesToNycType.containsKey(routeId)) {
-//            if(routeId!=null){_log.warn("Assessing route type: Route ID " + routeId + " not found in route type data.");}
+            if(routeId!=null){_log.warn("Assessing route type: Route ID " + routeId + " not found in route type data.");}
             return SupplementalRouteType.UNIDENTIFIED;
         }
         return _routesToNycType.get(routeId);
