@@ -20,6 +20,7 @@ import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -34,14 +35,14 @@ public class RouteResult implements SearchResult {
 
 	private List<RouteDirection> directions;
 
-	private List<TripModificationDiff> tripModificationDiffs;
+	private Collection<TripModificationDiff> tripModificationDiffs;
 
 	public RouteResult(RouteBean route, List<RouteDirection> directions) {
 		this.route = route;
 		this.directions = directions;
 	}
 
-	public RouteResult(RouteBean route, List<RouteDirection> directions, List<TripModificationDiff> tripModificationDiffs) {
+	public RouteResult(RouteBean route, List<RouteDirection> directions, Collection<TripModificationDiff> tripModificationDiffs) {
 		this.route = route;
 		this.directions = directions;
 		this.tripModificationDiffs = tripModificationDiffs;
@@ -77,7 +78,7 @@ public class RouteResult implements SearchResult {
 		return directions;
 	}
 
-	public List<TripModificationDiff> getTripModificationDiffs() {
+	public Collection<TripModificationDiff> getTripModificationDiffs() {
 		return tripModificationDiffs;
 	}
 }

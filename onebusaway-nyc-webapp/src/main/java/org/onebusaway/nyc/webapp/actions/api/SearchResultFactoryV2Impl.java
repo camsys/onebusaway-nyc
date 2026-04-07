@@ -27,6 +27,8 @@ import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -100,10 +102,8 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
             }
         }
 
-        List<TripModificationDiff> diffs = _nycTransitDataService.getAllTripModificationDiffs()
-                .stream()
-                .filter(d -> routeBean.getId().equals(d.getRouteId()))
-                .collect(Collectors.toList());
+        Collection<TripModificationDiff> diffs = _nycTransitDataService.getAllTripModificationDiffs(
+                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
 
         return new RouteResult(routeBean, directions, diffs);
     }
@@ -173,10 +173,8 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
                 }
             }
 
-            List<TripModificationDiff> diffs = _nycTransitDataService.getAllTripModificationDiffs()
-                    .stream()
-                    .filter(d -> routeBean.getId().equals(d.getRouteId()))
-                    .collect(Collectors.toList());
+            Collection<TripModificationDiff> diffs = _nycTransitDataService.getAllTripModificationDiffs(
+                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
 
             RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions, diffs);
             routesAtStop.add(routeAtStop);

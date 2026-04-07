@@ -43,6 +43,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -149,7 +150,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
         LocalDate serviceDate = null;
         try {
             serviceDate = getServiceLocalDate(block.getServiceDate(), timeZone);
-            tripModificationDiffs = _transitDataService.getAllTripModificationDiffsById(serviceDate);
+            tripModificationDiffs = _transitDataService.getAllTripModificationDiffsById(serviceDate.format(DateTimeFormatter.BASIC_ISO_DATE));
        }
         catch(Exception e){
             _log.error("Error retrieving trip modification diffs", e);
@@ -284,7 +285,7 @@ public class TripUpdateServiceImpl extends AbstractFeedMessageService {
             LocalDate serviceDate = getServiceLocalDate(block.getServiceDate(), block.getBlockConfiguration().getTimeZone());
             TripBean trip = vehicle.getTripStatus().getActiveTrip();
 
-            Map<AgencyAndId, TripModificationDiff> tripModificationDiffs = _transitDataService.getAllTripModificationDiffsById(serviceDate);
+            Map<AgencyAndId, TripModificationDiff> tripModificationDiffs = _transitDataService.getAllTripModificationDiffsById(serviceDate.format(DateTimeFormatter.BASIC_ISO_DATE));
             TripModificationDiff tripModificationDiff = tripModificationDiffs.get(AgencyAndId.convertFromString(trip.getId()));
 
             GtfsRealtime.TripUpdate.Builder tu = _feedBuilder.makeTripUpdate(trip, vehicle, Collections.emptyList(), tripModificationDiff);

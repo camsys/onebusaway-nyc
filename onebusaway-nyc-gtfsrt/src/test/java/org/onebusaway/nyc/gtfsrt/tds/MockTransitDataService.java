@@ -54,7 +54,6 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import java.io.File;
 import java.net.URL;
-import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.Assert.fail;
@@ -609,17 +608,17 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
-    public Collection<TripModificationDiff> getAllTripModificationDiffs(LocalDate serviceDate) {
+    public Collection<TripModificationDiff> getAllTripModificationDiffs(String serviceDate) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Optional<TripModificationDiff> getTripModificationDiff(AgencyAndId tripId, LocalDate serviceDate) {
+    public Optional<TripModificationDiff> getTripModificationDiff(AgencyAndId tripId, String serviceDate) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById(LocalDate serviceDate) {
+    public Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById(String serviceDate) {
         throw new UnsupportedOperationException();
     }
 
