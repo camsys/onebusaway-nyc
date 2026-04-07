@@ -101,7 +101,7 @@
             <id>local-front-end</id>
             <properties>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
-                <bundle.location>/tmp/oba-bundle</bundle.location>
+                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
                 <log4j.appender>stdout</log4j.appender>
                 <service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
@@ -115,7 +115,7 @@
             <id>local-single-port</id>
             <properties>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
-                <bundle.location>/tmp</bundle.location>
+                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
 <!--
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
@@ -146,7 +146,7 @@
             <id>local-ie</id>
             <properties>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
-                <bundle.location>/tmp/oba-bundle</bundle.location>
+                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
                 <log4j.appender>stdout</log4j.appender>
                 <service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
@@ -159,7 +159,7 @@
             <id>local-multi-port</id>
             <properties>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
-                <bundle.location>/tmp/oba-bundle</bundle.location>
+                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
