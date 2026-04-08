@@ -23,7 +23,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,7 +45,6 @@ public class TripModificationDiffsActionTest {
     private TripModificationDiffsAction _action;
 
     private static final String DATE_JAN_15 = "20250115";
-    private static final LocalDate LOCAL_DATE_JAN_15 = LocalDate.of(2025, 1, 15);
 
     @Before
     public void setUp() {
@@ -55,7 +53,7 @@ public class TripModificationDiffsActionTest {
     }
 
     // =========================================================================
-    // getTripModDiffs() — verifies correct LocalDate is passed to service
+    // getTripModDiffs() — verifies correct serviceDate string is passed to service
     // =========================================================================
 
     @Test
@@ -70,41 +68,30 @@ public class TripModificationDiffsActionTest {
     }
 
     @Test
-    public void getTripModDiffs_validDate_callsServiceWithParsedLocalDate() {
-        when(_service.getAllTripModificationDiffs(LOCAL_DATE_JAN_15))
+    public void getTripModDiffs_validDate_callsServiceWithDateString() {
+        when(_service.getAllTripModificationDiffs(DATE_JAN_15))
                 .thenReturn(Collections.singletonList(_diffJan15));
 
         _action.setServiceDate(DATE_JAN_15);
         _action.getTripModDiffs();
 
-        verify(_service).getAllTripModificationDiffs(LOCAL_DATE_JAN_15);
+        verify(_service).getAllTripModificationDiffs(DATE_JAN_15);
     }
 
     @Test
-    public void getTripModDiffs_invalidDate_callsServiceWithNull() {
-        when(_service.getAllTripModificationDiffs(null))
+    public void getTripModDiffs_invalidDate_callsServiceWithInvalidString() {
+        when(_service.getAllTripModificationDiffs("not-a-date"))
                 .thenReturn(Collections.emptyList());
 
         _action.setServiceDate("not-a-date");
         _action.getTripModDiffs();
 
-        verify(_service).getAllTripModificationDiffs(null);
-    }
-
-    @Test
-    public void getTripModDiffs_wrongDateFormat_callsServiceWithNull() {
-        when(_service.getAllTripModificationDiffs(null))
-                .thenReturn(Collections.emptyList());
-
-        _action.setServiceDate("2025-01-15"); // yyyy-MM-dd instead of yyyyMMdd
-        _action.getTripModDiffs();
-
-        verify(_service).getAllTripModificationDiffs(null);
+        verify(_service).getAllTripModificationDiffs("not-a-date");
     }
 
     @Test
     public void getTripModDiffs_returnsServiceResults() {
-        when(_service.getAllTripModificationDiffs(LOCAL_DATE_JAN_15))
+        when(_service.getAllTripModificationDiffs(DATE_JAN_15))
                 .thenReturn(Arrays.asList(_diffJan15, _diffJan16));
 
         _action.setServiceDate(DATE_JAN_15);
@@ -146,17 +133,17 @@ public class TripModificationDiffsActionTest {
         _action.setServiceDate(DATE_JAN_15);
         _action.index();
 
-        verify(_service).getAllTripModificationDiffs(LOCAL_DATE_JAN_15);
+        verify(_service).getAllTripModificationDiffs(DATE_JAN_15);
     }
 
     @Test
     public void index_nonEmptyDiffs_returnsOkResponse() {
-        when(_service.getAllTripModificationDiffs(LOCAL_DATE_JAN_15))
+        when(_service.getAllTripModificationDiffs(DATE_JAN_15))
                 .thenReturn(Collections.singletonList(_diffJan15));
 
         _action.setServiceDate(DATE_JAN_15);
         _action.index();
 
-        verify(_service).getAllTripModificationDiffs(LOCAL_DATE_JAN_15);
+        verify(_service).getAllTripModificationDiffs(DATE_JAN_15);
     }
 }

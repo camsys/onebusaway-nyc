@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.transit_data.services;
 
-import java.time.LocalDate;
 import java.util.*;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -91,11 +90,11 @@ public interface NycTransitDataService extends TransitDataService {
 
 	void blockUntilBundleIsReady();
 
-	Collection<TripModificationDiff> getAllTripModificationDiffs(LocalDate serviceDate);
+	Collection<TripModificationDiff> getAllTripModificationDiffs(String serviceDate);
 
-	Optional<TripModificationDiff> getTripModificationDiff(AgencyAndId tripId, LocalDate serviceDate);
+	Optional<TripModificationDiff> getTripModificationDiff(AgencyAndId tripId, String serviceDate);
 
-	Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById(LocalDate serviceDate);
+	Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById(String serviceDate);
 
 	Map<String, TimepointPredictionRecord> getPredictionRecordsForVehicleAndTripByStopId(String vehicleId, String tripId);
 }
