@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.transit_data_federation.impl;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -816,18 +817,24 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 		return new HashSet<>();
 	}
 
-	@Override
-	public Collection<TripModificationDiff> getAllTripModificationDiffs(LocalDate serviceDate) {
-		return _transitDataService.getAllTripModificationDiffs(serviceDate);
+	private static final DateTimeFormatter SERVICE_DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+	private LocalDate parseServiceDate(String serviceDate) {
+		return serviceDate != null ? LocalDate.parse(serviceDate, SERVICE_DATE_FMT) : null;
 	}
 
 	@Override
-	public Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById(LocalDate serviceDate) {
-		return _transitDataService.getAllTripModificationDiffsById(serviceDate);
+	public Collection<TripModificationDiff> getAllTripModificationDiffs(String serviceDate) {
+		return _transitDataService.getAllTripModificationDiffs(parseServiceDate(serviceDate));
 	}
 
 	@Override
-	public Optional<TripModificationDiff> getTripModificationDiff(AgencyAndId tripId, LocalDate serviceDate) {
-		return _transitDataService.getTripModificationDiffs(tripId, serviceDate);
+	public Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById(String serviceDate) {
+		return _transitDataService.getAllTripModificationDiffsById(parseServiceDate(serviceDate));
+	}
+
+	@Override
+	public Optional<TripModificationDiff> getTripModificationDiff(AgencyAndId tripId, String serviceDate) {
+		return _transitDataService.getTripModificationDiffs(tripId, parseServiceDate(serviceDate));
 	}
 }
