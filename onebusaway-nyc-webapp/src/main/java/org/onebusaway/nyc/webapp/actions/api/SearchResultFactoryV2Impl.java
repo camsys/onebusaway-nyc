@@ -25,6 +25,7 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.api.model.*;
 import org.onebusaway.transit_data.model.*;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
+import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
 import java.time.LocalDate;
@@ -102,8 +103,10 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
             }
         }
 
-        Collection<TripModificationDiff> diffs = _nycTransitDataService.getAllTripModificationDiffs(
-                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+        Collection<TripModificationDiff> diffs = filterDiffsByRoute(
+                _nycTransitDataService.getAllTripModificationDiffs(
+                        LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))),
+                routeBean.getId());
 
         return new RouteResult(routeBean, directions, diffs);
     }
@@ -173,8 +176,10 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
                 }
             }
 
-            Collection<TripModificationDiff> diffs = _nycTransitDataService.getAllTripModificationDiffs(
-                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+            Collection<TripModificationDiff> diffs = filterDiffsByRoute(
+                    _nycTransitDataService.getAllTripModificationDiffs(
+                            LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))),
+                    routeBean.getId());
 
             RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions, diffs);
             routesAtStop.add(routeAtStop);
@@ -184,6 +189,17 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
     }
 
 
+
+    private Collection<TripModificationDiff> filterDiffsByRoute(Collection<TripModificationDiff> diffs, String routeId) {
+        if (diffs == null || routeId == null) return diffs;
+        return diffs.stream()
+                .filter(diff -> {
+                    TripBean trip = _nycTransitDataService.getTrip(diff.getTripId());
+                    return trip != null && trip.getRoute() != null
+                            && routeId.equals(trip.getRoute().getId());
+                })
+                .collect(Collectors.toList());
+    }
 
     @Override
     public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeBean) {

@@ -21,6 +21,7 @@ import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Route available at a stop, the stop being the top-level result.
@@ -33,7 +34,7 @@ public class RouteAtStop {
 
   private List<RouteDirection> directions;
 
-  private Collection<TripModificationDiff> tripModificationDiffs;
+  private Collection<TripModificationDiffView> tripModificationDiffs;
 
   public RouteAtStop(RouteBean route, List<RouteDirection> directions) {
     this.route = route;
@@ -43,7 +44,11 @@ public class RouteAtStop {
   public RouteAtStop(RouteBean route, List<RouteDirection> directions, Collection<TripModificationDiff> tripModificationDiffs) {
     this.route = route;
     this.directions = directions;
-    this.tripModificationDiffs = tripModificationDiffs;
+    String routeId = route.getId();
+    this.tripModificationDiffs = tripModificationDiffs == null ? null :
+            tripModificationDiffs.stream()
+                    .map(diff -> new TripModificationDiffView(diff, routeId))
+                    .collect(Collectors.toList());
   }
   
   public String getId() {
@@ -74,7 +79,7 @@ public class RouteAtStop {
     return directions;
   }
 
-  public Collection<TripModificationDiff> getTripModificationDiffs() {
+  public Collection<TripModificationDiffView> getTripModificationDiffs() {
     return tripModificationDiffs;
   }
 
