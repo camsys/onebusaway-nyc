@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.webapp.actions.api;
 
-import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
@@ -24,6 +23,8 @@ import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.api.model.*;
 import org.onebusaway.transit_data.model.*;
+import org.onebusaway.transit_data.model.trip_mods.ShapeModificationDiff;
+import org.onebusaway.transit_data.model.trip_mods.StopChangeDiff;
 import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.util.AgencyAndIdLibrary;
@@ -33,9 +34,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
-
-
+public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl {
 
     private SearchService _searchService;
 
@@ -44,7 +43,7 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
     private RealtimeService _realtimeService;
 
     public SearchResultFactoryV2Impl(SearchService searchService, NycTransitDataService nycTransitDataService, RealtimeService realtimeService) {
-        super(searchService,nycTransitDataService,realtimeService);
+        super(searchService, nycTransitDataService, realtimeService);
         _searchService = searchService;
         _nycTransitDataService = nycTransitDataService;
         _realtimeService = realtimeService;
@@ -52,146 +51,219 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
 
     @Override
     public SearchResult getRouteResult(RouteBean routeBean) {
-        List<RouteDirection> directions = new ArrayList<RouteDirection>();
+        List<RouteDirection> directions = new ArrayList<>();
 
         StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
-        // create stop ID->stop bean map
-        Map<String, StopBean> stopIdToStopBeanMap = new HashMap<String, StopBean>();
-        for(StopBean stopBean : stopsForRoute.getStops()) {
+        Map<String, StopBean> stopIdToStopBeanMap = new HashMap<>();
+        for (StopBean stopBean : stopsForRoute.getStops()) {
             stopIdToStopBeanMap.put(stopBean.getId(), stopBean);
         }
+
+        // Fetch and filter diffs for this route once, then group by direction ID
+        Collection<TripModificationDiff> routeDiffs = filterDiffsByRoute(
+                _nycTransitDataService.getAllTripModificationDiffs(
+                        LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))),
+                routeBean.getId());
+        Map<String, List<TripModificationDiff>> diffsByDirection = groupDiffsByDirection(routeDiffs);
 
         List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
         for (StopGroupingBean stopGroupingBean : stopGroupings) {
             for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
                 NameBean name = stopGroupBean.getName();
-                String type = name.getType();
-
-                if (!type.equals("destination"))
+                if (!name.getType().equals("destination"))
                     continue;
 
-                List<String> polylines = new ArrayList<String>();
-                for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
-                    polylines.add(polyline.getPoints());
-                }
+                String directionId = stopGroupBean.getId();
+                List<TripModificationDiff> directionDiffs = diffsByDirection.getOrDefault(directionId, Collections.emptyList());
+
+                List<PolylineWithStatus> polylines = buildPolylinesForDirection(stopGroupBean, directionDiffs);
+                Map<String, String> stopDetourStatusMap = buildStopDetourStatusMap(directionDiffs);
 
                 Boolean hasUpcomingScheduledService =
-                        _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
+                        _nycTransitDataService.routeHasUpcomingScheduledService(
+                                (routeBean.getAgency() != null ? routeBean.getAgency().getId() : null),
+                                System.currentTimeMillis(), routeBean.getId(), directionId);
 
-                // if there are buses on route, always have "scheduled service"
                 Boolean routeHasVehiclesInService =
-                        _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
+                        _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), directionId, System.currentTimeMillis());
 
-                if(routeHasVehiclesInService) {
+                if (routeHasVehiclesInService) {
                     hasUpcomingScheduledService = true;
                 }
 
-                List<StopOnRoute> _stops = new ArrayList<StopOnRoute>();
-                if(!stopGroupBean.getStopIds().isEmpty()) {
-                    for(String stopId : stopGroupBean.getStopIds()) {
-                        String agencyId = AgencyAndIdLibrary.convertFromString(routeBean.getId()).getAgencyId();
+                List<StopOnRoute> stops = new ArrayList<>();
+                if (!stopGroupBean.getStopIds().isEmpty()) {
+                    String agencyId = AgencyAndIdLibrary.convertFromString(routeBean.getId()).getAgencyId();
+                    for (String stopId : stopGroupBean.getStopIds()) {
                         if (_nycTransitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId,
-                                stopsForRoute.getRoute().getId(), stopGroupBean.getId())) {
-                            _stops.add(new StopOnRoute(stopIdToStopBeanMap.get(stopId)));
+                                stopsForRoute.getRoute().getId(), directionId)) {
+                            String detourStatus = stopDetourStatusMap.getOrDefault(stopId, "canonical");
+                            stops.add(new StopOnRouteV2(stopIdToStopBeanMap.get(stopId), detourStatus));
                         }
                     }
                 }
 
-
-                directions.add(new RouteDirection(stopGroupBean, polylines, _stops, hasUpcomingScheduledService));
+                directions.add(new RouteDirection(stopGroupBean, polylines, stops, hasUpcomingScheduledService));
             }
         }
 
-        Collection<TripModificationDiff> diffs = filterDiffsByRoute(
-                _nycTransitDataService.getAllTripModificationDiffs(
-                        LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))),
-                routeBean.getId());
-
-        return new RouteResult(routeBean, directions, diffs);
+        return new RouteResult(routeBean, directions);
     }
-
 
     @Override
     public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
-        List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
-        Map<String, StopBean> stopIdToStopBeanMap = new HashMap<String, StopBean>();
+        List<RouteAtStop> routesAtStop = new ArrayList<>();
+        Map<String, StopBean> stopIdToStopBeanMap = new HashMap<>();
 
-
-        for(RouteBean routeBean : stopBean.getRoutes()) {
+        for (RouteBean routeBean : stopBean.getRoutes()) {
             StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
-            for(StopBean stopBeanForRoute : stopsForRoute.getStops()) {
+            for (StopBean stopBeanForRoute : stopsForRoute.getStops()) {
                 stopIdToStopBeanMap.put(stopBeanForRoute.getId(), stopBeanForRoute);
             }
 
-            List<RouteDirection> directions = new ArrayList<RouteDirection>();
+            // Fetch and filter diffs for this route once, then group by direction ID
+            Collection<TripModificationDiff> routeDiffs = filterDiffsByRoute(
+                    _nycTransitDataService.getAllTripModificationDiffs(
+                            LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))),
+                    routeBean.getId());
+            Map<String, List<TripModificationDiff>> diffsByDirection = groupDiffsByDirection(routeDiffs);
+
+            List<RouteDirection> directions = new ArrayList<>();
             List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
             for (StopGroupingBean stopGroupingBean : stopGroupings) {
                 for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
                     NameBean name = stopGroupBean.getName();
-                    String type = name.getType();
-
-                    if (!type.equals("destination"))
+                    if (!name.getType().equals("destination"))
                         continue;
 
-                    List<String> polylines = new ArrayList<String>();
-                    for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
-                        polylines.add(polyline.getPoints());
-                    }
+                    String directionId = stopGroupBean.getId();
+                    List<TripModificationDiff> directionDiffs = diffsByDirection.getOrDefault(directionId, Collections.emptyList());
+
+                    List<PolylineWithStatus> polylines = buildPolylinesForDirection(stopGroupBean, directionDiffs);
+                    Map<String, String> stopDetourStatusMap = buildStopDetourStatusMap(directionDiffs);
 
                     Boolean hasUpcomingScheduledService = null;
 
-                    // Only set hasUpcomingScheduledService if the current stopGroupBean (direction) contains the current stop.
-                    // In other words, only if the stop in question is served in the current direction.
-                    // We do this to prevent checking if there is service in a direction that does not even serve this stop.
+                    // Only check service if this direction actually serves this stop
                     if (stopGroupBean.getStopIds().contains(stopBean.getId())) {
                         hasUpcomingScheduledService =
-                                _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stopBean.getId(),
-                                        routeBean.getId(), stopGroupBean.getId());
+                                _nycTransitDataService.stopHasUpcomingScheduledService(
+                                        (routeBean.getAgency() != null ? routeBean.getAgency().getId() : null),
+                                        System.currentTimeMillis(), stopBean.getId(),
+                                        routeBean.getId(), directionId);
 
-                        // if there are buses on route, always have "scheduled service"
                         Boolean routeHasVehiclesInService =
                                 _realtimeService.getVehiclesInServiceForStopAndRoute(stopBean.getId(), routeBean.getId(), System.currentTimeMillis());
 
-                        if(routeHasVehiclesInService) {
+                        if (routeHasVehiclesInService) {
                             hasUpcomingScheduledService = true;
                         }
                     }
 
-
-
-
-                    List<StopOnRoute> _stops = new ArrayList<StopOnRoute>();
-                    if(!stopGroupBean.getStopIds().isEmpty()) {
-                        for(String stopId : stopGroupBean.getStopIds()) {
-                            String agencyId = AgencyAndIdLibrary.convertFromString(routeBean.getId()).getAgencyId();
+                    List<StopOnRoute> stops = new ArrayList<>();
+                    if (!stopGroupBean.getStopIds().isEmpty()) {
+                        String agencyId = AgencyAndIdLibrary.convertFromString(routeBean.getId()).getAgencyId();
+                        for (String stopId : stopGroupBean.getStopIds()) {
                             if (_nycTransitDataService.stopHasRevenueServiceOnRoute(agencyId, stopId,
-                                    stopsForRoute.getRoute().getId(), stopGroupBean.getId())) {
-                                _stops.add(new StopOnRoute(stopIdToStopBeanMap.get(stopId)));
+                                    stopsForRoute.getRoute().getId(), directionId)) {
+                                String detourStatus = stopDetourStatusMap.getOrDefault(stopId, "canonical");
+                                stops.add(new StopOnRouteV2(stopIdToStopBeanMap.get(stopId), detourStatus));
                             }
                         }
                     }
 
-                    directions.add(new RouteDirection(stopGroupBean, polylines, _stops, hasUpcomingScheduledService));
+                    directions.add(new RouteDirection(stopGroupBean, polylines, stops, hasUpcomingScheduledService));
                 }
             }
 
-            Collection<TripModificationDiff> diffs = filterDiffsByRoute(
-                    _nycTransitDataService.getAllTripModificationDiffs(
-                            LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))),
-                    routeBean.getId());
-
-            RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions, diffs);
+            RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions);
             routesAtStop.add(routeAtStop);
         }
 
         return new StopResult(stopBean, routesAtStop);
     }
 
+    /**
+     * Groups route-filtered diffs by the direction ID of their trip.
+     */
+    private Map<String, List<TripModificationDiff>> groupDiffsByDirection(Collection<TripModificationDiff> diffs) {
+        Map<String, List<TripModificationDiff>> map = new HashMap<>();
+        for (TripModificationDiff diff : diffs) {
+            TripBean trip = _nycTransitDataService.getTrip(diff.getTripId());
+            if (trip != null && trip.getDirectionId() != null) {
+                map.computeIfAbsent(trip.getDirectionId(), k -> new ArrayList<>()).add(diff);
+            }
+        }
+        return map;
+    }
 
+    /**
+     * Builds the polyline list for a direction. If any diff for this direction
+     * has a shape modification, returns the four annotated segments
+     * (prefix/canonical, original/removed, replacement/detour, suffix/canonical).
+     * Otherwise wraps the stop-group polylines as canonical.
+     */
+    private List<PolylineWithStatus> buildPolylinesForDirection(StopGroupBean stopGroupBean,
+                                                                List<TripModificationDiff> directionDiffs) {
+        Optional<ShapeModificationDiff> shapeDiff = directionDiffs.stream()
+                .map(TripModificationDiff::getShapeDiff)
+                .filter(Objects::nonNull)
+                .findFirst();
+
+        if (shapeDiff.isPresent()) {
+            ShapeModificationDiff sd = shapeDiff.get();
+            List<PolylineWithStatus> result = new ArrayList<>();
+            if (sd.getPrefixSegmentPolyline() != null)
+                result.add(new PolylineWithStatus(sd.getPrefixSegmentPolyline(), "canonical"));
+            if (sd.getOriginalSegmentPolyline() != null)
+                result.add(new PolylineWithStatus(sd.getOriginalSegmentPolyline(), "removed"));
+            if (sd.getReplacementSegmentPolyline() != null)
+                result.add(new PolylineWithStatus(sd.getReplacementSegmentPolyline(), "detour"));
+            if (sd.getSuffixSegmentPolyline() != null)
+                result.add(new PolylineWithStatus(sd.getSuffixSegmentPolyline(), "canonical"));
+            return result;
+        }
+
+        return stopGroupBean.getPolylines().stream()
+                .map(p -> new PolylineWithStatus(p.getPoints(), "canonical"))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Builds a stopId -> detourStatus map from the stop change diffs for a direction.
+     * Priority: removed > detour > canonical.
+     */
+    private Map<String, String> buildStopDetourStatusMap(List<TripModificationDiff> directionDiffs) {
+        Map<String, String> statusMap = new HashMap<>();
+        for (TripModificationDiff diff : directionDiffs) {
+            if (diff.getChanges() == null) continue;
+            for (StopChangeDiff change : diff.getChanges()) {
+                String stopId = change.getStopId();
+                String newStatus;
+                switch (change.getChangeType()) {
+                    case REMOVED: newStatus = "removed"; break;
+                    case ADDED:   newStatus = "detour";  break;
+                    default:      newStatus = "canonical"; break;
+                }
+                String existing = statusMap.get(stopId);
+                if (existing == null || outranks(newStatus, existing)) {
+                    statusMap.put(stopId, newStatus);
+                }
+            }
+        }
+        return statusMap;
+    }
+
+    /** Returns true if newStatus should take priority over existing. */
+    private boolean outranks(String newStatus, String existing) {
+        if ("removed".equals(newStatus)) return true;
+        if ("detour".equals(newStatus) && "canonical".equals(existing)) return true;
+        return false;
+    }
 
     private Collection<TripModificationDiff> filterDiffsByRoute(Collection<TripModificationDiff> diffs, String routeId) {
-        if (diffs == null || routeId == null) return diffs;
+        if (diffs == null || routeId == null) return Collections.emptyList();
         return diffs.stream()
                 .filter(diff -> {
                     TripBean trip = _nycTransitDataService.getTrip(diff.getTripId());
@@ -207,7 +279,7 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
         // get routes data
         List<SearchResult> nearbySearchResults = null;
 
-        if(geocodeResult.isRegion()) {
+        if (geocodeResult.isRegion()) {
             nearbySearchResults = _searchService.findRoutesStoppingWithinRegion(geocodeResult.getBounds(), this).getMatches();
         } else {
             nearbySearchResults = _searchService.findRoutesStoppingNearPoint(geocodeResult.getLatitude(),
@@ -217,7 +289,7 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
         // get stops data
         SearchResultCollection searchResultCollection;
 
-        if(geocodeResult.isRegion()) {
+        if (geocodeResult.isRegion()) {
             searchResultCollection = _searchService.findRoutesStoppingWithinRegion(
                     geocodeResult.getBounds(), this);
         } else {
@@ -225,11 +297,8 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl{
                     geocodeResult.getLongitude(), this, routeBean);
         }
 
-
-        //merge results
         nearbySearchResults.addAll(searchResultCollection.getMatches());
 
-        SearchResult result =  new GeocodeResult(geocodeResult,nearbySearchResults);
-        return result;
+        return new GeocodeResult(geocodeResult, nearbySearchResults);
     }
 }
