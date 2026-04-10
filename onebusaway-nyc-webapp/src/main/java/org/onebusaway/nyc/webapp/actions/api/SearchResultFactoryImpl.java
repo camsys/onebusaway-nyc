@@ -27,6 +27,7 @@ import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.api.model.GeocodeResult;
+import org.onebusaway.nyc.webapp.actions.api.model.PolylineWithStatus;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteDirection;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteInRegionResult;
@@ -92,12 +93,12 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         if (!type.equals("destination"))
           continue;
         
-        List<String> polylines = new ArrayList<String>();
+        List<PolylineWithStatus> polylines = new ArrayList<PolylineWithStatus>();
         for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
-          polylines.add(polyline.getPoints());
+          polylines.add(new PolylineWithStatus(polyline.getPoints(), "canonical"));
         }
 
-        Boolean hasUpcomingScheduledService = 
+        Boolean hasUpcomingScheduledService =
             _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
 
         // if there are buses on route, always have "scheduled service"
@@ -132,11 +133,11 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           if (!type.equals("destination"))
             continue;
         
-          List<String> polylines = new ArrayList<String>();
+          List<PolylineWithStatus> polylines = new ArrayList<PolylineWithStatus>();
           for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
-            polylines.add(polyline.getPoints());
+            polylines.add(new PolylineWithStatus(polyline.getPoints(), "canonical"));
           }
-          
+
           Boolean hasUpcomingScheduledService = null;
           
           // Only set hasUpcomingScheduledService if the current stopGroupBean (direction) contains the current stop.
