@@ -51,7 +51,7 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl {
 
     @Override
     public SearchResult getRouteResult(RouteBean routeBean) {
-        List<RouteDirection> directions = new ArrayList<>();
+        List<RouteDirectionV2> directions = new ArrayList<>();
 
         StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
@@ -104,16 +104,16 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl {
                     }
                 }
 
-                directions.add(new RouteDirection(stopGroupBean, polylines, stops, hasUpcomingScheduledService));
+                directions.add(new RouteDirectionV2(stopGroupBean, polylines, stops, hasUpcomingScheduledService));
             }
         }
 
-        return new RouteResult(routeBean, directions);
+        return new RouteResultV2(routeBean, directions);
     }
 
     @Override
     public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
-        List<RouteAtStop> routesAtStop = new ArrayList<>();
+        List<RouteAtStopV2> routesAtStop = new ArrayList<>();
         Map<String, StopBean> stopIdToStopBeanMap = new HashMap<>();
 
         for (RouteBean routeBean : stopBean.getRoutes()) {
@@ -129,7 +129,7 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl {
                     routeBean.getId());
             Map<String, List<TripModificationDiff>> diffsByDirection = groupDiffsByDirection(routeDiffs);
 
-            List<RouteDirection> directions = new ArrayList<>();
+            List<RouteDirectionV2> directions = new ArrayList<>();
             List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
             for (StopGroupingBean stopGroupingBean : stopGroupings) {
                 for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
@@ -173,15 +173,15 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl {
                         }
                     }
 
-                    directions.add(new RouteDirection(stopGroupBean, polylines, stops, hasUpcomingScheduledService));
+                    directions.add(new RouteDirectionV2(stopGroupBean, polylines, stops, hasUpcomingScheduledService));
                 }
             }
 
-            RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions);
+            RouteAtStopV2 routeAtStop = new RouteAtStopV2(routeBean, directions);
             routesAtStop.add(routeAtStop);
         }
 
-        return new StopResult(stopBean, routesAtStop);
+        return new StopResultV2(stopBean, routesAtStop);
     }
 
     /**

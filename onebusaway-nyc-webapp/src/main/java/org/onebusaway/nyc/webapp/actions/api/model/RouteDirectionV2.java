@@ -25,20 +25,20 @@ import java.util.List;
  * @author jmaki
  *
  */
-public class RouteDirection {
+public class RouteDirectionV2 {
 
   private String directionId;
 
   private String destination;
 
-  private List<String> polylines;
+  private List<PolylineWithStatus> polylines;
 
   private List<StopOnRoute> stops;
 
   private Boolean hasUpcomingScheduledService;
 
-  public RouteDirection(StopGroupBean stopGroup, List<String> polylines,
-                        List<StopOnRoute> stops, Boolean hasUpcomingScheduledService) {
+  public RouteDirectionV2(StopGroupBean stopGroup, List<PolylineWithStatus> polylines,
+                          List<StopOnRoute> stops, Boolean hasUpcomingScheduledService) {
     this.directionId = stopGroup.getId();
     this.destination = stopGroup.getName().getName();
     this.polylines = polylines;
@@ -54,14 +54,14 @@ public class RouteDirection {
     return destination;
   }
 
-  public List<String> getPolylines() {
+  public List<PolylineWithStatus> getPolylines() {
     return polylines;
   }
 
   public List<StopOnRoute> getStops() {
     return stops;
   }
-
+  
   public Boolean getHasUpcomingScheduledService() {
     return hasUpcomingScheduledService;
   }

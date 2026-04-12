@@ -27,7 +27,6 @@ import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.api.model.GeocodeResult;
-import org.onebusaway.nyc.webapp.actions.api.model.PolylineWithStatus;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteDirection;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteInRegionResult;
@@ -55,9 +54,9 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   }
 
   @Override
-  public SearchResult getRouteResultForRegion(RouteBean routeBean) { 
+  public SearchResult getRouteResultForRegion(RouteBean routeBean) {
     List<String> polylines = new ArrayList<String>();
-    
+
     StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
@@ -68,7 +67,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
         if (!type.equals("destination"))
           continue;
-        
+
         for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
           polylines.add(polyline.getPoints());
         }
@@ -77,11 +76,11 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
     return new RouteInRegionResult(routeBean, polylines);
   }
-  
+
   @Override
-  public SearchResult getRouteResult(RouteBean routeBean) {    
+  public SearchResult getRouteResult(RouteBean routeBean) {
     List<RouteDirection> directions = new ArrayList<RouteDirection>();
-    
+
     StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
@@ -92,21 +91,21 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
         if (!type.equals("destination"))
           continue;
-        
-        List<PolylineWithStatus> polylines = new ArrayList<PolylineWithStatus>();
+
+        List<String> polylines = new ArrayList<String>();
         for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
-          polylines.add(new PolylineWithStatus(polyline.getPoints(), "canonical"));
+          polylines.add(polyline.getPoints());
         }
 
         Boolean hasUpcomingScheduledService =
-            _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
+                _nycTransitDataService.routeHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
 
         // if there are buses on route, always have "scheduled service"
-        Boolean routeHasVehiclesInService = 
-      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
+        Boolean routeHasVehiclesInService =
+                _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId(), System.currentTimeMillis());
 
         if(routeHasVehiclesInService) {
-      	  hasUpcomingScheduledService = true;
+          hasUpcomingScheduledService = true;
         }
 
         directions.add(new RouteDirection(stopGroupBean, polylines, null, hasUpcomingScheduledService));
@@ -119,7 +118,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   @Override
   public SearchResult getStopResult(StopBean stopBean, Set<RouteBean> routeFilter) {
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
-    
+
     for(RouteBean routeBean : stopBean.getRoutes()) {
       StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
@@ -132,25 +131,25 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
           if (!type.equals("destination"))
             continue;
-        
-          List<PolylineWithStatus> polylines = new ArrayList<PolylineWithStatus>();
+
+          List<String> polylines = new ArrayList<String>();
           for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
-            polylines.add(new PolylineWithStatus(polyline.getPoints(), "canonical"));
+            polylines.add(polyline.getPoints());
           }
 
           Boolean hasUpcomingScheduledService = null;
-          
+
           // Only set hasUpcomingScheduledService if the current stopGroupBean (direction) contains the current stop.
           // In other words, only if the stop in question is served in the current direction.
           // We do this to prevent checking if there is service in a direction that does not even serve this stop.
           if (stopGroupBean.getStopIds().contains(stopBean.getId())) {
-            hasUpcomingScheduledService = 
-                _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stopBean.getId(), 
-                    routeBean.getId(), stopGroupBean.getId());
+            hasUpcomingScheduledService =
+                    _nycTransitDataService.stopHasUpcomingScheduledService((routeBean.getAgency()!=null?routeBean.getAgency().getId():null), System.currentTimeMillis(), stopBean.getId(),
+                            routeBean.getId(), stopGroupBean.getId());
 
             // if there are buses on route, always have "scheduled service"
-            Boolean routeHasVehiclesInService = 
-                _realtimeService.getVehiclesInServiceForStopAndRoute(stopBean.getId(), routeBean.getId(), System.currentTimeMillis());
+            Boolean routeHasVehiclesInService =
+                    _realtimeService.getVehiclesInServiceForStopAndRoute(stopBean.getId(), routeBean.getId(), System.currentTimeMillis());
 
             if(routeHasVehiclesInService) {
               hasUpcomingScheduledService = true;
@@ -171,15 +170,15 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   @Override
   public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<RouteBean> routeBean) {
     List<SearchResult> routesNearby = null;
-    
+
     if(geocodeResult.isRegion()) {
-       routesNearby = _searchService.findRoutesStoppingWithinRegion(geocodeResult.getBounds(), this).getMatches();
+      routesNearby = _searchService.findRoutesStoppingWithinRegion(geocodeResult.getBounds(), this).getMatches();
     } else {
-      routesNearby = _searchService.findRoutesStoppingNearPoint(geocodeResult.getLatitude(), 
-          geocodeResult.getLongitude(), this).getMatches();
+      routesNearby = _searchService.findRoutesStoppingNearPoint(geocodeResult.getLatitude(),
+              geocodeResult.getLongitude(), this).getMatches();
     }
-    
-    return new GeocodeResult(geocodeResult, routesNearby);   
+
+    return new GeocodeResult(geocodeResult, routesNearby);
   }
 
 }
