@@ -40,6 +40,8 @@ public class ServiceAlertServiceImpl extends AbstractFeedMessageService {
 
     private static final String CONFIG_ALERTS_REFRESH_INTERVAL = "gtfsrt.alertRefreshInterval";
 
+    private static final int DEFAULT_ALERT_REFRESH_INTERVAL_SECONDS = 60;
+
     private ServiceAlertFeedBuilder _feedBuilder;
 
     private NycTransitDataService _transitDataService;
@@ -70,10 +72,8 @@ public class ServiceAlertServiceImpl extends AbstractFeedMessageService {
 
     @Refreshable(dependsOn = CONFIG_ALERTS_REFRESH_INTERVAL)
     private void refreshConfig() {
-        int interval = Integer.parseInt(
-                _configurationService.getConfigurationValueAsString(
-                        CONFIG_ALERTS_REFRESH_INTERVAL,
-                        String.valueOf(DEFAULT_REFRESH_INTERVAL_SECONDS)));
+        int interval = _configurationService.getConfigurationValueAsInteger(
+                        CONFIG_ALERTS_REFRESH_INTERVAL, DEFAULT_ALERT_REFRESH_INTERVAL_SECONDS);
         setRefreshIntervalSeconds(interval);
     }
 

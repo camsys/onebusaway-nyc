@@ -47,7 +47,7 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
 
     private static final Logger _log = LoggerFactory.getLogger(AbstractFeedMessageService.class);
 
-    public static final int DEFAULT_REFRESH_INTERVAL_SECONDS = 60;
+    public static final int DEFAULT_REFRESH_INTERVAL_SECONDS = 10;
 
     private int _refreshIntervalSeconds = DEFAULT_REFRESH_INTERVAL_SECONDS;
 
