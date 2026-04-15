@@ -28,73 +28,128 @@ import org.onebusaway.transit_data.services.TransitDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Includes shared logic for FeedMessageServices. Builds the FeedMessage given a list of FeedEntities.
+ * Includes shared logic for FeedMessageServices. Maintains a background thread
+ * that periodically refreshes a cached FeedMessage. Callers receive the last
+ * successfully built message immediately without blocking on data retrieval.
  */
 public abstract class AbstractFeedMessageService implements FeedMessageService {
 
     private static final Logger _log = LoggerFactory.getLogger(AbstractFeedMessageService.class);
 
-    public static final int DEFAULT_CACHE_EXPIRY_SECONDS = 10;
+    public static final int DEFAULT_REFRESH_INTERVAL_SECONDS = 10;
 
-    private long _generatedTime = 0l;
-    private int _cacheExpirySeconds = DEFAULT_CACHE_EXPIRY_SECONDS;
-    private FeedMessage _cache = null;
-    private boolean _disableCache = false;
+    private int _refreshIntervalSeconds = DEFAULT_REFRESH_INTERVAL_SECONDS;
 
-    public void setCacheExpirySeconds(int seconds) {
-        _cacheExpirySeconds = seconds;
+    private volatile FeedMessage _cachedMessage = null;
+
+    private ScheduledExecutorService _scheduler;
+
+    public void setRefreshIntervalSeconds(int seconds) {
+        _refreshIntervalSeconds = seconds;
     }
 
-    public void setDisableCache(boolean disableCache) {
-        _disableCache = disableCache;
+    @PostConstruct
+    public void init() {
+        _scheduler = Executors.newSingleThreadScheduledExecutor();
+        _scheduler.scheduleWithFixedDelay(this::refresh, 0, _refreshIntervalSeconds, TimeUnit.SECONDS);
     }
 
+    @PreDestroy
+    public void destroy() {
+        if (_scheduler != null) {
+            _scheduler.shutdownNow();
+        }
+    }
+
+    /**
+     * Returns the last successfully cached FeedMessage, or an empty feed if
+     * no successful refresh has completed yet.
+     */
     @Override
-    public synchronized FeedMessage getFeedMessage() {
-        return getFeedMessage(null);
+    public FeedMessage getFeedMessage() {
+        FeedMessage cached = _cachedMessage;
+        if (cached == null) {
+            return buildEmptyFeedMessage();
+        }
+        return cached;
     }
 
+    /**
+     * If a specific time is provided (debug/replay use), builds the feed
+     * in real-time at that timestamp. Otherwise returns the cached message.
+     */
     @Override
-    public synchronized FeedMessage getFeedMessage(Long requestTime) {
-        long time = System.currentTimeMillis();
-        if (requestTime != null && requestTime > 0)
-            time = requestTime;
+    public FeedMessage getFeedMessage(Long requestTime) {
+        if (requestTime != null && requestTime > 0) {
+            return buildFeedMessage(requestTime);
+        }
+        return getFeedMessage();
+    }
 
-        if (_disableCache || isCacheExpired(time)) {
-            FeedMessage.Builder builder = FeedMessage.newBuilder();
+    /**
+     * Called by the background thread on each refresh cycle. Builds the feed
+     * and updates the cache only if the result is non-null.
+     */
+    private void refresh() {
+        try {
+            List<FeedEntity.Builder> entities = getEntities(System.currentTimeMillis());
+            if (entities == null) {
+                _log.warn("{}: getEntities returned null, skipping cache update", getClass().getSimpleName());
+                return;
+            }
+            FeedMessage message = buildFeedMessage(entities, System.currentTimeMillis());
+            _cachedMessage = message;
+        } catch (Exception e) {
+            _log.error("{}: error during feed refresh, retaining previous cache", getClass().getSimpleName(), e);
+        }
+    }
 
-            for (FeedEntity.Builder entity : getEntities(time)) {
-                if (entity != null) {
-                    try {
-                        builder.addEntity(entity);
-                    } catch (Exception ex) {
-                        _log.error("Unable to process entity {}", entity.getId(), ex);
-                    }
+    private FeedMessage buildFeedMessage(long time) {
+        List<FeedEntity.Builder> entities = getEntities(time);
+        if (entities == null) {
+            return buildEmptyFeedMessage();
+        }
+        return buildFeedMessage(entities, time);
+    }
+
+    private FeedMessage buildFeedMessage(List<FeedEntity.Builder> entities, long time) {
+        FeedMessage.Builder builder = FeedMessage.newBuilder();
+        for (FeedEntity.Builder entity : entities) {
+            if (entity != null) {
+                try {
+                    builder.addEntity(entity);
+                } catch (Exception ex) {
+                    _log.error("Unable to process entity {}", entity.getId(), ex);
                 }
             }
-
-            FeedHeader.Builder header = FeedHeader.newBuilder();
-            header.setGtfsRealtimeVersion("1.0");
-            long headerTime = requestTime != null ? requestTime : System.currentTimeMillis();
-            header.setTimestamp(headerTime / 1000);
-            header.setIncrementality(FeedHeader.Incrementality.FULL_DATASET);
-            builder.setHeader(header);
-            FeedMessage message = builder.build();
-            _cache = message;
-            _generatedTime = time;
         }
-        return _cache;
+        FeedHeader.Builder header = FeedHeader.newBuilder();
+        header.setGtfsRealtimeVersion("1.0");
+        header.setTimestamp(time / 1000);
+        header.setIncrementality(FeedHeader.Incrementality.FULL_DATASET);
+        builder.setHeader(header);
+        return builder.build();
     }
 
-    private boolean isCacheExpired(long now) {
-        if (_cache == null) return true;
-        return (now - _generatedTime) > _cacheExpirySeconds * 1000;
+    private FeedMessage buildEmptyFeedMessage() {
+        FeedMessage.Builder builder = FeedMessage.newBuilder();
+        FeedHeader.Builder header = FeedHeader.newBuilder();
+        header.setGtfsRealtimeVersion("1.0");
+        header.setTimestamp(System.currentTimeMillis() / 1000);
+        header.setIncrementality(FeedHeader.Incrementality.FULL_DATASET);
+        builder.setHeader(header);
+        return builder.build();
     }
 
     public Collection<VehicleStatusBean> getAllVehicles(TransitDataService tds, PresentationService ps, long time) {
@@ -102,8 +157,8 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
         for (AgencyWithCoverageBean bean : tds.getAgenciesWithCoverage()) {
             String agency = bean.getAgency().getId();
             ListBean<VehicleStatusBean> lb = tds.getAllVehiclesForAgency(agency, time);
-            for(VehicleStatusBean vsb : lb.getList()){
-                if(includeVehicle(tds,ps,vsb,time)){
+            for (VehicleStatusBean vsb : lb.getList()) {
+                if (includeVehicle(tds, ps, vsb, time)) {
                     vehicles.add(vsb);
                 }
             }
@@ -112,16 +167,16 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
     }
 
     public boolean includeVehicle(TransitDataService tds, PresentationService presentationService,
-                                  VehicleStatusBean vehicleStatus, long time){
+                                  VehicleStatusBean vehicleStatus, long time) {
         TripDetailsBean tripDetails = getTripForVehicle(tds, vehicleStatus, time);
         presentationService.setTime(time);
-        if (tripDetails == null || !presentationService.include(tripDetails.getStatus()) || vehicleStatus.getTrip() == null){
+        if (tripDetails == null || !presentationService.include(tripDetails.getStatus()) || vehicleStatus.getTrip() == null) {
             return Boolean.FALSE;
         }
         return Boolean.TRUE;
     }
 
-    private TripDetailsBean getTripForVehicle(TransitDataService tds, VehicleStatusBean vehicleStatus, long time){
+    private TripDetailsBean getTripForVehicle(TransitDataService tds, VehicleStatusBean vehicleStatus, long time) {
         TripForVehicleQueryBean query = new TripForVehicleQueryBean();
         query.setTime(new Date(time));
         query.setVehicleId(vehicleStatus.getVehicleId());
@@ -131,9 +186,7 @@ public abstract class AbstractFeedMessageService implements FeedMessageService {
         inclusion.setIncludeTripBean(true);
         query.setInclusion(inclusion);
 
-        TripDetailsBean tripDetailsForCurrentTrip = tds.getTripDetailsForVehicleAndTime(query);
-
-        return tripDetailsForCurrentTrip;
+        return tds.getTripDetailsForVehicleAndTime(query);
     }
 
     public abstract List<FeedEntity.Builder> getEntities(long time);
