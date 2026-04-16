@@ -25,7 +25,9 @@ import org.onebusaway.nyc.presentation.service.realtime.siri.SiriMonitoredCallBu
 import org.onebusaway.nyc.siri.support.SiriApcExtension;
 import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
+import org.onebusaway.nyc.siri.support.SiriStopDetourStatusExtension;
 import org.onebusaway.nyc.siri.support.SiriVehicleFeatures;
+import org.onebusaway.transit_data.model.trip_mods.StopChangeDiff;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.realtime.api.VehicleOccupancyRecord;
@@ -85,8 +87,8 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                                                     boolean showRawApc,
                                                     boolean isCancelled,
                                                     long responseTimestamp,
-                                                    Set<VehicleFeature> vehicleFeatures
-                                                    ){
+                                                    Set<VehicleFeature> vehicleFeatures,
+                                                    Map<String, StopChangeDiff.ChangeType> stopChangeMap){
 
         List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
 
@@ -169,7 +171,8 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                                 stopTime.getStopTime().getArrivalTime(),
                                 getScheduledArrivalTime(currentlyActiveTripOnBlock, stopTime),
                                 getScheduledDepartureTime(currentlyActiveTripOnBlock, stopTime),
-                                responseTimestamp, vehicleFeatures
+                                responseTimestamp, vehicleFeatures,
+                                stopChangeMap.get(stopTime.getStopTime().getStop().getId())
                         );
 
                     }
@@ -215,8 +218,8 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
                                                              long scheduledArrivalTime,
                                                              long scheduledDepartureTime,
                                                              long responseTimestamp,
-                                                             Set<VehicleFeature> vehicleFeatures
-                                                             ) {
+                                                             Set<VehicleFeature> vehicleFeatures,
+                                                             StopChangeDiff.ChangeType changeType) {
 
         SiriMonitoredCallBuilder siriMonitoredCallBuilder = new SiriMonitoredCallBuilder();
         siriMonitoredCallBuilder.setVisitNumber(BigInteger.valueOf(visitNumber));
@@ -272,6 +275,12 @@ public class SiriMonitoredCallBuilderServiceImpl implements SiriMonitoredCallBui
         SiriVehicleFeatures siriVehicleFeatures = new SiriVehicleFeatures();
         siriVehicleFeatures.setStrollerVehicle(vehicleFeatures.contains(VehicleFeature.STROLLER));
         wrapper.setFeatures(siriVehicleFeatures);
+
+        if (changeType == StopChangeDiff.ChangeType.ADDED || changeType == StopChangeDiff.ChangeType.REMOVED) {
+            SiriStopDetourStatusExtension stopDetourStatus = new SiriStopDetourStatusExtension();
+            stopDetourStatus.setDetour(changeType == StopChangeDiff.ChangeType.ADDED);
+            wrapper.setStopDetourStatus(stopDetourStatus);
+        }
 
         anyExtensions.setAny(wrapper);
         siriMonitoredCallBuilder.setExtensions(anyExtensions);

@@ -38,6 +38,8 @@ public class SiriExtensionWrapper {
 
   private SiriVehicleFeatures features;
 
+  private SiriStopDetourStatusExtension stopDetourStatus;
+
   @XmlElement(name="Distances")
   public SiriDistanceExtension getDistances() {
     return distances;
@@ -57,5 +59,12 @@ public class SiriExtensionWrapper {
 
   public void setFeatures(SiriVehicleFeatures features) {
     this.features = features;
+  }
+
+  @XmlElement(name="StopDetourStatus")
+  public SiriStopDetourStatusExtension getStopDetourStatus() { return stopDetourStatus; }
+
+  public void setStopDetourStatus(SiriStopDetourStatusExtension stopDetourStatus) {
+    this.stopDetourStatus = stopDetourStatus;
   }
 }

@@ -19,6 +19,7 @@ package org.onebusaway.nyc.presentation.service.realtime.siri;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportPredictionTimepointRecord;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
+import org.onebusaway.transit_data.model.trip_mods.StopChangeDiff;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.VehicleFeature;
@@ -36,6 +37,6 @@ public interface SiriMonitoredCallBuilderService {
                                              boolean showRawApc,
                                              boolean isCancelled,
                                              long responseTimestamp,
-
-                                             Set<VehicleFeature> vehicleFeatures);
+                                             Set<VehicleFeature> vehicleFeatures,
+                                             Map<String, StopChangeDiff.ChangeType> stopChangeMap);
 }

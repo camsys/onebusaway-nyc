@@ -35,6 +35,8 @@ import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
 import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.onebusaway.transit_data.model.trip_mods.StopChangeDiff;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.VehicleFeature;
@@ -44,6 +46,7 @@ import uk.org.siri.siri.*;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Component
@@ -207,19 +210,24 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
             }
         }
 
+        // Build stop change map from trip modification diff (empty map if no modification)
+        Map<String, StopChangeDiff.ChangeType> stopChangeMap = buildStopChangeMap(tripOnBlock, currentlyActiveTripOnBlock);
+
         // monitored call
         if(!_presentationService.isOnDetour(currentlyActiveTripOnBlock)) {
             MonitoredCallStructure monitoredCall = _siriMonitoredCallBuilderService.makeMonitoredCall(
                     blockInstance, tripOnBlock, currentlyActiveTripOnBlock, monitoredCallStopBean,
-                    stopIdToPredictionRecordMap, showRawApc, isCancelled, responseTimestamp,vehicleFeatures);
+                    stopIdToPredictionRecordMap, showRawApc, isCancelled, responseTimestamp, vehicleFeatures,
+                    stopChangeMap);
             siriMonitoredVehicleJourneyBuilder.setMonitoredCall(monitoredCall);
         }
 
         // onward calls
         if(!_presentationService.isOnDetour(currentlyActiveTripOnBlock)){
             OnwardCallsStructure onwardCallStructure = _siriOnwardCallsBuilderService
-                    .makeOnwardCalls(blockInstance, tripOnBlock,currentlyActiveTripOnBlock, onwardCallsMode,
-                            stopIdToPredictionRecordMap, maximumOnwardCalls,isCancelled, responseTimestamp);
+                    .makeOnwardCalls(blockInstance, tripOnBlock, currentlyActiveTripOnBlock, onwardCallsMode,
+                            stopIdToPredictionRecordMap, maximumOnwardCalls, isCancelled, responseTimestamp,
+                            stopChangeMap);
             siriMonitoredVehicleJourneyBuilder.setOnwardCalls(onwardCallStructure);
         }
 
@@ -227,6 +235,25 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
         siriMonitoredVehicleJourneyBuilder.setSituationRef(getSituationRef(currentlyActiveTripOnBlock));
 
         return siriMonitoredVehicleJourneyBuilder;
+    }
+
+    private Map<String, StopChangeDiff.ChangeType> buildStopChangeMap(TripBean tripOnBlock,
+                                                                      TripStatusBean currentlyActiveTripOnBlock) {
+        Map<String, StopChangeDiff.ChangeType> stopChangeMap = new HashMap<>();
+        try {
+            String serviceDate = new SimpleDateFormat("yyyyMMdd")
+                    .format(new Date(currentlyActiveTripOnBlock.getServiceDate()));
+            Optional<TripModificationDiff> diff = _nycTransitDataService
+                    .getTripModificationDiff(AgencyAndId.convertFromString(tripOnBlock.getId()), serviceDate);
+            if (diff.isPresent() && diff.get().getChanges() != null) {
+                for (StopChangeDiff change : diff.get().getChanges()) {
+                    stopChangeMap.put(change.getStopId(), change.getChangeType());
+                }
+            }
+        } catch (Exception e) {
+            // return empty map on any lookup failure
+        }
+        return stopChangeMap;
     }
 
     private BlockInstanceBean getBlockInstanceForTrip(TripStatusBean currentVehicleTripStatus){
