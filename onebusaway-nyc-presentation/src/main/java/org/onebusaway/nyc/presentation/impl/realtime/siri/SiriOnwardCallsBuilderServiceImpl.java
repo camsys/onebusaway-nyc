@@ -23,6 +23,8 @@ import org.onebusaway.nyc.presentation.service.realtime.siri.SiriBuilderServiceH
 import org.onebusaway.nyc.presentation.service.realtime.siri.SiriOnwardCallsBuilderService;
 import org.onebusaway.nyc.siri.support.SiriDistanceExtension;
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
+import org.onebusaway.nyc.siri.support.SiriStopDetourStatusExtension;
+import org.onebusaway.transit_data.model.trip_mods.StopChangeDiff;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.StopBean;
@@ -77,7 +79,8 @@ public class SiriOnwardCallsBuilderServiceImpl implements SiriOnwardCallsBuilder
                                                 Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions,
                                                 int maximumOnwardCalls,
                                                 boolean isCancelled,
-                                                long responseTimestamp){
+                                                long responseTimestamp,
+                                                Map<String, StopChangeDiff.ChangeType> stopChangeMap){
 
         OnwardCallsStructure onwardCallsStructures = new OnwardCallsStructure();
 
@@ -160,10 +163,13 @@ public class SiriOnwardCallsBuilderServiceImpl implements SiriOnwardCallsBuilder
                     String stopPredictionKey = SiriSupportPredictionTimepointRecord.convertTripAndStopToKey(
                             blockTrip.getTrip().getId(), stopTime.getStopTime().getStop().getId());
 
+                    StopChangeDiff.ChangeType changeType = stopChangeMap == null ? null
+                            : stopChangeMap.get(stopTime.getStopTime().getStop().getId());
+
                     OnwardCallStructure onwardCallStructure = getOnwardCallStructure(blockTrip, stopTime,
                             distanceOfVehicleAlongBlock, blockTripStopsAfterTheVehicle,
                             (stopLevelPredictions == null?null:stopLevelPredictions.get(stopPredictionKey)),
-                            responseTimestamp);
+                            responseTimestamp, changeType);
 
                     onwardCallsStructures.getOnwardCall().add(onwardCallStructure);
 
@@ -188,7 +194,8 @@ public class SiriOnwardCallsBuilderServiceImpl implements SiriOnwardCallsBuilder
                                                        double distanceOfVehicleAlongBlock,
                                                        int blockTripStopsAfterTheVehicle,
                                                        SiriSupportPredictionTimepointRecord prediction,
-                                                       long responseTimestamp) {
+                                                       long responseTimestamp,
+                                                       StopChangeDiff.ChangeType changeType) {
 
         StopBean stopTimeStop = stopTime.getStopTime().getStop();
         double distanceOfCallAlongTrip = stopTime.getDistanceAlongBlock() - blockTrip.getDistanceAlongBlock();
@@ -210,7 +217,9 @@ public class SiriOnwardCallsBuilderServiceImpl implements SiriOnwardCallsBuilder
         boolean isNearFirstStop = false;
         if (distanceOfCallAlongTrip < 100) isNearFirstStop = true;
 
-        if(prediction != null) {
+        boolean isCancelledStop = changeType == StopChangeDiff.ChangeType.REMOVED;
+
+        if(prediction != null && !isCancelledStop) {
             if (prediction.getTimepointPredictionRecord().getTimepointPredictedArrivalTime() < responseTimestamp) {
                 if (!isNearFirstStop) { siriOnwardCallBuilder.setExpectedArrivalTime(new Date(responseTimestamp));}
                 else {
@@ -247,6 +256,13 @@ public class SiriOnwardCallsBuilderServiceImpl implements SiriOnwardCallsBuilder
         distances.setPresentableDistance(_presentationService.getPresentableDistance(distances));
 
         wrapper.setDistances(distances);
+
+        if (changeType == StopChangeDiff.ChangeType.ADDED || changeType == StopChangeDiff.ChangeType.REMOVED) {
+            SiriStopDetourStatusExtension stopDetourStatus = new SiriStopDetourStatusExtension();
+            stopDetourStatus.setDetour(changeType == StopChangeDiff.ChangeType.ADDED);
+            wrapper.setStopDetourStatus(stopDetourStatus);
+        }
+
         extensionsStructure.setAny(wrapper);
         siriOnwardCallBuilder.setExtensions(extensionsStructure);
 

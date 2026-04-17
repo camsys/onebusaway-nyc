@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
@@ -79,6 +80,7 @@ public class MonitoredVehicleJourneyServiceTest {
     when(nycTransitDataService.getBlockInstance(eq("BLOCK"), anyLong())).thenReturn(blockInstance);
     when(nycTransitDataService.getLastVehicleOccupancyRecordForVehicleId(any(AgencyAndId.class))).thenReturn(null);
     when(nycTransitDataService.stopHasRevenueServiceOnRoute(anyString(),anyString(),anyString(),anyString())).thenReturn(null);
+    when(nycTransitDataService.getTripModificationDiff(any(AgencyAndId.class), anyString())).thenReturn(Optional.empty());
 
     //when(siriMonitoredCallBuilderService.makeMonitoredCall(any(BlockInstanceBean.class), any(TripBean.class), any(TripStatusBean.class), any(StopBean.class), anyMap(), anyBoolean(), anyLong())).thenReturn(new MonitoredCallStructure());
 
@@ -87,7 +89,7 @@ public class MonitoredVehicleJourneyServiceTest {
     when(presentationService.isOnDetour(any(TripStatusBean.class))).thenReturn(false);
 
     when(siriOnwardCallsBuilderService.makeOnwardCalls(any(BlockInstanceBean.class), any(TripBean.class),
-            any(TripStatusBean.class), any(OnwardCallsMode.class), anyMap(), anyInt(), anyBoolean(), anyLong())).thenReturn(null);
+            any(TripStatusBean.class), any(OnwardCallsMode.class), anyMap(), anyInt(), anyBoolean(), anyLong(), anyMap())).thenReturn(null);
 
     StopBean monitoredCallStopBean = mock(StopBean.class);
     when(monitoredCallStopBean.getId()).thenReturn(STOP_ID);

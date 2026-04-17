@@ -26,7 +26,9 @@ import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.realtime.siri.SiriMonitoredVehicleJourneyBuilderService;
 import org.onebusaway.nyc.siri.support.SiriExtensionWrapper;
 import org.onebusaway.nyc.siri.support.SiriJsonSerializer;
+import org.onebusaway.nyc.siri.support.SiriTripDetourStatusExtension;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializer;
+import org.onebusaway.transit_data.model.trip_mods.TripModificationDiff;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.*;
@@ -152,6 +154,7 @@ public class RealtimeServiceImpl implements RealtimeService {
               OnwardCallsMode.VEHICLE_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, false,vehicleFeatures);
 
       activity.setMonitoredVehicleJourney(monitoredVehicleJourney);
+      setTripDetourStatusExtension(activity, tripDetails.getTrip().getId(), tripDetails.getStatus().getServiceDate());
 
       output.add(activity);
     }
@@ -204,6 +207,8 @@ public class RealtimeServiceImpl implements RealtimeService {
               OnwardCallsMode.STOP_MONITORING, maximumOnwardCalls, currentTime, showApc, showRawApc, false,vehicleFeatures);
 
       output.setMonitoredVehicleJourney(monitoredVehicleJourney);
+      setTripDetourStatusExtension(output, tripDetailsForCurrentTrip.getTrip().getId(),
+              tripDetailsForCurrentTrip.getStatus().getServiceDate());
 
       return output;
     }
@@ -494,6 +499,23 @@ public class RealtimeServiceImpl implements RealtimeService {
 
     private boolean useApc(){
         return _configurationService.getConfigurationValueAsBoolean("tds.useApc", Boolean.FALSE);
+    }
+
+    private void setTripDetourStatusExtension(VehicleActivityStructure activity, String tripId, long serviceDateEpochMs) {
+        try {
+            String serviceDate = new java.text.SimpleDateFormat("yyyyMMdd").format(new Date(serviceDateEpochMs));
+            Optional<TripModificationDiff> diff = _nycTransitDataService
+                    .getTripModificationDiff(AgencyAndId.convertFromString(tripId), serviceDate);
+            if (diff.isPresent()) {
+                SiriTripDetourStatusExtension tripDetourStatus = new SiriTripDetourStatusExtension();
+                tripDetourStatus.setDetour(true);
+                ExtensionsStructure extensions = new ExtensionsStructure();
+                extensions.setAny(tripDetourStatus);
+                activity.setExtensions(extensions);
+            }
+        } catch (Exception e) {
+            // leave extensions unset on any lookup failure
+        }
     }
 
 

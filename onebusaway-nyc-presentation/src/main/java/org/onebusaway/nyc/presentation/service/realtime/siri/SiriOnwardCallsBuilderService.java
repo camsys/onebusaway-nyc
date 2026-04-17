@@ -19,6 +19,7 @@ package org.onebusaway.nyc.presentation.service.realtime.siri;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportPredictionTimepointRecord;
 import org.onebusaway.nyc.presentation.impl.realtime.siri.OnwardCallsMode;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
+import org.onebusaway.transit_data.model.trip_mods.StopChangeDiff;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import uk.org.siri.siri.OnwardCallsStructure;
@@ -33,5 +34,6 @@ public interface SiriOnwardCallsBuilderService {
                                          Map<String, SiriSupportPredictionTimepointRecord> stopLevelPredictions,
                                          int maximumOnwardCalls,
                                          boolean isCancelled,
-                                         long responseTimestamp);
+                                         long responseTimestamp,
+                                         Map<String, StopChangeDiff.ChangeType> stopChangeMap);
 }
