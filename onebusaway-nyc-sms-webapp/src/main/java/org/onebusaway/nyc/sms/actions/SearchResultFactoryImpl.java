@@ -239,7 +239,10 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 	}
 
 	private VehicleResult.OccupancyConfig getOccupancyConfig() {
-		String config = _configurationService.getConfigurationValueAsString("display.apcMode", "PASSENGERCOUNT");
+		String config = _configurationService.getConfigurationValueAsString("siri.apcMode", "null");
+		if(config==null || config.equals("null") || config.equals("")) {
+			config = _configurationService.getConfigurationValueAsString("display.apcMode", "PASSENGERCOUNT");
+		}
 		if ("NONE".equals(config)) {
 			return VehicleResult.OccupancyConfig.NONE;
 		} else if ("OCCUPANCY".equals(config)) {
@@ -281,7 +284,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 			//TODO: Modify output load text here
 			if(loadOccupancy.equals("SEATS_AVAILABLE") || loadOccupancy.equals("MANY_SEATS_AVAILABLE"))
 				loadOccupancy = "seats available";
-			else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE"))
+			else if (loadOccupancy.equals("FEW_SEATS_AVAILABLE") || loadOccupancy.equals("STANDING_AVAILABLE"))
 				loadOccupancy = "almost full";
 			else if (loadOccupancy.equals("FULL"))
 				loadOccupancy = "full";

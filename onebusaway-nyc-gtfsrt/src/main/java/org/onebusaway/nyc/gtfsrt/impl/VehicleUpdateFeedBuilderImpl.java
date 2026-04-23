@@ -76,8 +76,10 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
                 position.getVehicleBuilder().setExtension(GtfsRealtimeOneBusAway.obaVehicleDescriptor, obaVehicleDescriptor.build());
             }
         }
-        if(showApc() && getGtfsrtOccupancy(status) != null){
-            position.setOccupancyStatus(getGtfsrtOccupancy(status));
+        if(showApc() && vor != null && vor.getOccupancyStatus() != null){
+            // the vor is filtered to trip and route, we can't use the vehicle status
+            // as it might not apply
+            position.setOccupancyStatus(com.google.transit.realtime.GtfsRealtime.VehiclePosition.OccupancyStatus.valueOf(vor.getOccupancyStatus().valueOf()));
         }
 
         // if we have count or capacity, create custom extension
@@ -107,12 +109,6 @@ public class VehicleUpdateFeedBuilderImpl implements VehicleUpdateFeedBuilder {
         }
 
         return position;
-    }
-    
-    private com.google.transit.realtime.GtfsRealtime.VehiclePosition.OccupancyStatus getGtfsrtOccupancy(VehicleStatusBean status){
-       if(status.getOccupancyStatus() == null)
-          return null;
-       return com.google.transit.realtime.GtfsRealtime.VehiclePosition.OccupancyStatus.valueOf(status.getOccupancyStatus().valueOf());
     }
 
     public boolean showApc(){

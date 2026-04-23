@@ -72,7 +72,7 @@ public class VehiclePulloutServiceImplTest {
 
     String xml = tcipUtil.getAsXml(o);
     ObaSchPullOutList o2 = tcipUtil.getFromXml(xml);
-    service.refreshData(o2);
+    service.processVehiclePipoList(o2);
 
     AgencyAndId vehicle = new AgencyAndId("MTA", "7788");
     SCHPullInOutInfo pullouts = service.getVehiclePullout(vehicle);
@@ -109,7 +109,7 @@ public class VehiclePulloutServiceImplTest {
     
     String xml = tcipUtil.getAsXml(o);
     ObaSchPullOutList o2 = tcipUtil.getFromXml(xml);
-    service.refreshData(o2);
+    service.processVehiclePipoList(o2);
     
     AgencyAndId lookupVehicle = new AgencyAndId("MTA", "7788");
     SCHPullInOutInfo resultPullouts = service.getVehiclePullout(lookupVehicle);

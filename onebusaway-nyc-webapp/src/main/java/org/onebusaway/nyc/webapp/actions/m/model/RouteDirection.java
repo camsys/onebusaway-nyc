@@ -16,7 +16,6 @@
 
 package org.onebusaway.nyc.webapp.actions.m.model;
 
-import org.apache.xpath.operations.Bool;
 import org.onebusaway.transit_data.model.StopGroupBean;
 
 import java.util.List;

@@ -25,4 +25,6 @@ public interface ServiceAlertsPersister {
   boolean saveOrUpdateServiceAlerts(String defaultAgencyId, List<ServiceAlertBean> serviceAlertBeans);
 
   void deleteServiceAlertById(String serviceAlertId);
+
+  boolean deleteOrphans();
 }

@@ -90,6 +90,9 @@
     <bean id="cancelledTripListener" class="org.onebusaway.nyc.transit_data_federation.impl.queue.CancelledTripHttpListenerTask">
     </bean>
 
+<!--    <bean class="org.onebusaway.nyc.transit_data_federation.impl.nyc.NycRouteTypeService"/>-->
+
+
     <!-- Stroller Vehicle Configuration -->
     <bean id="strollerVehicleListener" class="org.onebusaway.nyc.transit_data_federation.impl.queue.StrollerVehicleHttpListenerTask">
     </bean>

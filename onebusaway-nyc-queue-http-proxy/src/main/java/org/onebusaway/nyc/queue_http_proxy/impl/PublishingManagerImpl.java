@@ -16,8 +16,10 @@
 
 package org.onebusaway.nyc.queue_http_proxy.impl;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.queue.IPublisher;
+import org.onebusaway.nyc.queue_http_proxy.model.RecordOverride;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +43,16 @@ public class PublishingManagerImpl implements PublishingManager{
 
     private Map<String, Date> lastKnownVehicleRecords = new ConcurrentHashMap<>(10000);
 
+    private Map<String, RecordOverride> recordOverrides = new ConcurrentHashMap<>();
+
+
     private String highFrequencyVehiclesList;
 
     private Set<String> highFrequencyVehicles;
+
+    private String bypassHighFrequencyVehiclesList;
+
+    private Set<String> bypassHighFrequencyVehicles;
 
     @Autowired
     @Qualifier("publisher")
@@ -66,10 +75,28 @@ public class PublishingManagerImpl implements PublishingManager{
 
     @PostConstruct
     public void setup(){
+        setupHighFreqVehicles();
+        setupBypassHighFreqVehicles();
+        startDNSCheckThread();
+        startCacheCheckThread();
+    }
+
+    public Map<String, RecordOverride> getRecordOverrides() {
+        return recordOverrides;
+    }
+
+    public void setRecordOverrides(Map<String, RecordOverride> recordOverrides) {
+        this.recordOverrides = recordOverrides;
+    }
+
+    private void setupHighFreqVehicles(){
         String[] vehiclesList = highFrequencyVehiclesList.split("\\s*,\\s*");
         highFrequencyVehicles = new HashSet<>(Arrays.asList(vehiclesList));
-        startDNSCheckThread();
+    }
 
+    private void setupBypassHighFreqVehicles(){
+        String[] vehiclesList = bypassHighFrequencyVehiclesList.split("\\s*,\\s*");
+        bypassHighFrequencyVehicles = new HashSet<>(Arrays.asList(vehiclesList));
     }
 
     public synchronized Date parseDate(String date) throws ParseException {
@@ -88,17 +115,40 @@ public class PublishingManagerImpl implements PublishingManager{
         this.highFrequencyVehiclesList = highFrequencyVehiclesList;
     }
 
+    public void setBypassHighFrequencyVehiclesList(String bypassHighFrequencyVehiclesList) {
+        this.bypassHighFrequencyVehiclesList = bypassHighFrequencyVehiclesList;
+    }
+
+    public void setBypassHighFrequencyVehicles(Set<String> bypassHighFrequencyVehicles) {
+        this.bypassHighFrequencyVehicles = bypassHighFrequencyVehicles;
+    }
+
     @Override
     public void send(JsonNode message) throws ExecutionException, ParseException {
         JsonNode ccLocationReport = message.get("CcLocationReport");
         String vehicleId = getVehicleId(ccLocationReport);
+        optionallyOverrideSelectRecords(vehicleId, ccLocationReport);
 
-        if(highFrequencyVehicles.contains(vehicleId) || highFrequencyVehicles.contains("*")){
+        if(!bypassHighFrequencyVehicles.contains(vehicleId) &&
+                (highFrequencyVehicles.contains(vehicleId) || highFrequencyVehicles.contains("*"))){
             Date vehicleTimestamp = getVehicleTimestamp(ccLocationReport);
             processMessage(vehicleId, vehicleTimestamp, message.toString());
         } else {
             publisher.send(message.toString());
             highFreqPublisher.send(message.toString());
+        }
+    }
+
+    private void optionallyOverrideSelectRecords(String vehicleId, JsonNode ccLocationReport) {
+        if(recordOverrides.containsKey(vehicleId) && ccLocationReport.isObject()){
+            RecordOverride recordOverride = recordOverrides.get(vehicleId);
+            if(ccLocationReport.has("latitude") && ccLocationReport.has("latitude")){
+                ObjectNode ccLocationReportObject = (ObjectNode) ccLocationReport;
+                ccLocationReportObject.put("latitude", recordOverride.getLat());
+                ccLocationReportObject.put("longitude", recordOverride.getLon());
+                ObjectNode vehicleObject = (ObjectNode) ccLocationReportObject.get("vehicle");
+                vehicleObject.put("agencydesignator",recordOverride.getAgency());
+            }
         }
     }
 
@@ -144,7 +194,9 @@ public class PublishingManagerImpl implements PublishingManager{
         long timeSinceLastUpdateMillis = currentVehicleTimestamp.getTime() - lastVehicleTime.getTime();
 
         // Checks for vehicles that are more than 25 seconds old OR vehicles that have the same timestamp
-        if(TimeUnit.MILLISECONDS.toSeconds(timeSinceLastUpdateMillis) > 25 || timeSinceLastUpdateMillis == 0){
+        if(TimeUnit.MILLISECONDS.toSeconds(timeSinceLastUpdateMillis) > 25
+                || TimeUnit.MILLISECONDS.toSeconds(timeSinceLastUpdateMillis) < -300
+                || timeSinceLastUpdateMillis == 0){
             return true;
         }
         return false;
@@ -158,7 +210,6 @@ public class PublishingManagerImpl implements PublishingManager{
     }
 
 
-
     // DNS CHECK - Reloads queue if DNS information changes
     public void startDNSCheckThread() {
         String host = getHost();
@@ -167,8 +218,14 @@ public class PublishingManagerImpl implements PublishingManager{
 
         if (_taskScheduler != null) {
             DNSCheckThread dnsCheckThread = new DNSCheckThread();
-            // Check every 20 seconds
             _taskScheduler.scheduleWithFixedDelay(dnsCheckThread, TimeUnit.SECONDS.toMillis(20));
+        }
+    }
+
+    public void startCacheCheckThread() {
+        if (_taskScheduler != null) {
+            CacheCheckThread cacheCheckThread = new CacheCheckThread();
+            _taskScheduler.scheduleWithFixedDelay(cacheCheckThread, TimeUnit.MINUTES.toMillis(15));
         }
     }
 
@@ -197,7 +254,29 @@ public class PublishingManagerImpl implements PublishingManager{
         }
     }
 
-
-
-
+    private class CacheCheckThread extends TimerTask {
+        @Override
+        public void run() {
+            Map<String, Date> sortedLastKnownVehicleRecords = new TreeMap<>(lastKnownVehicleRecords);
+            try {
+                _log.info("checking last known vehicle records");
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                StringBuilder sb = new StringBuilder();
+                sb.append("[");
+                sb.append("\n");
+                for(Map.Entry<String, Date> entry : sortedLastKnownVehicleRecords.entrySet()) {
+                    sb.append("Vehicle ID: ");
+                    sb.append(entry.getKey());
+                    sb.append("," );
+                    sb.append("Date: ");
+                    sb.append(sdf.format(entry.getValue()));
+                    sb.append("\n");
+                }
+                sb.append("]");
+                _log.info(sb.toString());
+            } catch (Exception e) {
+                _log.error(e.toString());
+            }
+        }
+    }
 }

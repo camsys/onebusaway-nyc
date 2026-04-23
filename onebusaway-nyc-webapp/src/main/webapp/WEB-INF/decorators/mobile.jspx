@@ -62,14 +62,13 @@
 	<decorator:body />
 
 	<div id="footer">
-		<s:if test="%{getShowSurvey() &amp;&amp; getSurveyText() != null &amp;&amp; !getSurveyText().isEmpty()
-			&amp;&amp; getSurveyLinkText() != null &amp;&amp; !getSurveyLinkText().isEmpty()
-			&amp;&amp; getSurveyLinkUrl() != null &amp;&amp; !getSurveyLinkUrl().isEmpty()}">
+		<s:if test="%{getShowSurvey()}">
 			<div id="mobile-survey">
-				<p>
-					${surveyText} <a href="${surveyLinkUrl}">${surveyLinkText}</a>
-				</p>
+				<p><strong>The Spring 2026 Customers Count survey is live!</strong> Share your feedback <a href="https://nymta.qualtrics.com/jfe/form/SV_d4hYIpU9OS8pYI6?link=14"><strong>here</strong></a> for a chance to win a $100 OMNY card.</p>
+				<br />
+				<p>We have a new look! Try the Beta <a href="https://bustime-beta.mta.info">here &gt;&gt;</a></p>
 			</div>
+			<br />
 		</s:if>
     	<p>
 			<s:url var="mobileHelpUrl" namespace="/m/wiki" action="Help/Index"/>	

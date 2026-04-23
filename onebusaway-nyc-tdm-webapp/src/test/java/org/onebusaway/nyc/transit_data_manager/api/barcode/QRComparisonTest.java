@@ -23,21 +23,27 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.onebusaway.nyc.transit_data_manager.barcode.*;
 import org.onebusaway.nyc.transit_data_manager.barcode.model.MtaBarcode;
 
 public class QRComparisonTest extends QrCodeGeneratorResource {
 
+	/**
+	 * Google Chart Barcode Generator Is Now Depracated
+	 * @throws IOException
+	 */
+	@Ignore
 	@Test
 	public void testGenerateBarcodeZipFileFromUrlList() throws IOException {
 
 		QrCodeGenerator google = new GoogleChartBarcodeGenerator();
 		QrCodeGenerator zxing = new ZXingCodeGenerator();
 
-		MtaBarcode bcOne = new MtaBarcode("HTTP://BT.MTA.INFO/S/10");
-		MtaBarcode bcTwo = new MtaBarcode("HTTP://BT.MTA.INFO/S/20");
-		MtaBarcode bcThree = new MtaBarcode("HTTP://BT.MTA.INFO/S/325");
+		MtaBarcode bcOne = new MtaBarcode("HTTPS://BT.MTA.INFO/S/305111");
+		MtaBarcode bcTwo = new MtaBarcode("HTTPS://BT.MTA.INFO/S/305408");
+		MtaBarcode bcThree = new MtaBarcode("HTTPS://BT.MTA.INFO/S/325");
 
 		BufferedImage result1a = (BufferedImage) google.generateCode(bcOne.getContents(), 100, 100);
 		BufferedImage result1b = (BufferedImage) zxing.generateCode(bcOne.getContents(), 100, 100);

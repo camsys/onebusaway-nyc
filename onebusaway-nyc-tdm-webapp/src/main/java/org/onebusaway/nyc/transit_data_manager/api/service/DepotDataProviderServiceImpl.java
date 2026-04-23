@@ -45,39 +45,44 @@ import tcip_final_3_0_5_1.CPTVehicleIden;
  */
 public class DepotDataProviderServiceImpl implements DepotDataProviderService {
 
-	private MostRecentFilePicker mostRecentFilePicker;
+	private MostRecentFilePicker depotAssignsMostRecentFilePicker;
 	private TcipMappingTool mappingTool;
 	
 	private static Logger log = LoggerFactory.getLogger(DepotDataProviderServiceImpl.class);
-	
+
+	/**
+	 * Retreives
+	 * @param depotIdTranslator for depot id translation
+	 * @return
+	 */
 	@Override
 	public VehicleDepotData getVehicleDepotData(DepotIdTranslator depotIdTranslator) {
-		File inputFile = mostRecentFilePicker.getMostRecentSourceFile();
+		File mostRecentDepotAssignsFile = depotAssignsMostRecentFilePicker.getMostRecentSourceFile();
 
-		log.debug("Getting VehicleDepotData object in getVehicleDepotData from " + inputFile.getPath());
+		log.debug("Getting VehicleDepotData object in getVehicleDepotData from " + mostRecentDepotAssignsFile.getPath());
 
-		VehicleDepotData resultData = null;
+		VehicleDepotData vehicleDepotData = null;
 
-		MtaBusDepotFileToDataCreator process;
+		MtaBusDepotFileToDataCreator busDepotFileToDataCreator;
 		try {
-			process = new MtaBusDepotFileToDataCreator(inputFile);
+			busDepotFileToDataCreator = new MtaBusDepotFileToDataCreator(mostRecentDepotAssignsFile);
 
 			if (depotIdTranslator == null) {
 				log.info("Depot ID translation has not been enabled properly. Depot ids will not be translated.");
 			} else {
 				log.info("Using depot ID translation.");
 			}
-			process.setDepotIdTranslator(depotIdTranslator);
+			busDepotFileToDataCreator.setDepotIdTranslator(depotIdTranslator);
 
-			resultData = process.generateDataObject();
+			vehicleDepotData = busDepotFileToDataCreator.generateVehicleDepotData();
 		} catch (IOException e) {
-			log.info("Could not create data object from " + inputFile.getPath());
+			log.info("Could not create data object from " + mostRecentDepotAssignsFile.getPath());
 			log.info(e.getMessage());
 			throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
 		}
 
 		log.debug("Returning VehicleDepotData object in getVehicleDepotData.");
-		return resultData;
+		return vehicleDepotData;
 	}
 
 	@Override
@@ -102,13 +107,13 @@ public class DepotDataProviderServiceImpl implements DepotDataProviderService {
 	}
 
 	/**
-	 * Injects most recent file picker
+	 * Injects most recent file picker for Depot Assigns (SPEAR) Data
 	 * @param mostRecentFilePicker the mostRecentFilePicker to set
 	 */
 	@Autowired
 	@Qualifier("depotFilePicker")
 	public void setMostRecentFilePicker(MostRecentFilePicker mostRecentFilePicker) {
-		this.mostRecentFilePicker = mostRecentFilePicker;
+		this.depotAssignsMostRecentFilePicker = mostRecentFilePicker;
 	}
 	
 	/**

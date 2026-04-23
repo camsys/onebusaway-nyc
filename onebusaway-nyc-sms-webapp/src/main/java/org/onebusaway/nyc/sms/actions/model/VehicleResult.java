@@ -62,15 +62,20 @@ public class VehicleResult implements Serializable {
     String occupancyStr = "";
     if (vor != null) {
       switch (occupancyConfig) {
-        case NONE:
-          occupancyStr = "";
         case OCCUPANCY:
-          occupancyStr = getPresentableOccupancy(vor.getOccupancyStatus());
+          occupancyStr = ", " + getPresentableOccupancy(vor.getOccupancyStatus());
+          break;
         case LOAD_FACTOR:
         case LOAD_FACTOR_PASSENGER_COUNT:
         case PASSENGER_COUNT:
-          if (vor.getRawCount() != null)
+          if (vor.getRawCount() != null) {
             occupancyStr = ", ~" + vor.getRawCount() + " passengers";
+            break;
+          }
+        case NONE:
+        default:
+          occupancyStr = "";
+          break;
       }
     }
     return timeOrDistance + occupancyStr;
