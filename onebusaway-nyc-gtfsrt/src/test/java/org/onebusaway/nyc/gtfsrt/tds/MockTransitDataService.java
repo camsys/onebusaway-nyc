@@ -613,7 +613,7 @@ public class MockTransitDataService implements NycTransitDataService {
     }
 
     @Override
-    public Optional<TripModificationDiff> getTripModificationDiff(AgencyAndId tripId, String serviceDate) {
+    public TripModificationDiff getTripModificationDiff(AgencyAndId tripId, String serviceDate) {
         throw new UnsupportedOperationException();
     }
 

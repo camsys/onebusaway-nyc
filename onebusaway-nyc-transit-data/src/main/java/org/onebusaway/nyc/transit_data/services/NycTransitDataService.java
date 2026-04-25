@@ -92,7 +92,7 @@ public interface NycTransitDataService extends TransitDataService {
 
 	Collection<TripModificationDiff> getAllTripModificationDiffs(String serviceDate);
 
-	Optional<TripModificationDiff> getTripModificationDiff(AgencyAndId tripId, String serviceDate);
+	TripModificationDiff getTripModificationDiff(AgencyAndId tripId, String serviceDate);
 
 	Map<AgencyAndId, TripModificationDiff> getAllTripModificationDiffsById(String serviceDate);
 
