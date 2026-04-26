@@ -834,7 +834,11 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}
 
 	@Override
-	public Optional<TripModificationDiff> getTripModificationDiff(AgencyAndId tripId, String serviceDate) {
-		return _transitDataService.getTripModificationDiffs(tripId, parseServiceDate(serviceDate));
+	public TripModificationDiff getTripModificationDiff(AgencyAndId tripId, String serviceDate) {
+		// Pass null as LocalDate to skip the service date filter. effectiveServiceDate in the
+		// cached diff is set at modification-processing time via the block calendar, which can
+		// diverge from the vehicle tracker's serviceDate (e.g. blocks running past midnight).
+		// The cache is keyed by trip ID with one entry per trip, so the filter adds no value.
+		return _transitDataService.getTripModificationDiffs(tripId, null).orElse(null);
 	}
 }

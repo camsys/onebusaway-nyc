@@ -504,9 +504,9 @@ public class RealtimeServiceImpl implements RealtimeService {
     private void setTripDetourStatusExtension(VehicleActivityStructure activity, String tripId, long serviceDateEpochMs) {
         try {
             String serviceDate = new java.text.SimpleDateFormat("yyyyMMdd").format(new Date(serviceDateEpochMs));
-            Optional<TripModificationDiff> diff = _nycTransitDataService
+            TripModificationDiff diff = _nycTransitDataService
                     .getTripModificationDiff(AgencyAndId.convertFromString(tripId), serviceDate);
-            if (diff.isPresent()) {
+            if (diff != null) {
                 SiriTripDetourStatusExtension tripDetourStatus = new SiriTripDetourStatusExtension();
                 tripDetourStatus.setDetour(true);
                 ExtensionsStructure extensions = new ExtensionsStructure();

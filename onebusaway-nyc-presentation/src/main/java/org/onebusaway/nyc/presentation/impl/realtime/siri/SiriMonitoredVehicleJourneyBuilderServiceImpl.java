@@ -243,10 +243,10 @@ public class SiriMonitoredVehicleJourneyBuilderServiceImpl implements SiriMonito
         try {
             String serviceDate = new SimpleDateFormat("yyyyMMdd")
                     .format(new Date(currentlyActiveTripOnBlock.getServiceDate()));
-            Optional<TripModificationDiff> diff = _nycTransitDataService
+            TripModificationDiff diff = _nycTransitDataService
                     .getTripModificationDiff(AgencyAndId.convertFromString(tripOnBlock.getId()), serviceDate);
-            if (diff.isPresent() && diff.get().getChanges() != null) {
-                for (StopChangeDiff change : diff.get().getChanges()) {
+            if (diff != null && diff.getChanges() != null) {
+                for (StopChangeDiff change : diff.getChanges()) {
                     stopChangeMap.put(change.getStopId(), change.getChangeType());
                 }
             }
