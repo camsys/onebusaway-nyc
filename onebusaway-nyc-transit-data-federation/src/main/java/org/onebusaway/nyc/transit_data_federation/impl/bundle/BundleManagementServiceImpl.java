@@ -40,9 +40,7 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
-import org.onebusaway.nyc.transit_data_federation.impl.nyc.NycGtfsTripModificationsClientImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
@@ -52,6 +50,8 @@ import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
+import org.onebusaway.transit_data_federation.impl.federated.TransitDataServiceTemplateImpl;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.GtfsTripModificationsClient;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
@@ -79,7 +79,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	// when the command to change the bundle has been received.
 	private static final int INFERENCE_PROCESSING_THREAD_WAIT_TIMEOUT_IN_SECONDS = 60;
 
-  private static final int MAX_EXPECTED_THREADS = 3000;
+  	private static final int MAX_EXPECTED_THREADS = 3000;
 
 	private static Logger _log = LoggerFactory.getLogger(BundleManagementServiceImpl.class);
 
@@ -118,7 +118,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	private ReentrantLock _bundleAccessLock = new ReentrantLock();
 
 	@Autowired
-	private NycTransitDataService _nycTransitDataService;
+	private TransitDataServiceTemplateImpl _transitDataService;
 
 	@Autowired
 	private TransitGraphDao _transitGraphDao;
@@ -142,14 +142,15 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	NearbyStopsBeanService _nearbyStopsBeanService;
 	
 	@Autowired
-  private ConfigurationService _configurationService;
+  	private ConfigurationService _configurationService;
   
    // This is only used when logging block info at bundle change.
    @Autowired
    private CalendarService _calendarService;
 
    @Autowired
-   private NycGtfsTripModificationsClientImpl _tripModificationsClient;
+   private GtfsTripModificationsClient _tripModificationsClient;
+
 	/******
 	 * Getters / Setters
 	 ******/
@@ -238,7 +239,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	 * using. Switch to that bundle if not already active. 
 	 */
 	public void reevaluateBundleAssignment() throws Exception {
-		if(_applicableBundles.size() == 0) {
+		if(_applicableBundles.isEmpty()) {
 			_log.error("No valid and active bundles found!");
 			return;
 		}
@@ -289,8 +290,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			_taskScheduler.schedule(discoveryThread, discoveryThread);
 
 			BundleSwitchUpdateThread switchThread = new BundleSwitchUpdateThread();
-			_taskScheduler.schedule(switchThread, switchThread);
-			
 			_taskScheduler.schedule(switchThread, switchThread);
 		}
 	}	
@@ -370,8 +369,9 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 			return;
 		}
 
-		_log.info("Switching to bundle " + bundleId + "...");   
+		_log.info("Switching to bundle " + bundleId + "...");
 		_bundleIsReady = false;
+
 
 		// wait until all inference processing threads have exited...
 		int t = INFERENCE_PROCESSING_THREAD_WAIT_TIMEOUT_IN_SECONDS / 5;
@@ -498,18 +498,18 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  _log.info("Rebuilding caches...");
     try {
       
-      List<AgencyWithCoverageBean> agenciesWithCoverage = _nycTransitDataService.getAgenciesWithCoverage();
+      List<AgencyWithCoverageBean> agenciesWithCoverage = _transitDataService.getAgenciesWithCoverage();
       for (AgencyWithCoverageBean agencyWithCoverage : agenciesWithCoverage) {
         AgencyBean agency = agencyWithCoverage.getAgency();
         
-        ListBean<String> stopIds = _nycTransitDataService.getStopIdsForAgencyId(agency.getId());
+        ListBean<String> stopIds = _transitDataService.getStopIdsForAgencyId(agency.getId());
         for (String stopId : stopIds.getList()) {
-          _nearbyStopsBeanService.getNearbyStops(_nycTransitDataService.getStop(stopId), 100);
+          _nearbyStopsBeanService.getNearbyStops(_transitDataService.getStop(stopId), 100);
         }
 
-        ListBean<String> routeIds = _nycTransitDataService.getRouteIdsForAgencyId(agency.getId());
+        ListBean<String> routeIds = _transitDataService.getRouteIdsForAgencyId(agency.getId());
         for (String routeId : routeIds.getList()) {
-          _nycTransitDataService.getStopsForRoute(routeId);
+			_transitDataService.getStopsForRoute(routeId);
         }
       }
 
@@ -521,7 +521,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
       }
 
       for (AgencyAndId shapeId : shapeIds) {
-        _nycTransitDataService.getShapeForId(AgencyAndIdLibrary.convertToString(shapeId));
+		  _transitDataService.getShapeForId(AgencyAndIdLibrary.convertToString(shapeId));
       }
       
       listCacheNames(); 

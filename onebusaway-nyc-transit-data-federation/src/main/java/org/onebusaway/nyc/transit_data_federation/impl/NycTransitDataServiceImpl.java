@@ -139,7 +139,7 @@ class NycTransitDataServiceImpl implements NycTransitDataService {
 	}*/
 	public void blockUntilBundleIsReady() {
 		try {
-			while(_bundleManagementService != null && !_bundleManagementService.bundleIsReady()) {
+			while(_bundleManagementService == null || !_bundleManagementService.bundleIsReady()) {
 				_blockedRequestCounter++;
 
 				// only print this every 25 times so we don't fill up the logs!
