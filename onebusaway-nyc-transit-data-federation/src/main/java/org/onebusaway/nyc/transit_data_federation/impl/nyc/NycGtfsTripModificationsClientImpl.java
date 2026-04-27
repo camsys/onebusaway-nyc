@@ -37,7 +37,12 @@ public class NycGtfsTripModificationsClientImpl extends GtfsTripModificationsCli
     @Override
     public synchronized void update() {
         while (_bundleManagementService == null || !_bundleManagementService.bundleIsReady()) {
-            try { Thread.sleep(250); } catch (InterruptedException e) { return; }
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
         }
         super.update();
     }
