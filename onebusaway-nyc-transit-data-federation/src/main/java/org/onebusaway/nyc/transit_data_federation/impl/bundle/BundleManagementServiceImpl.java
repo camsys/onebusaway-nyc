@@ -292,8 +292,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 			BundleSwitchUpdateThread switchThread = new BundleSwitchUpdateThread();
 			_taskScheduler.schedule(switchThread, switchThread);
-			
-			_taskScheduler.schedule(switchThread, switchThread);
 		}
 	}	
 
