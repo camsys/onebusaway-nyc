@@ -37,6 +37,8 @@ public class RouteDirection {
 
   private Boolean hasUpcomingScheduledService;
 
+  private String detourStatus;
+
   public RouteDirection(StopGroupBean stopGroup, List<String> polylines,
                         List<StopOnRoute> stops, Boolean hasUpcomingScheduledService) {
     this.directionId = stopGroup.getId();
@@ -44,6 +46,13 @@ public class RouteDirection {
     this.polylines = polylines;
     this.stops = stops;
     this.hasUpcomingScheduledService = hasUpcomingScheduledService;
+  }
+
+  public RouteDirection(StopGroupBean stopGroup, List<String> polylines,
+                        List<StopOnRoute> stops, Boolean hasUpcomingScheduledService,
+                        String detourStatus) {
+    this(stopGroup, polylines, stops, hasUpcomingScheduledService);
+    this.detourStatus = detourStatus;
   }
 
   public String getDirectionId() {
@@ -64,6 +73,10 @@ public class RouteDirection {
 
   public Boolean getHasUpcomingScheduledService() {
     return hasUpcomingScheduledService;
+  }
+
+  public String getDetourStatus() {
+    return detourStatus;
   }
 
 }
