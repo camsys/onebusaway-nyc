@@ -87,9 +87,6 @@ public class ApcVerificationServiceTask implements Runnable {
                         if(_log.isDebugEnabled()){
                             _log.warn("Updating occupancy status for vehicle {}: current status {}, calculated status {}, Count: {}, Max Occupancy: {}, Route ID: {}, Express Status: {}",
                                     vehicleId, currentStatus, calculatedStatus, vor.getRawCount(), vor.getCapacity(), routeId, _nycRouteTypeService.isRouteExpress(AgencyAndIdLibrary.convertFromString(vor.getRouteId())));
-                        } else{
-                            _log.warn("Updating occupancy status for vehicle {}: current status {}, calculated status {}",
-                                    vehicleId, currentStatus, calculatedStatus);
                         }
                         correctedVehicles++;
                         vor.setOccupancyStatus(calculatedStatus);
