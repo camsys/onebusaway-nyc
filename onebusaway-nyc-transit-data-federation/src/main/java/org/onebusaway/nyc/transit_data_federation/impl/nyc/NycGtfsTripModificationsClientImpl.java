@@ -5,6 +5,7 @@ import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManageme
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.GtfsTripModificationsClient;
 import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.GtfsTripModificationsClientImpl;
+import org.onebusaway.transit_data_federation.impl.realtime.gtfs_tripmodifications.TripModificationConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,8 @@ public class NycGtfsTripModificationsClientImpl extends GtfsTripModificationsCli
     private static final String CONFIG_TRIP_MODS_REFRESH_INTERVAL = "tds.tripModificationsRefreshInterval";
     private static final String CONFIG_TRIP_MODS_URL = "tds.tripModificationsUrl";
     private static final String CONFIG_TRIP_MODS_ENABLED = "tds.tripModificationsEnabled";
+    private static final String SHAPE_OVERLAP_THRESHOLD_CONFIG_KEY = "tds.tripModifications.shapeOverlapThresholdMeters";
+    private static final String DEFAULT_SHAPE_OVERLAP_THRESHOLD_METERS = "25.0";
 
     @Autowired
     private BundleManagementService _bundleManagementService;
@@ -47,7 +50,8 @@ public class NycGtfsTripModificationsClientImpl extends GtfsTripModificationsCli
         super.update();
     }
 
-    @Refreshable(dependsOn = {CONFIG_TRIP_MODS_REFRESH_INTERVAL, CONFIG_TRIP_MODS_URL, CONFIG_TRIP_MODS_ENABLED})
+    @Refreshable(dependsOn = {CONFIG_TRIP_MODS_REFRESH_INTERVAL, CONFIG_TRIP_MODS_URL, CONFIG_TRIP_MODS_ENABLED,
+            SHAPE_OVERLAP_THRESHOLD_CONFIG_KEY})
     protected void refreshCache() {
         int refreshInterval = Integer.parseInt(_configurationService.getConfigurationValueAsString(
                 CONFIG_TRIP_MODS_REFRESH_INTERVAL, "60"));
@@ -60,5 +64,17 @@ public class NycGtfsTripModificationsClientImpl extends GtfsTripModificationsCli
         setRefreshInterval(refreshInterval);
         setGtfsTripModificationsUrl(tripModificationsUrl);
         setEnabled(tripModificationsEnabled);
+        setTripModificationConfiguration(getTripModificationConfiguration());
+    }
+
+    private TripModificationConfiguration getTripModificationConfiguration() {
+        TripModificationConfiguration tripModificationConfiguration = new TripModificationConfiguration();
+
+        double shapeOverlapThresholdMeters = Double.parseDouble(_configurationService.getConfigurationValueAsString(
+                SHAPE_OVERLAP_THRESHOLD_CONFIG_KEY, DEFAULT_SHAPE_OVERLAP_THRESHOLD_METERS));
+
+        tripModificationConfiguration.setShapeOverlapThreshold(shapeOverlapThresholdMeters);
+
+        return tripModificationConfiguration;
     }
 }
