@@ -33,7 +33,7 @@ public class NycGtfsTripModificationsClientImpl extends GtfsTripModificationsCli
     @Override
     @PostConstruct
     public void init() {
-        refreshCache();
+        updateConfig();
         super.init();
     }
 
@@ -53,6 +53,11 @@ public class NycGtfsTripModificationsClientImpl extends GtfsTripModificationsCli
     @Refreshable(dependsOn = {CONFIG_TRIP_MODS_REFRESH_INTERVAL, CONFIG_TRIP_MODS_URL, CONFIG_TRIP_MODS_ENABLED,
             SHAPE_OVERLAP_THRESHOLD_CONFIG_KEY})
     protected void refreshCache() {
+        updateConfig();
+        reapplyTripModifications();
+    }
+
+    private void updateConfig(){
         int refreshInterval = Integer.parseInt(_configurationService.getConfigurationValueAsString(
                 CONFIG_TRIP_MODS_REFRESH_INTERVAL, "60"));
 
