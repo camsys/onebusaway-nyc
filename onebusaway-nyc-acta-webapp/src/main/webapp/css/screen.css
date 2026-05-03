@@ -192,6 +192,11 @@
 	padding-bottom: 2px;
 }
 
+#survey {
+	padding-top: 1.0em;
+	padding-bottom: 1.0em;
+}
+
 .clear {
 	clear: both;	
 }
