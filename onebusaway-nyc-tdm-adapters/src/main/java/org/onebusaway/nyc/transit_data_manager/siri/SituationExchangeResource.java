@@ -17,7 +17,8 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import java.io.StringReader;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -208,47 +209,41 @@ public class SituationExchangeResource {
         boolean foundDirection = false;
         AffectsScopeStructure affects = ptSituationElementStructure.getAffects();
         if (affects == null) continue;
-        // make a list of routes and a list of routes with directions
-        // insert more vehicle journeys with directions for any route that has no directions
-        List<AffectedVehicleJourneyStructure> affectedVehicleJourneyStructures = new ArrayList();
-        HashMap<String, Boolean> afjsHasDirection = new HashMap<>();
         for (AffectedVehicleJourneyStructure affectedVehicleJourneyStructure : affects.getVehicleJourneys().getAffectedVehicleJourney()) {
-          if(affectedVehicleJourneyStructure.getLineRef() == null) continue;
-          affectedVehicleJourneyStructures.add(affectedVehicleJourneyStructure);
           if (affectedVehicleJourneyStructure.getDirectionRef() != null
             && affectedVehicleJourneyStructure.getDirectionRef().getValue() != null) {
-            afjsHasDirection.put(affectedVehicleJourneyStructure.getLineRef().getValue(), true);
+            foundDirection = true;
           }
         }
-        affectedVehicleJourneyStructures.forEach(afjs -> {
-          if (afjsHasDirection.get(afjs.getLineRef().getValue()) == null) {
-            replaceWithDirections(afjs,affects.getVehicleJourneys().getAffectedVehicleJourney());
-          }
-        });
+        if (!foundDirection) {
+          insertDirections(affects.getVehicleJourneys());
+        }
       }
     }
     return incomingSiriServiceDelivery;
   }
 
-
   // for legacy reasons a LineRef needs DirectionRefs 0 and 1
-  private void replaceWithDirections(
-          AffectedVehicleJourneyStructure direction0,
-          List<AffectedVehicleJourneyStructure> vehicleJourneys
-          ) {
-    if (direction0 != null && direction0.getLineRef() != null) {
-      direction0.setDirectionRef(new DirectionRefStructure());
-      direction0.getDirectionRef().setValue("0");
-
-      AffectedVehicleJourneyStructure direction1 = new AffectedVehicleJourneyStructure();
-      direction1.setLineRef(new LineRefStructure());
-      direction1.getLineRef().setValue(direction0.getLineRef().getValue());
-      direction1.setDirectionRef(new DirectionRefStructure());
-      direction1.getDirectionRef().setValue("1");
-      vehicleJourneys.add(direction1);
+  private void insertDirections(AffectsScopeStructure.VehicleJourneys vehicleJourneys) {
+    List<AffectedVehicleJourneyStructure> afj = vehicleJourneys.getAffectedVehicleJourney();
+    if (afj.isEmpty()) return;
+    if (afj.size() == 1) {
+      AffectedVehicleJourneyStructure direction0 = afj.get(0);
+      if (direction0.getLineRef() != null) {
+        direction0.setDirectionRef(new DirectionRefStructure());
+        direction0.getDirectionRef().setValue("0");
+        afj.add(new AffectedVehicleJourneyStructure());
+        AffectedVehicleJourneyStructure direction1 = afj.get(1);
+        direction1.setDirectionRef(new DirectionRefStructure());
+        direction1.getDirectionRef().setValue("1");
+        direction1.setLineRef(new LineRefStructure());
+        direction1.getLineRef().setValue(
+                direction0.getLineRef().getValue()
+        );
+      }
     }
-  }
 
+  }
 
   private boolean requestIsForThisEnvironment(SubscriptionRequest subscriptionRequest, Siri responseSiri) {
     if (subscriptionRequest == null)
