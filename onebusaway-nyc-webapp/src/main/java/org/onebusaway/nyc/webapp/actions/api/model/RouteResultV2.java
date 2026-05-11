@@ -16,9 +16,11 @@
 
 package org.onebusaway.nyc.webapp.actions.api.model;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.transit_data.model.RouteBean;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -52,6 +54,20 @@ public class RouteResultV2 implements SearchResult {
 
 	public String getDescription() {
 		return route.getDescription();
+	}
+
+	@Override
+	public String getEtag() {
+		StringBuilder sb = new StringBuilder();
+		// Sort the directions by directionId to ensure deterministic output
+		directions.stream()
+				.sorted(Comparator.comparing(RouteDirectionV2::getDirectionId))
+				.forEach(direction -> {
+					sb.append(direction.getDirPolyAndStopsHash());
+					sb.append("||");
+				});
+		return DigestUtils.md5Hex(sb.toString());
+
 	}
 
 	public String getColor() {

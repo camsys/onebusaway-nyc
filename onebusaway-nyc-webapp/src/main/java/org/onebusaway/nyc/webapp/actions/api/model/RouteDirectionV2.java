@@ -16,8 +16,10 @@
 
 package org.onebusaway.nyc.webapp.actions.api.model;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.onebusaway.transit_data.model.StopGroupBean;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -64,6 +66,27 @@ public class RouteDirectionV2 {
   
   public Boolean getHasUpcomingScheduledService() {
     return hasUpcomingScheduledService;
+  }
+
+  public String getDirPolyAndStopsHash() {
+    StringBuilder sb = new StringBuilder();
+
+    // 2. Append the unique direction identifier
+    sb.append("dir:").append(this.getDirectionId());
+
+    // 3. Append the polyline
+    sb.append("|poly:").append(this.getPolylines().stream().map(PolylineWithStatus::getLine).reduce("", String::concat));
+
+    // 4. Append all stop IDs (assuming Stop objects have a getId() or similar)
+    sb.append("|stops:");
+    for (StopOnRoute stop : this.getStops()) {
+      sb.append(stop.getId()).append(",");
+    }
+
+
+    // 5. Hash the resulting string to create a fixed-length ETag
+    // Using a standard hash like MD5 or SHA-256 is recommended for headers
+    return DigestUtils.md5Hex(sb.toString());
   }
 
 }

@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.webapp.actions.api;
 
+import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
@@ -24,6 +25,9 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @ParentPackage("json-default")
 //@Result(type="json")
@@ -55,10 +59,21 @@ public class SearchV2Action extends OneBusAwayNYCActionSupport {
 
     @Override
     public String execute() {
+
+        HttpServletResponse response = ServletActionContext.getResponse();
+
         if(_q == null || _q.isEmpty())
             return SUCCESS;
 
         _results = _searchService.getSearchResults(_q, new SearchResultFactoryV2Impl(_searchService, _nycTransitDataService, _realtimeService));
+        boolean hasMatches = _results != null &&
+                _results.getMatches() != null &&
+                !_results.getMatches().isEmpty();
+
+        if (hasMatches) {
+            response.setHeader("ETag", _results.getMatches().get(0).getEtag());
+        }
+
 
         return SUCCESS;
     }
