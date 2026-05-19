@@ -16,11 +16,9 @@
 
 package org.onebusaway.nyc.webapp.actions.api.model;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.transit_data.model.StopBean;
 
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -66,23 +64,5 @@ public class StopResultV2 implements SearchResult {
 
 	public List<RouteAtStopV2> getRoutesAvailable() {
 		return routesAvailable;
-	}
-
-	@Override
-	public String getEtag() {
-		StringBuilder sb = new StringBuilder();
-		// Sort the directions by directionId to ensure deterministic output
-		routesAvailable.stream()
-				.sorted(Comparator.comparing(RouteAtStopV2::getId))
-				.forEach(routeAtStopV2 -> {
-					sb.append(routeAtStopV2.getId());
-					routeAtStopV2.getDirections().stream()
-							.sorted(Comparator.comparing(RouteDirectionV2::getDirectionId))
-							.forEach(direction -> {
-								sb.append(direction.getDirPolyAndStopsHash());
-								sb.append("||");
-							});
-				});
-		return DigestUtils.md5Hex(sb.toString());
 	}
 }

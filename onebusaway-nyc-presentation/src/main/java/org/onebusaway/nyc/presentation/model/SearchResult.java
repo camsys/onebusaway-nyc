@@ -18,8 +18,4 @@ package org.onebusaway.nyc.presentation.model;
 
 public interface SearchResult {
 
-    // default etag is null
-    default String getEtag() {
-        return null;
-    }
 }
