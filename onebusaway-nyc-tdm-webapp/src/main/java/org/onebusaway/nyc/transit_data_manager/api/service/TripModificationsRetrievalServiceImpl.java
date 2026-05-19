@@ -62,7 +62,7 @@ public class TripModificationsRetrievalServiceImpl implements TripModificationsR
     private static final String CONFIG_TRIP_MODS_CACHE_TIMEOUT = "tdm.tripModificationCacheTimeout";
 
 
-    private static final long DEFAULT_CONNECTION_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(5);
+    private static final long DEFAULT_CONNECTION_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(15);
     private static final long DEFAULT_UPDATE_INTERVAL_MS = TimeUnit.SECONDS.toMillis(60);
     private static final long DEFAULT_CACHE_EXPIRATION_MS = TimeUnit.SECONDS.toMillis(120);
 

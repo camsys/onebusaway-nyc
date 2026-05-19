@@ -35,9 +35,6 @@ public class HttpDataFetcherDao implements DataFetcherDao {
 
     private static final Logger log = LoggerFactory.getLogger(HttpDataFetcherDao.class);
 
-    private static final long DEFAULT_CONNECTION_TIMEOUT = 5000; // 5 seconds
-    private static final long DEFAULT_READ_TIMEOUT = 5000; // 5 seconds
-
     private String url;
     private int connectionTimeout;
     private int readTimeout;
