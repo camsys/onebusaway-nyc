@@ -76,7 +76,7 @@ public class GoogleGeocoderImpl extends FilteredGeocoderBase {
       }
 
       String apiKey =
-          _configurationService.getConfigurationValueAsString("display.googleMapsApiKey", null);
+          _configurationService.getConfigurationValueAsString("display.googleMapsGeocoderApiKey", null);
 
       if (StringUtils.isEmpty(apiKey)) {
         _log.warn("No googleMapsApiKey configured. Not accessing Google.");
