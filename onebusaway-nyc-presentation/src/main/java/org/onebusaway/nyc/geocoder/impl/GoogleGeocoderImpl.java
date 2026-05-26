@@ -19,7 +19,6 @@ import org.onebusaway.geocoder.impl.GoogleAddressComponent;
 import org.onebusaway.nyc.geocoder.model.GoogleGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.digester.Digester;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -27,18 +26,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  * A geocoder that queries against Google's REST-ful Enterprise API. 
@@ -49,7 +41,7 @@ public class GoogleGeocoderImpl extends FilteredGeocoderBase {
 
   private static Logger _log = LoggerFactory.getLogger(GoogleGeocoderImpl.class);
 
-  private static final String GEOCODE_URL_PREFIX = "http://maps.googleapis.com";
+  private static final String GEOCODE_URL_PREFIX = "https://maps.googleapis.com";
   
   private static final String GEOCODE_PATH = "/maps/api/geocode/xml";
 
@@ -83,24 +75,17 @@ public class GoogleGeocoderImpl extends FilteredGeocoderBase {
             _resultBiasingBounds.getMaxLon());
       }
 
-      String clientId = 
-          _configurationService.getConfigurationValueAsString("display.googleMapsClientId", null);          
-      String authKey = 
-          _configurationService.getConfigurationValueAsString("display.googleMapsSecretKey", null);
-      String channelId =
-          _configurationService.getConfigurationValueAsString("display.googleMapsChannelId", null);
+      String apiKey =
+          _configurationService.getConfigurationValueAsString("display.googleMapsApiKey", null);
 
-      // Fail if we don't have client key, auth key, channel id
-      if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(authKey)
-              || StringUtils.isEmpty(channelId)) {
-        _log.warn("No clientId, authKey, or channelId. Not accessing Google.");
+      if (StringUtils.isEmpty(apiKey)) {
+        _log.warn("No googleMapsApiKey configured. Not accessing Google.");
         return Collections.emptyList();
       }
 
-      q.append("&client=").append(clientId);
-      q.append("&channel=").append(channelId);
+      q.append("&key=").append(apiKey);
 
-      URL url = new URL(GEOCODE_URL_PREFIX + signRequest(authKey, GEOCODE_PATH + "?" + q.toString()));
+      URL url = new URL(GEOCODE_URL_PREFIX + GEOCODE_PATH + "?" + q.toString());
       
       Digester digester = createDigester();
       digester.push(results);
@@ -120,37 +105,6 @@ public class GoogleGeocoderImpl extends FilteredGeocoderBase {
       return null;
     }
   }
-  
-  /**
-   * PRIVATE METHODS
-   */
-  private String signRequest(String key, String resource) throws NoSuchAlgorithmException,
-    InvalidKeyException, UnsupportedEncodingException, URISyntaxException {
-
-    key = key.replace('-', '+');
-    key = key.replace('_', '/');
-    byte[] base64edKey = Base64.decodeBase64(key.getBytes());
-
-    // Get an HMAC-SHA1 signing key from the raw key bytes
-    SecretKeySpec sha1Key = new SecretKeySpec(base64edKey, "HmacSHA1");
-
-    // Get an HMAC-SHA1 Mac instance and initialize it with the HMAC-SHA1 key
-    Mac mac = Mac.getInstance("HmacSHA1");
-    mac.init(sha1Key);
-
-    // compute the binary signature for the request
-    byte[] sigBytes = mac.doFinal(resource.getBytes());
-
-    // base 64 encode the binary signature
-    String signature = new String(Base64.encodeBase64(sigBytes));
-    
-    // convert the signature to 'web safe' base 64
-    signature = signature.replace('+', '-');
-    signature = signature.replace('/', '_');
-    
-    return resource + "&signature=" + signature;
-  }
-  
   
   private Digester createDigester() {
     Digester digester = new Digester();
