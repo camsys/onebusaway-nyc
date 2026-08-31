@@ -33,6 +33,8 @@ import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.*;
 	 * Inference tests
 	 */
 
+	//2023Sept_Prod_r02_b03_PREDATE_SHUTTLES
+	Trace_8396_dsc_from_34047_to_9429_IntegrationTest.class,
 	//2016April_Prod_r01_b05 (Route M20)
 	Trace_9458_20160706_flips_trip_IntegrationTest.class,
 
