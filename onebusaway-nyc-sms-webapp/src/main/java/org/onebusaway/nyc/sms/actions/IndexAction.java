@@ -152,7 +152,7 @@ public class IndexAction extends SessionedIndexAction {
     } else if ((queryString == null || queryString.isEmpty()) && commandString != null && _searchResults != null && _searchResults.getSuggestions().size() > 0) {
       // We have suggestions with a command string for picking one of them or paginating
     } else if (queryString == null || queryString.isEmpty()) {
-      _response = errorResponse("No results.");
+      _response = failedSearchResponse(_query);
       return SUCCESS;
     }
 
@@ -166,7 +166,7 @@ public class IndexAction extends SessionedIndexAction {
           // this is a route in the bundle with no trips/stops/etc.
           // Show no results.
           if (route.getDirections() != null && route.getDirections().size() == 0) {
-            _response = errorResponse("No results.");
+            _response = failedSearchResponse(queryString);
             break;
 
           } else if (commandString != null && (commandString.equals("C") || commandString.equals("A"))) {
@@ -406,7 +406,8 @@ public class IndexAction extends SessionedIndexAction {
 
     // no response generated--no results or unrecognized query
     if(StringUtils.isEmpty(_response)) {
-      _response = errorResponse("No results.");
+
+      _response = failedSearchResponse(_query);
 
       if(_googleAnalytics != null) {
         try {
@@ -490,11 +491,11 @@ public class IndexAction extends SessionedIndexAction {
     int offset = 0;
     if (_searchResults.getMatches().isEmpty()) {
       // nothing to do
-      return errorResponse("No Results");
+      return failedSearchResponse("No Results");
     }
     if (!(_searchResults.getMatches().get(0) instanceof StopResult)) {
       // we shouldn't be here
-      return errorResponse("No Results");
+      return failedSearchResponse("No Results");
 
     }
     TreeMap<Double, String> observationsByDistanceFromStopAcrossAllRoutes =
@@ -1035,16 +1036,32 @@ public class IndexAction extends SessionedIndexAction {
     return header + body + footer;
   }
 
+  private String failedSearchResponse(String queryString) throws Exception {
+    String message;
+    if(queryString == null || queryString.isEmpty())
+      message = "No search term\n";
+    else if (queryString.equalsIgnoreCase("R")) {
+      message = "“R”efresh search.";
+    } else {
+      message = "\"";
+      message += queryString.length() > 6 ? queryString.substring(0,4) + ".." : queryString;
+      message += "\" not found";
+    }
+    return errorResponse(message);
+  }
+
   private String errorResponse(String message) throws Exception {
-    String staticStuff = "Send:\n\n";
+    String staticStuff = "\n\n";
+
+    staticStuff += "Send:\n\n";
 
     staticStuff += "STOPCODE or\n";
     staticStuff += "INTERSECTION\n";
     staticStuff += "Add ROUTE for best results\n\n";
 
     staticStuff += "Examples:\n";
-    staticStuff += "'PARK AV & 21 ST X1'\n";
-    staticStuff += "'400145 X1'\n\n";
+    staticStuff += "'86 ST/20 AV B1'\n";
+    staticStuff += "'300037 B1'\n\n";
 
     staticStuff += "Find 6-digit stopcode on stop pole";
 
