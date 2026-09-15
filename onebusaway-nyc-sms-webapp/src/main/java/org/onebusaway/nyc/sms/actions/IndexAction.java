@@ -1000,7 +1000,7 @@ public class IndexAction extends SessionedIndexAction {
     if(queryString == null || queryString.isEmpty())
       message = "No search term\n";
     else if (queryString.equalsIgnoreCase("R")) {
-      message = "“R”efresh search.";
+      message = "“R”efresh expired.";
     } else {
       message = "\"";
       message += queryString.length() > 6 ? queryString.substring(0,4) + ".." : queryString;
