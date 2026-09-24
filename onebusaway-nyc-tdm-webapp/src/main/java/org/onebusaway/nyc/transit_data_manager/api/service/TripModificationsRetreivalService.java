@@ -23,5 +23,5 @@ import java.util.List;
 
 public interface TripModificationsRetreivalService {
 
-    GtfsRealtime.FeedMessage getTripModifications();
+    GtfsRealtime.FeedMessage getTripModifications(String feedId);
 }
