@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
@@ -54,13 +55,21 @@ public class TripModificationsResource {
         _tripModificationsService = tripModificationsService;
     }
 
-    @Path("/feed")
+    @Path("/{feedId}/feed")
     @GET
     public Response getTripModifications(
+            @PathParam("feedId") String feedId,
             @QueryParam("format") @DefaultValue("pb") String format) {
 
         try {
-            GtfsRealtime.FeedMessage feed = _tripModificationsService.getTripModifications();
+            GtfsRealtime.FeedMessage feed = _tripModificationsService.getTripModifications(feedId);
+
+            if (feed == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("No Trip Modifications feed configured for feedId=" + feedId)
+                        .type("text/plain")
+                        .build();
+            }
 
             if (format.equals("json")) {
                 String json = com.google.protobuf.util.JsonFormat

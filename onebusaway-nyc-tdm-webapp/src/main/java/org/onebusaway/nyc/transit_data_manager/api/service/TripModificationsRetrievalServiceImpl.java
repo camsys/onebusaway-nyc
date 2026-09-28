@@ -16,8 +16,8 @@
 
 package org.onebusaway.nyc.transit_data_manager.api.service;
 
-import com.google.protobuf.util.JsonFormat;
-import com.google.transit.realtime.GtfsRealtime;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data_manager.api.dao.DataFetcherDao;
@@ -38,54 +38,47 @@ import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import static org.onebusaway.realtime.gtfsrt.util.GtfsRealtimeDeserializer.parseFeedMessageFromProtobuf;
 
 @Service
 public class TripModificationsRetrievalServiceImpl implements TripModificationsRetreivalService, ServletContextAware {
 
     private static final Logger log = LoggerFactory.getLogger(TripModificationsRetrievalServiceImpl.class);
 
-    private static final String CONFIG_TRIP_MODS_URL = "tdm.tripModificationsUrl";
+    // JSON array of {feedId, url, enabled, updateIntervalMs}, e.g.
+    // [{"feedId":"primary","url":"http://...","enabled":true,"updateIntervalMs":60000}]
+    private static final String CONFIG_TRIP_MODS_FEEDS = "tdm.tripModificationsFeeds";
     private static final String CONFIG_TRIP_MODS_TIMEOUT = "tdm.tripModificationsConnectionTimeout";
-    private static final String CONFIG_TRIP_MODS_ENABLED = "tdm.tripModificationsEnabled";
-    private static final String CONFIG_TRIP_MODS_UPDATE_INTERVAL = "tdm.tripModificationsUpdateInterval";
     private static final String CONFIG_TRIP_MODS_CACHE_TIMEOUT = "tdm.tripModificationCacheTimeout";
-
 
     private static final long DEFAULT_CONNECTION_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(15);
     private static final long DEFAULT_UPDATE_INTERVAL_MS = TimeUnit.SECONDS.toMillis(60);
     private static final long DEFAULT_CACHE_EXPIRATION_MS = TimeUnit.SECONDS.toMillis(120);
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private final ConfigurationService configurationService;
     private final ThreadPoolTaskScheduler taskScheduler;
-
-    private String feedUrl;
-    private boolean enabled;
-    private int connectionTimeoutMs;
-    private long updateIntervalMs;
-    private long cacheExpirationMs;
-    private DataFetcherDao currentFetcher;
     private final DataFetcherFactory dataFetcherFactory;
-    private DataFetcherConnectionData dataFetcherConnectionData;
 
-    private FeedMessage tripModifications;
-    private long lastUpdateTimestamp = 0;
+    private volatile int connectionTimeoutMs = (int) DEFAULT_CONNECTION_TIMEOUT_MS;
+    private volatile long cacheExpirationMs = DEFAULT_CACHE_EXPIRATION_MS;
 
-    // Lock for thread-safe cache updates
-    private final ReentrantReadWriteLock cacheLock = new ReentrantReadWriteLock();
+    private String credentialsUsername;
+    private String credentialsPassword;
+    private Map<String, String> credentialsAuthHeaderMap = new HashMap<>();
 
-    // Scheduled task for periodic updates
-    private ScheduledFuture<?> scheduledTask;
+    private volatile Map<String, TripModificationsFeedConfig> feedConfigsById = new HashMap<>();
+    private final Map<String, DataFetcherDao> fetcherByFeed = new ConcurrentHashMap<>();
+    private final Map<String, FeedCacheEntry> cacheByFeed = new ConcurrentHashMap<>();
+    private final Map<String, ScheduledFuture<?>> scheduledTaskByFeed = new ConcurrentHashMap<>();
 
     @Autowired
     public TripModificationsRetrievalServiceImpl(
@@ -101,127 +94,149 @@ public class TripModificationsRetrievalServiceImpl implements TripModificationsR
     public void setup() {
         log.info("Initializing TripModificationsRetrievalService");
         refreshConfig();
-        scheduleDataUpdates();
     }
 
-    @Refreshable(dependsOn = {CONFIG_TRIP_MODS_URL, CONFIG_TRIP_MODS_TIMEOUT, CONFIG_TRIP_MODS_ENABLED,
-            CONFIG_TRIP_MODS_UPDATE_INTERVAL, CONFIG_TRIP_MODS_CACHE_TIMEOUT})
+    @Refreshable(dependsOn = {CONFIG_TRIP_MODS_FEEDS, CONFIG_TRIP_MODS_TIMEOUT, CONFIG_TRIP_MODS_CACHE_TIMEOUT})
     public synchronized void refreshConfig() {
         if (configurationService == null) {
             log.warn("Configuration service not available");
             return;
         }
 
-        boolean oldEnabled = this.enabled;
-        this.enabled = configurationService.getConfigurationValueAsBoolean(CONFIG_TRIP_MODS_ENABLED, false);
-
-        this.feedUrl = configurationService.getConfigurationValueAsString(CONFIG_TRIP_MODS_URL, null);
-
         this.connectionTimeoutMs = configurationService.getConfigurationValueAsInteger(
-                CONFIG_TRIP_MODS_TIMEOUT,
-                (int) DEFAULT_CONNECTION_TIMEOUT_MS
-        );
-
-        long oldUpdateIntervalMs = this.updateIntervalMs;
-        this.updateIntervalMs = configurationService.getConfigurationValueAsInteger(
-                CONFIG_TRIP_MODS_UPDATE_INTERVAL,
-                (int) DEFAULT_UPDATE_INTERVAL_MS
-        );
+                CONFIG_TRIP_MODS_TIMEOUT, (int) DEFAULT_CONNECTION_TIMEOUT_MS);
 
         this.cacheExpirationMs = configurationService.getConfigurationValueAsInteger(
-                CONFIG_TRIP_MODS_CACHE_TIMEOUT,
-                (int) DEFAULT_CACHE_EXPIRATION_MS
-        );
+                CONFIG_TRIP_MODS_CACHE_TIMEOUT, (int) DEFAULT_CACHE_EXPIRATION_MS);
 
-        dataFetcherConnectionData.setUrl(this.feedUrl);
-        dataFetcherConnectionData.setConnectionTimeout((int) this.connectionTimeoutMs);
-        dataFetcherConnectionData.setReadTimeout((int) this.connectionTimeoutMs);
+        String feedsJson = configurationService.getConfigurationValueAsString(CONFIG_TRIP_MODS_FEEDS, "[]");
+        Map<String, TripModificationsFeedConfig> newFeedConfigs = parseFeedConfigs(feedsJson);
 
-        // Determine which data fetcher to use based on URL scheme
-        this.currentFetcher = dataFetcherFactory.getDataFetcher(dataFetcherConnectionData);
+        Set<String> removedFeedIds = new HashSet<>(feedConfigsById.keySet());
+        removedFeedIds.removeAll(newFeedConfigs.keySet());
+        for (String removedFeedId : removedFeedIds) {
+            cancelScheduledTask(removedFeedId);
+            fetcherByFeed.remove(removedFeedId);
+            cacheByFeed.remove(removedFeedId);
+            log.info("Trip modifications feed {} removed from configuration", removedFeedId);
+        }
 
-        log.debug("Configuration refreshed - URL: {}, Enabled: {}, Update Interval: {}ms, Fetcher: {}",
-                feedUrl != null ? feedUrl : "not set", enabled, updateIntervalMs,
-                currentFetcher != null ? currentFetcher.getClass().getSimpleName() : "none");
+        for (TripModificationsFeedConfig feedConfig : newFeedConfigs.values()) {
+            TripModificationsFeedConfig oldConfig = feedConfigsById.get(feedConfig.getFeedId());
 
-        if(oldEnabled != this.enabled || oldUpdateIntervalMs != this.updateIntervalMs) {
-            rescheduleUpdates();
+            DataFetcherConnectionData connectionData = new DataFetcherConnectionData(
+                    credentialsUsername, credentialsPassword, credentialsAuthHeaderMap);
+            connectionData.setUrl(feedConfig.getUrl());
+            connectionData.setConnectionTimeout(connectionTimeoutMs);
+            connectionData.setReadTimeout(connectionTimeoutMs);
+            fetcherByFeed.put(feedConfig.getFeedId(), dataFetcherFactory.getDataFetcher(connectionData));
+
+            cacheByFeed.computeIfAbsent(feedConfig.getFeedId(), id -> new FeedCacheEntry());
+
+            boolean needsReschedule = oldConfig == null
+                    || oldConfig.isEnabled() != feedConfig.isEnabled()
+                    || oldConfig.getUpdateIntervalMs() != feedConfig.getUpdateIntervalMs();
+            if (needsReschedule) {
+                rescheduleUpdates(feedConfig);
+            }
+        }
+
+        feedConfigsById = newFeedConfigs;
+
+        log.debug("Configuration refreshed - {} feed(s) configured", feedConfigsById.size());
+    }
+
+    private Map<String, TripModificationsFeedConfig> parseFeedConfigs(String feedsJson) {
+        Map<String, TripModificationsFeedConfig> feedConfigs = new HashMap<>();
+        try {
+            JsonNode feeds = OBJECT_MAPPER.readTree(feedsJson);
+            for (JsonNode feed : feeds) {
+                String feedId = feed.get("feedId").asText();
+                String url = feed.hasNonNull("url") ? feed.get("url").asText() : null;
+                boolean enabled = feed.path("enabled").asBoolean(false);
+                long updateIntervalMs = feed.hasNonNull("updateIntervalMs")
+                        ? feed.get("updateIntervalMs").asLong() : DEFAULT_UPDATE_INTERVAL_MS;
+                feedConfigs.put(feedId, new TripModificationsFeedConfig(feedId, url, enabled, updateIntervalMs));
+            }
+        } catch (Exception e) {
+            log.error("Unable to parse {} config value '{}'; no Trip Modifications feeds will be polled until this is fixed",
+                    CONFIG_TRIP_MODS_FEEDS, feedsJson, e);
+        }
+        return feedConfigs;
+    }
+
+    private void rescheduleUpdates(TripModificationsFeedConfig feedConfig) {
+        cancelScheduledTask(feedConfig.getFeedId());
+        if (taskScheduler != null && feedConfig.isEnabled()) {
+            ScheduledFuture<?> task = taskScheduler.scheduleWithFixedDelay(
+                    () -> updateTripModifications(feedConfig.getFeedId()), feedConfig.getUpdateIntervalMs());
+            scheduledTaskByFeed.put(feedConfig.getFeedId(), task);
+            log.info("Scheduled trip modifications updates for feed {} every {}ms",
+                    feedConfig.getFeedId(), feedConfig.getUpdateIntervalMs());
+        } else if (taskScheduler == null) {
+            log.warn("Task scheduler not available - trip modifications for feed {} will not auto-update", feedConfig.getFeedId());
         }
     }
 
-    private void scheduleDataUpdates() {
-        if (taskScheduler != null && enabled) {
-            taskScheduler.scheduleWithFixedDelay(this::updateTripModifications, updateIntervalMs);
-            log.info("Scheduled trip modifications updates every {}ms", updateIntervalMs);
-        } else {
-            log.warn("Task scheduler not available - trip modifications will not auto-update");
+    private void cancelScheduledTask(String feedId) {
+        ScheduledFuture<?> existing = scheduledTaskByFeed.remove(feedId);
+        if (existing != null && !existing.isCancelled()) {
+            boolean cancelled = existing.cancel(false);
+            log.info("Cancelled existing scheduled task for feed {}: {}", feedId, cancelled);
         }
-    }
-
-    private void rescheduleUpdates() {
-        if (scheduledTask != null && !scheduledTask.isCancelled()) {
-            boolean cancelled = scheduledTask.cancel(false);
-            log.info("Cancelled existing scheduled task: {}", cancelled);
-            scheduledTask = null;
-        }
-        scheduleDataUpdates();
-    }
-
-
-
-    // TODO
-    private void rescheduleUpdatesIfNeeded() {
-        log.debug("Update interval changed, new tasks will use updated interval");
     }
 
     /**
-     * Periodic update task that fetches and processes trip modifications.
+     * Periodic update task that fetches and processes trip modifications for a single feed.
      */
-    private void updateTripModifications() {
-        if (!enabled) {
-            log.debug("Trip modifications disabled, clearing data");
-            setTripModifications(null);
+    private void updateTripModifications(String feedId) {
+        TripModificationsFeedConfig feedConfig = feedConfigsById.get(feedId);
+        if (feedConfig == null || !feedConfig.isEnabled()) {
+            log.debug("Trip modifications feed {} disabled or removed, clearing data", feedId);
+            setTripModifications(feedId, null);
             return;
         }
 
-        log.debug("Refreshing trip modifications...");
+        log.debug("Refreshing trip modifications for feed {}...", feedId);
 
         try {
-            FeedMessage feedMessage = fetchFeed();
+            FeedMessage feedMessage = fetchFeed(feedId, feedConfig);
             if (feedMessage != null) {
-                setTripModifications(feedMessage);
-                log.debug("Refresh complete - {} modifications loaded", feedMessage.getEntityCount());
+                setTripModifications(feedId, feedMessage);
+                log.debug("Refresh complete for feed {} - {} modifications loaded", feedId, feedMessage.getEntityCount());
             } else {
-                log.warn("Failed to fetch feed, keeping existing data");
+                log.warn("Failed to fetch feed {}, keeping existing data", feedId);
             }
         } catch (Exception e) {
-            log.error("Error updating trip modifications", e);
+            log.error("Error updating trip modifications for feed {}", feedId, e);
         }
     }
 
     /**
-     * Fetches the GTFS-RT feed from the configured URL using the appropriate data fetcher.
+     * Fetches the GTFS-RT feed for a single feed id using its configured data fetcher.
      *
      * @return FeedMessage or null if fetch fails
      */
-    private FeedMessage fetchFeed() {
+    private FeedMessage fetchFeed(String feedId, TripModificationsFeedConfig feedConfig) {
+        String feedUrl = feedConfig.getUrl();
         if (feedUrl == null || feedUrl.trim().isEmpty()) {
-            log.warn("Trip modifications feed URL not configured");
+            log.warn("Trip modifications feed URL not configured for feed {}", feedId);
             return null;
         }
 
-        if (currentFetcher == null) {
-            log.error("No data fetcher available for URL: {}", feedUrl);
+        DataFetcherDao fetcher = fetcherByFeed.get(feedId);
+        if (fetcher == null) {
+            log.error("No data fetcher available for feed {} (URL: {})", feedId, feedUrl);
             return null;
         }
 
-        log.info("Fetching GTFS-RT feed from: {} using {}", feedUrl,
-                currentFetcher.getClass().getSimpleName());
+        log.info("Fetching GTFS-RT feed for feed {} from: {} using {}", feedId, feedUrl,
+                fetcher.getClass().getSimpleName());
 
-        try (InputStream inputStream = currentFetcher.fetchData()) {
+        try (InputStream inputStream = fetcher.fetchData()) {
 
             if (inputStream == null) {
-                log.error("No response received from trip modifications feed");
+                log.error("No response received from trip modifications feed {}", feedId);
                 return null;
             }
 
@@ -229,155 +244,101 @@ public class TripModificationsRetrievalServiceImpl implements TripModificationsR
 
             FeedMessage feedMessage = GtfsRealtimeDeserializer.parseFeedMessage(message);
 
-            log.info("Successfully fetched GTFS-RT feed with {} entities",
-                    feedMessage.getEntityCount());
+            log.info("Successfully fetched GTFS-RT feed {} with {} entities",
+                    feedId, feedMessage.getEntityCount());
 
             return feedMessage;
 
         } catch (IOException e) {
-            log.error("Failed to fetch GTFS-RT feed from {}: {}", feedUrl, e.getMessage(), e);
+            log.error("Failed to fetch GTFS-RT feed for feed {} from {}: {}", feedId, feedUrl, e.getMessage(), e);
             return null;
         }
     }
 
     /**
-     * Processes the feed message and extracts trip modifications.
-     * Override this method to implement actual processing logic.
+     * Gets the current trip modifications for a single feed.
+     * If the cache has expired (older than the configured cache timeout), fetches fresh data.
      *
-     * @param feedMessage the GTFS-RT feed message
-     * @return list of trip modifications
-     */
-    protected List<Object> processFeedMessage(FeedMessage feedMessage) {
-        // TODO: Implement actual processing logic
-        // This is a placeholder - replace with actual trip modification extraction
-        log.debug("Processing feed message with {} entities", feedMessage.getEntityCount());
-        return Collections.emptyList();
-    }
-
-    /**
-     * Gets the current trip modifications.
-     * If the cache has expired (older than 60 seconds), fetches fresh data.
-     *
-     * @return list of trip modifications
+     * @return FeedMessage, or null if the feed id is unknown or has no data yet
      */
     @Override
-    public FeedMessage getTripModifications() {
-        // Check if cache is expired
-        if (isCacheExpired()) {
-            log.debug("Cache expired, fetching fresh trip modifications");
-            refreshCacheIfNeeded();
+    public FeedMessage getTripModifications(String feedId) {
+        FeedCacheEntry entry = cacheByFeed.get(feedId);
+        if (entry == null) {
+            log.warn("Requested trip modifications for unknown feed id {}", feedId);
+            return null;
         }
-        cacheLock.readLock().lock();
+
+        if (isCacheExpired(entry)) {
+            log.debug("Cache expired for feed {}, fetching fresh trip modifications", feedId);
+            refreshCacheIfNeeded(feedId, entry);
+        }
+        entry.lock.readLock().lock();
         try {
-            return tripModifications;
+            return entry.tripModifications;
         } finally {
-            cacheLock.readLock().unlock();
+            entry.lock.readLock().unlock();
         }
     }
 
-    /**
-     * Checks if the cache has expired.
-     *
-     * @return true if cache is older than cacheExpirationMs
-     */
-    private boolean isCacheExpired() {
-        long age = System.currentTimeMillis() - lastUpdateTimestamp;
+    private boolean isCacheExpired(FeedCacheEntry entry) {
+        long age = System.currentTimeMillis() - entry.lastUpdateTimestamp;
         return age > cacheExpirationMs;
     }
 
-    /**
-     * Refreshes the cache if needed, preventing multiple concurrent refreshes.
-     */
-    private void refreshCacheIfNeeded() {
-        // Only one thread should refresh at a time
-        if (cacheLock.writeLock().tryLock()) {
+    private void refreshCacheIfNeeded(String feedId, FeedCacheEntry entry) {
+        // Only one thread should refresh a given feed's cache at a time
+        if (entry.lock.writeLock().tryLock()) {
             try {
-                // Double-check expiration after acquiring lock
-                if (isCacheExpired() && enabled) {
-                    log.debug("Performing on-demand cache refresh");
-                    updateTripModifications();
+                if (isCacheExpired(entry)) {
+                    log.debug("Performing on-demand cache refresh for feed {}", feedId);
+                    updateTripModifications(feedId);
                 }
             } finally {
-                cacheLock.writeLock().unlock();
+                entry.lock.writeLock().unlock();
             }
         } else {
-            // Another thread is already refreshing, wait for it
-            log.debug("Another thread is refreshing cache, waiting...");
+            log.debug("Another thread is refreshing feed {}'s cache, waiting...", feedId);
         }
     }
 
-    /**
-     * Sets the trip modifications and updates the cache timestamp.
-     *
-     * @param feedMessage list of trip modifications
-     */
-    protected void setTripModifications(FeedMessage feedMessage) {
-        cacheLock.writeLock().lock();
+    private void setTripModifications(String feedId, FeedMessage feedMessage) {
+        FeedCacheEntry entry = cacheByFeed.computeIfAbsent(feedId, id -> new FeedCacheEntry());
+        entry.lock.writeLock().lock();
         try {
-            this.tripModifications = feedMessage;
-            this.lastUpdateTimestamp = System.currentTimeMillis();
-            log.debug("Cache updated with {} modifications at timestamp {}",
-                    feedMessage != null ? feedMessage.getEntityCount() : 0, lastUpdateTimestamp);
+            entry.tripModifications = feedMessage;
+            entry.lastUpdateTimestamp = System.currentTimeMillis();
+            log.debug("Cache updated for feed {} with {} modifications at timestamp {}",
+                    feedId, feedMessage != null ? feedMessage.getEntityCount() : 0, entry.lastUpdateTimestamp);
         } finally {
-            cacheLock.writeLock().unlock();
+            entry.lock.writeLock().unlock();
         }
-    }
-
-    /**
-     * Checks if trip modifications are enabled.
-     *
-     * @return true if enabled
-     */
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    /**
-     * Gets the configured feed URL.
-     *
-     * @return feed URL
-     */
-    public String getFeedUrl() {
-        return feedUrl;
-    }
-
-    /**
-     * Gets the age of the current cache in milliseconds.
-     *
-     * @return cache age in milliseconds
-     */
-    public long getCacheAge() {
-        return System.currentTimeMillis() - lastUpdateTimestamp;
-    }
-
-    /**
-     * Gets the timestamp of the last cache update.
-     *
-     * @return timestamp in milliseconds since epoch
-     */
-    public long getLastUpdateTimestamp() {
-        return lastUpdateTimestamp;
     }
 
     @Override
     public void setServletContext(ServletContext servletContext) {
         if (servletContext != null) {
-            String credentialsUsername = servletContext.getInitParameter("tripmods.user");
+            credentialsUsername = servletContext.getInitParameter("tripmods.user");
             log.info("servlet context provided tripmods.user=" + credentialsUsername);
 
-            String credentialsPassword = servletContext.getInitParameter("tripmods.password");
+            credentialsPassword = servletContext.getInitParameter("tripmods.password");
             if (credentialsPassword != null) {
                 log.info("servlet context provided tripmods.password=[REDACTED]");
             }
 
-            Map<String, String> credentialsAuthHeaderMap = new HashMap<>();
+            credentialsAuthHeaderMap = new HashMap<>();
             String credentialsAuthHeader = servletContext.getInitParameter("tripmods.authHeader");
             if (credentialsAuthHeader != null) {
                 log.info("servlet context provided tripmods.header=" + credentialsAuthHeader);
                 credentialsAuthHeaderMap.put(credentialsAuthHeader, credentialsPassword);
             }
-
-            dataFetcherConnectionData = new DataFetcherConnectionData(credentialsUsername, credentialsPassword, credentialsAuthHeaderMap);
         }
+    }
+
+    /** Per-feed cache state: the last fetched feed, when it was fetched, and a lock guarding both. */
+    private static final class FeedCacheEntry {
+        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        private volatile FeedMessage tripModifications;
+        private volatile long lastUpdateTimestamp = 0;
     }
 }
