@@ -129,6 +129,12 @@
 			<version>1.10.19</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- Servlet mocks for CharacterEncodingFilterConfigTest (OBANYC-4185); version managed in root pom -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.tuckey</groupId>
 			<artifactId>urlrewritefilter</artifactId>
