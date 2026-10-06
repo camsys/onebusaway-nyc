@@ -351,7 +351,7 @@ cat <<'EOF'
             -> context: /onebusaway-nyc-transit-data-federation-webapp
           - onebusaway-nyc-api-webapp:war -> context: /onebusaway-nyc-api-webapp
           - onebusaway-nyc-acta-webapp:war -> context: /
-          - onebusaway-nyc-sms-webapp:war exploded
+          - onebusaway-nyc-sms-webapp:war
             -> context: /onebusaway-nyc-sms-webapp  (SMS app; needed to test texting)
   [ ] Verify TDM access: http://tdm.dev.obanyc.com:80/api/config/list
       (if blocked, get your IP added to vpc_obanyc_tdm_dev security group)
