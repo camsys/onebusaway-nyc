@@ -30,6 +30,25 @@
     </context-param>
 
     <!-- Filters-->
+    <!--
+      OBANYC-4185: force UTF-8 on every response before anything calls getWriter().
+      Without a charset, the Servlet spec defaults to ISO-8859-1 and locks it the moment
+      getWriter() is called, turning characters outside Latin-1 (e.g. U+2019 ’ in alerts)
+      into '?'. The SMS reply JSP already declares UTF-8 today; this keeps any response
+      that doesn't from regressing. Must be the FIRST filter-mapping below.
+    -->
+    <filter>
+        <filter-name>characterEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceResponseEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
     <filter>
         <filter-name>requestAndResponseContextFilter</filter-name>
         <filter-class>org.onebusaway.users.impl.RequestAndResponseContextFilter</filter-class>
@@ -42,6 +61,12 @@
         <filter-name>action2</filter-name>
         <filter-class>org.apache.struts2.dispatcher.filter.StrutsExecuteFilter</filter-class>
     </filter>
+    <filter-mapping>
+        <filter-name>characterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
     <filter-mapping>
         <filter-name>requestAndResponseContextFilter</filter-name>
         <url-pattern>/*</url-pattern>
