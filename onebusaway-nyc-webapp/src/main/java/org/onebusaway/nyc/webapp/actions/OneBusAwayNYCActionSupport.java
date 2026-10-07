@@ -18,7 +18,6 @@ package org.onebusaway.nyc.webapp.actions;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.presentation.impl.NextActionSupport;
@@ -105,31 +104,5 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
     return _configurationService.getConfigurationValueAsBoolean(
             "display.showSurvey", false);
   }
-
-  /**
-   * GA4 measurement id (G-XXXXXXXX) for the gtag snippet in the page head.
-   * Kept separate from display.googleAnalyticsSiteId, which the SMS webapp and
-   * SIRI API still use for Universal Analytics. Returns null when unset or not
-   * a G- id, in which case no tag is rendered.
-   */
-  public String getGoogleAnalyticsMeasurementId() {
-    String id = _configurationService.getConfigurationValueAsString(
-            "display.googleAnalyticsMeasurementId", null);
-    if (id == null || !GA4_MEASUREMENT_ID.matcher(id.trim()).matches()) {
-      return null;
-    }
-    return id.trim();
-  }
-
-  /**
-   * Whether the UI's custom GA4 events (search, marker clicks, sign "Add Stop")
-   * are sent. Off by default: page views are collected by the tag regardless.
-   */
-  public Boolean getGoogleAnalyticsEventsEnabled() {
-    return _configurationService.getConfigurationValueAsBoolean(
-            "display.googleAnalyticsEventsEnabled", false);
-  }
-
-  private static final Pattern GA4_MEASUREMENT_ID = Pattern.compile("^G-[A-Za-z0-9]+$");
 
 }

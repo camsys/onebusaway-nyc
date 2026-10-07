@@ -151,6 +151,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     return (results != null && results.size() > 0) ? results : null;
   }
 
+  public String getGoogleAnalyticsSiteId() {
+	  return _configurationService.getConfigurationValueAsString(
+              "display.googleAnalyticsSiteId", null);
+  }
+  
   public String getGoogleAnalyticsValue() {
       // event tracking
       String label = getQ();
