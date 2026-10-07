@@ -52,6 +52,25 @@
 	</context-param>
 
 	<!-- Filters -->
+	<!--
+	  OBANYC-4185: force UTF-8 on every response before anything calls getWriter().
+	  Without a charset, the Servlet spec defaults to ISO-8859-1 and locks it the moment
+	  getWriter() is called. The SIRI actions call getWriter() before setContentType(),
+	  so characters outside Latin-1 (e.g. U+2019 ’ in Mercury alerts) were written as '?'.
+	  Must be the FIRST filter-mapping below so it runs ahead of UrlRewriteFilter's forward.
+	-->
+	<filter>
+		<filter-name>characterEncodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>forceResponseEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
 	<filter>
 		<filter-name>UrlRewriteFilter</filter-name>
 		<filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
@@ -91,6 +110,12 @@
 		<dispatcher>FORWARD</dispatcher>
 		<dispatcher>REQUEST</dispatcher>
 	</filter-mapping> -->
+	<filter-mapping>
+		<filter-name>characterEncodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
 	<filter-mapping>
 		<filter-name>UrlRewriteFilter</filter-name>
 		<url-pattern>/*</url-pattern>
