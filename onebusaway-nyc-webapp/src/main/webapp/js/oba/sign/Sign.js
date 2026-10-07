@@ -225,7 +225,7 @@ OBA.Sign = function() {
 				'<div class="alerts"><div class="alerts_header"><h2>Service Change Notices</h2></div><div id="stop' + stopId.id + '" class="scroller"></div></div>' +
 			'</div>').addClass("slide");
 		
-		_gaq.push(['_trackEvent', "DIY Sign", "Add Stop", stopId.id]);
+		OBA.Config.analyticsEvent("DIY Sign", "Add Stop", stopId.id);
 		
 		return newElement;
 	}
