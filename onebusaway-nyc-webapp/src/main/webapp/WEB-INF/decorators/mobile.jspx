@@ -25,6 +25,8 @@
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 	<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes"/>
 
+	<c:import url="/WEB-INF/decorators/includes/googleTag.jspx" />
+
 	<title><s:property value="getText('main.title')"/><s:property value="title" /></title>
 	
   	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo="/>
@@ -84,12 +86,10 @@
 		</p>
 	</div>
 
+	<s:if test="%{googleAnalyticsLabel != null}">
 	<script type="text/javascript">
-		_gaq.push(['_setAccount', "<s:property value="googleAnalyticsSiteId" />"]);
-		_gaq.push(['_setDomainName', 'none']);
-		_gaq.push(['_setAllowLinker', true]);
-		_gaq.push(['_trackEvent', "Mobile Web", "<s:property value="googleAnalyticsLabel" />", "<s:property value="googleAnalyticsValue" />"]);
-		(function() {var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);})();
+		OBA.Config.analyticsEvent("Mobile Web", "<s:property value="googleAnalyticsLabel" escapeHtml="false" escapeJavaScript="true" />", "<s:property value="googleAnalyticsValue" escapeHtml="false" escapeJavaScript="true" />");
 	</script>
+	</s:if>
 </body>
 </html>
