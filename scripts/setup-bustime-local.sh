@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Automates the scriptable portions of local BusTime dev setup on macOS.
 # Source of truth (update there first, this script should follow it):
-#   https://camsys.atlassian.net/wiki/spaces/~623178576a6824006970af77/pages/3235020829
+#   https://camsys.atlassian.net/wiki/spaces/obanyc/pages/3249045561
 #
 # Automates: MySQL install (Homebrew) + db/table, *.xml path rewrites,
 #            Tomcat download + workspace dirs, context.xml datasource block, maven build.
@@ -351,11 +351,15 @@ cat <<'EOF'
             -> context: /onebusaway-nyc-transit-data-federation-webapp
           - onebusaway-nyc-api-webapp:war -> context: /onebusaway-nyc-api-webapp
           - onebusaway-nyc-acta-webapp:war -> context: /
+          - onebusaway-nyc-sms-webapp:war
+            -> context: /onebusaway-nyc-sms-webapp  (SMS app; needed to test texting)
   [ ] Verify TDM access: http://tdm.dev.obanyc.com:80/api/config/list
       (if blocked, get your IP added to vpc_obanyc_tdm_dev security group)
   [ ] Run the "bustime-app" configuration
   [ ] Verify TDS loaded: http://localhost:8080/routes/
+  [ ] Verify SMS app (simulates texting "B63"; profile_id stands in for the phone):
+      http://localhost:8080/onebusaway-nyc-sms-webapp/index.action?profile_id=local-test&args=B63
 
-Full doc: https://camsys.atlassian.net/wiki/spaces/~623178576a6824006970af77/pages/3235020829
+Full doc: https://camsys.atlassian.net/wiki/spaces/obanyc/pages/3249045561
 ================================================================
 EOF
