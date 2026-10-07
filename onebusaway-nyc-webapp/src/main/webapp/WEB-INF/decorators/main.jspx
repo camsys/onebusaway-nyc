@@ -31,7 +31,9 @@
   <title><decorator:title default="${title}" /></title>
 
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  
+
+  <c:import url="/WEB-INF/decorators/includes/googleTag.jspx" />
+
   <s:set var="favicon" value="getText('favicon.url')" />
   <link rel="shortcut icon" href="${favicon}" type="image/x-icon"/>
 
