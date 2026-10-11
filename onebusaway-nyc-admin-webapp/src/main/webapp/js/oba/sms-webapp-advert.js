@@ -29,8 +29,8 @@ jQuery(function() {
     csrfParameter = $("meta[name='_csrf_parameter']").attr("content");
     csrfHeader = $("meta[name='_csrf_header']").attr("content");
     csrfToken = $("meta[name='_csrf_token']").attr("content");
-    $('#showAd').change(function(){
-        if($('#showAd').val() == 'true') {
+    $('#showAnnouncement').change(function(){
+        if($('#showAnnouncement').val() == 'true') {
             $('.advert_conditional_display').show();
         } else {
             $('.advert_conditional_display').hide();
@@ -138,7 +138,7 @@ function updateParametersView(parameters){
         var configValue = parameters[$(".ad_update")[i].name];
         $(".ad_update")[i].value = configValue;
     }
-    if($('#showAd').val() == 'true') {
+    if($('#showAnnouncement').val() == 'true') {
         $('.advert_conditional_display').show();
     } else {
         $('.advert_conditional_display').hide();
