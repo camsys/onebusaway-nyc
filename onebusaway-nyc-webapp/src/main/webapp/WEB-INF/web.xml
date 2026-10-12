@@ -153,6 +153,11 @@
 		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
 	</listener>
 
+	<!-- Track sessions by cookie only, so the container never rewrites URLs with ;jsessionid= -->
+	<session-config>
+		<tracking-mode>COOKIE</tracking-mode>
+	</session-config>
+
 	<!-- Welcome file lists -->
 	<welcome-file-list>
 		<welcome-file>index.action</welcome-file>
