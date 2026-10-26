@@ -25,7 +25,7 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.siri.core.ESiriModuleType;
 import org.onebusaway.transit_data.model.AgencyBean;
@@ -78,8 +78,8 @@ public class NycSiriServiceClientTest extends NycSiriServiceClient {
     handleServiceDelivery(serviceDelivery, deliveryForModule, moduleType,
         endpointDetails, result, preAlertIds);
     
-    verify(transitDataService).removeAllServiceAlertsForAgencyId(anyString());
-    verify(transitDataService).createServiceAlert(anyString(), any(ServiceAlertBean.class));
+    verify(transitDataService).removeAllServiceAlertsForAgencyId(nullable(String.class));
+    verify(transitDataService).createServiceAlert(nullable(String.class), any(ServiceAlertBean.class));
     
   }
 }

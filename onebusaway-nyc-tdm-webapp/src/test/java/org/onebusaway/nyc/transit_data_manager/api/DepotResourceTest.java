@@ -55,7 +55,7 @@ public class DepotResourceTest extends ResourceTest {
 	public void test1() throws Exception {
 		File tmpInFile = File.createTempFile("tmp", ".tmp");
 		tmpInFile.deleteOnExit();
-		File tmpOutFile = new File("/tmp/results.xml");
+		File tmpOutFile = new File(System.getProperty("java.io.tmpdir"), "results.xml");
 
 		// this draft depot assignments has additional fields in it to test leniency of parser
 		InputStream resource = this.getClass().getResourceAsStream("draft_depot_assignments_with_extra_fields.xml");
@@ -109,7 +109,7 @@ public class DepotResourceTest extends ResourceTest {
 	public void test2() throws Exception {
 		File tmpInFile = File.createTempFile("tmp1", ".tmp");
 		tmpInFile.deleteOnExit();
-		File tmpOutFile = new File("/tmp/results1.xml");
+		File tmpOutFile = new File(System.getProperty("java.io.tmpdir"), "results1.xml");
 
 		// this draft depot assignments has additional fields in it to test leniency of parser
 		InputStream resource = this.getClass().getResourceAsStream("spear082212.txt");

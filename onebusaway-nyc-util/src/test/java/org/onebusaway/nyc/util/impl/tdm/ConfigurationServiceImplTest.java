@@ -27,9 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import java.net.URL;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigurationServiceImplTest {
@@ -53,11 +51,6 @@ public class ConfigurationServiceImplTest {
     String json = new String("{\"config\":[{\"value\":\"20\",\"key\":\"tdm.crewAssignmentRefreshInterval\",\"description\":null,\"value-type\":\"String\",\"units\":\"minutes\",\"component\":\"tdm\",\"updated\":null}],\"status\":\"OK\"}");
     when(mockApiLibrary.getItemsForRequest("config", "list"))
       .thenReturn(ral.getJsonObjectsForString(json));
-
-    TransitDataManagerApiLibrary tdmal = new TransitDataManagerApiLibrary("tdm.staging.obanyc.com", 80, "/api");
-    URL setUrl = tdmal.buildUrl("config", "testComponent", "test123", "set");
-    when(mockRestApiLibrary.setContents(setUrl, "testValue"))
-      .thenReturn(true);
 
     service.refreshConfiguration();
   }

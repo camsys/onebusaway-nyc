@@ -17,7 +17,7 @@
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsTestSupport;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializer;
@@ -51,7 +51,7 @@ import uk.org.siri.siri.SituationSimpleRefStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
 
   private static final long serialVersionUID = 1L;
@@ -89,7 +89,7 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     when(servletResponse.getWriter()).thenReturn(nothingPrintWriter);
     
     List<VehicleActivityStructure> vehicleActivities = new ArrayList<VehicleActivityStructure>();
-    when(realtimeService.getVehicleActivityForRoute(eq("MTA NYCT_S51"), anyString(), eq(0), anyLong(), anyBoolean(), anyBoolean())).thenReturn(vehicleActivities);
+    when(realtimeService.getVehicleActivityForRoute(eq("MTA NYCT_S51"), nullable(String.class), eq(0), anyLong(), anyBoolean(), anyBoolean())).thenReturn(vehicleActivities);
     
     VehicleActivityStructure vehicleActivity = new VehicleActivityStructure();
     vehicleActivities.add(vehicleActivity);
@@ -104,12 +104,12 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     locationStructure.setLongitude(BigDecimal.valueOf(89.0));
     
     ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_1");
-    when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean );
+    when(transitDataService.getServiceAlertForId(nullable(String.class))).thenReturn(serviceAlertBean );
     
     RouteBean routeBean = RouteBean.builder().create();
-    when(transitDataService.getRouteForId(anyString())).thenReturn(routeBean);
+    when(transitDataService.getRouteForId(nullable(String.class))).thenReturn(routeBean);
     
-    when(configurationService.getConfigurationValueAsString(eq("display.googleAnalyticsSiteId"), anyString())).thenReturn("foo");
+    when(configurationService.getConfigurationValueAsString(eq("display.googleAnalyticsSiteId"), nullable(String.class))).thenReturn("foo");
     
     List<SituationRefStructure> sitRef = mvJourney.getSituationRef();
     SituationRefStructure sitRefStructure = new SituationRefStructure();
@@ -143,13 +143,13 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     when(servletResponse.getWriter()).thenReturn(nothingPrintWriter);
     
     List<VehicleActivityStructure> vehicleActivities = new ArrayList<VehicleActivityStructure>();
-    when(realtimeService.getVehicleActivityForRoute(eq("MTA NYCT_S51"), anyString(), eq(0), anyLong(), anyBoolean(), anyBoolean())).thenReturn(vehicleActivities);
+    when(realtimeService.getVehicleActivityForRoute(eq("MTA NYCT_S51"), nullable(String.class), eq(0), anyLong(), anyBoolean(), anyBoolean())).thenReturn(vehicleActivities);
     
     ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_1");
-    when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean );
+    when(transitDataService.getServiceAlertForId(nullable(String.class))).thenReturn(serviceAlertBean );
     
     RouteBean routeBean = RouteBean.builder().create();
-    when(transitDataService.getRouteForId(anyString())).thenReturn(routeBean);
+    when(transitDataService.getRouteForId(nullable(String.class))).thenReturn(routeBean);
     
     ListBean<ServiceAlertBean> serviceAlertListBean = new ListBean<ServiceAlertBean>();
     List<ServiceAlertBean> list = new ArrayList<ServiceAlertBean>();
