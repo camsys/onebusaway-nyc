@@ -41,7 +41,8 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -77,7 +78,7 @@ public class TripUpdateServiceImplTest {
     };
 
     presentationService = mock(PresentationService.class);
-    when(presentationService.include(any(TripStatusBean.class))).thenReturn(Boolean.TRUE);
+    when(presentationService.include(nullable(TripStatusBean.class))).thenReturn(Boolean.TRUE);
     doNothing().when(presentationService).setTime(any(Long.class));
 
     tds = mock(NycTransitDataService.class);

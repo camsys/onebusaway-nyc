@@ -39,9 +39,10 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -62,7 +63,7 @@ public class VehiclePositionServiceImplTest {
     };
 
     presentationService = mock(PresentationService.class);
-    when(presentationService.include(any(TripStatusBean.class))).thenReturn(Boolean.TRUE);
+    when(presentationService.include(nullable(TripStatusBean.class))).thenReturn(Boolean.TRUE);
     doNothing().when(presentationService).setTime(any(Long.class));
 
     tds = mock(NycTransitDataService.class);

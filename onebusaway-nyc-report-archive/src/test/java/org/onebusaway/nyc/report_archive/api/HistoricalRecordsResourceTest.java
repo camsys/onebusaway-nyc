@@ -29,8 +29,8 @@ import javax.ws.rs.core.Response;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.ArgumentMatchers;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.onebusaway.nyc.report.api.json.LowerCaseWDashesGsonJsonTool;
 import org.onebusaway.nyc.report.impl.CcAndInferredLocationFilter;
 import org.onebusaway.nyc.report_archive.result.HistoricalRecord;
@@ -50,7 +50,7 @@ public class HistoricalRecordsResourceTest {
     HistoricalRecord historicalRecord = new HistoricalRecord();
     historicalRecord.setAssignedBlockId("assigned block id");
     results.add(historicalRecord);
-    when(dao.getHistoricalRecords(Matchers.<Map<CcAndInferredLocationFilter, Object>>any())).thenReturn(results);
+    when(dao.getHistoricalRecords(ArgumentMatchers.<Map<CcAndInferredLocationFilter, Object>>any())).thenReturn(results);
 
     r.setHistoricalRecordsDao(dao);
 
