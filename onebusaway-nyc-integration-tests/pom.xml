@@ -89,7 +89,7 @@
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <version>2.3.5</version><!-- force newer version -->
+            <version>${hsqldb.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-httpclient</groupId>
@@ -199,7 +199,10 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.1.1</version>
+                <version>1.2.1</version>
+                <configuration>
+                    <longClasspath>true</longClasspath>
+                </configuration>
                 <executions>
                     <execution>
                         <id>graph-builder-execution-2016April_Prod_r01_b05</id>
@@ -211,10 +214,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx1500m</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -235,10 +238,10 @@
                             <arguments>
                                 <argument>-Xdebug</argument>
                                 <argument>-Xmx1500m</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -258,10 +261,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx4g</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -281,10 +284,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx2g</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -305,10 +308,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx2g</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -328,10 +331,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx2g</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -351,10 +354,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx2g</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -376,10 +379,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx1500m</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -399,10 +402,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx1500m</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -422,10 +425,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx2G</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -445,10 +448,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx2G</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -468,10 +471,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx1500m</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -491,10 +494,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx1500m</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -514,10 +517,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx1500m</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -537,10 +540,10 @@
                             <executable>java</executable>
                             <arguments>
                                 <argument>-Xmx1500m</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -560,11 +563,11 @@
                         <configuration>
                             <executable>java</executable>
                             <arguments>
-                                <argument>-Xmx1500m</argument>
-                                <argument>-classpath</argument>
-                                <classpath />
+                                <argument>-Xmx4g</argument>
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
@@ -586,10 +589,10 @@
                              <executable>java</executable>
                              <arguments>
                                  <argument>-Xmx1500m</argument>
-                                 <argument>-classpath</argument>
-                                 <classpath />
                                  <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                  <argument>-Donebusaway_prefix=${basedir}</argument>
+                                 <argument>-classpath</argument>
+                                 <classpath />
                                  <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                  <argument>-onlyIfDoesNotExist</argument>
                                  <argument>-additionalResourcesDirectory</argument>
@@ -609,10 +612,10 @@
                              <executable>java</executable>
                              <arguments>
                                  <argument>-Xmx1500m</argument>
-                                 <argument>-classpath</argument>
-                                 <classpath />
                                  <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
                                  <argument>-Donebusaway_prefix=${basedir}</argument>
+                                 <argument>-classpath</argument>
+                                 <classpath />
                                  <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
                                  <argument>-onlyIfDoesNotExist</argument>
                                  <argument>-additionalResourcesDirectory</argument>
