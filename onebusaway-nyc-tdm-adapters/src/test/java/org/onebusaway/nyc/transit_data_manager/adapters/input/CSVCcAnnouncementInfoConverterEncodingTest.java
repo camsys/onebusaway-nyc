@@ -17,6 +17,7 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.input;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -51,6 +52,10 @@ public class CSVCcAnnouncementInfoConverterEncodingTest {
 
   @Test
   public void testUtf8MessageTextDecodesUnchanged() throws Exception {
+    // The code under test decodes with the JVM default charset, so on a non-UTF-8
+    // Java 11 host the expected text cannot match. Skip there instead of failing.
+    assumeTrue("needs a UTF-8 default charset, got " + Charset.defaultCharset(),
+        StandardCharsets.UTF_8.equals(Charset.defaultCharset()));
     String csv = "\"AGENCY\",\"ROUTE\",\"DEST. SIGN CODE\",\"MESSAGE\",\"DIR\"\n"
         + "\"MTA NYCT\",\"M1\",1010,\"" + SIGN_TEXT + "\",\"N\"\n";
     File csvFile = tmp.newFile("dsc.csv");
