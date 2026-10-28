@@ -659,7 +659,7 @@
                         <append>true</append>
                         <containerId>${tomcat-container}</containerId>
                         <zipUrlInstaller>
-                            <url>http://developer.onebusaway.org/dist/apache-tomcat-${tomcat-version}.zip</url>
+                            <url>https://archive.apache.org/dist/tomcat/tomcat-8/v${tomcat-version}/bin/apache-tomcat-${tomcat-version}.zip</url>
                         </zipUrlInstaller>
                         <systemProperties>
                             <onebusaway_prefix>${basedir}</onebusaway_prefix>
