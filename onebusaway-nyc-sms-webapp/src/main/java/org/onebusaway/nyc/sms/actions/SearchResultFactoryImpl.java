@@ -257,7 +257,14 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 			}
 
 			if(timePrediction != null) {
-				map.put(distanceExtension.getDistanceFromCall(), new VehicleResult(timePrediction, vehicleId, vor, getOccupancyConfig(),isStroller));
+				VehicleResult vehicle = new VehicleResult(timePrediction, vehicleId, vor, getOccupancyConfig(),isStroller);
+				// Only attach the ETA when we actually displayed a time prediction.
+				// Layover results use distance/departure text instead.
+				if (monitoredCall.getExpectedArrivalTime() != null
+						&& (journeyHasTimedArrival(visit.getMonitoredVehicleJourney()))) {
+					vehicle.setExpectedArrivalTime(monitoredCall.getExpectedArrivalTime().getTime());
+				}
+				map.put(distanceExtension.getDistanceFromCall(), vehicle);
 			} else {
 				map.put(distanceExtension.getDistanceFromCall(), new VehicleResult(distance, vehicleId, vor, getOccupancyConfig(),isStroller));
 			}
@@ -325,6 +332,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
 	}
 	
+	private boolean journeyHasTimedArrival(MonitoredVehicleJourneyStructure journey) {
+		NaturalLanguageStringStructure status = journey.getProgressStatus();
+		return status == null || status.getValue() == null || !status.getValue().contains("layover");
+	}
+
 	private String getPresentableTime(
 			MonitoredVehicleJourneyStructure journey, long updateTime,
 			boolean isStopContext) {

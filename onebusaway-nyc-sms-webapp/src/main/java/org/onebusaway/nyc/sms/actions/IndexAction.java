@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Locale;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -42,6 +45,7 @@ import org.onebusaway.nyc.sms.actions.model.RouteDirection;
 import org.onebusaway.nyc.sms.actions.model.RouteResult;
 import org.onebusaway.nyc.sms.actions.model.ServiceAlertResult;
 import org.onebusaway.nyc.sms.actions.model.StopResult;
+import org.onebusaway.nyc.sms.actions.model.VehicleResult;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.RouteBean;
@@ -84,6 +88,8 @@ public class IndexAction extends SessionedIndexAction {
 
   private String _response = null;
 
+  private boolean _multiStopResponse = false;
+
   private String failureMessage = "request not filled";
 
 //  todo: if OBANYC-3699 is fixed, we can remove this config
@@ -114,6 +120,21 @@ public class IndexAction extends SessionedIndexAction {
     if (_googleAnalytics == null) initAnalytics();
 
     SearchResultFactory _resultFactory = new SearchResultFactoryImpl(_nycTransitDataService, _realtimeService, _configurationService);
+
+    // Explicit multi-stop / multi-route requests take a separate path.  Keep the
+    // original single-stop and interactive SMS behavior unchanged.
+    String multiQuery = "R".equalsIgnoreCase(_query) ? _lastQuery : _query;
+    MultiStopQuery.Request multiRequest = MultiStopQuery.parse(multiQuery);
+    if (multiRequest != null) {
+      _multiStopResponse = true;
+      _lastQuery = multiQuery;
+      _lastCommandString = null;
+      _searchResults = null; // no single-stop selection should survive this request
+      _response = multiRequest.getError() != null
+          ? errorResponse(multiRequest.getError())
+          : multiStopArrivalsResponse(multiRequest, _resultFactory);
+      return SUCCESS;
+    }
 
     String commandString = getCommand(_query);
     String queryString = getQuery(_query);
@@ -419,6 +440,85 @@ public class IndexAction extends SessionedIndexAction {
     }
 
     return SUCCESS;
+  }
+
+  /** Four earliest predicted arrivals across explicitly supplied stops. No nearby discovery. */
+  private String multiStopArrivalsResponse(MultiStopQuery.Request request,
+                                          SearchResultFactory resultFactory) throws Exception {
+    List<CombinedArrival> arrivals = new ArrayList<CombinedArrival>();
+    int resolvedStops = 0;
+    for (String stopId : request.getStopIds()) {
+      SearchResultCollection results = _searchService.getSearchResults(stopId, resultFactory);
+      if (results == null || !"StopResult".equals(results.getResultType())) {
+        continue;
+      }
+      // Only exact ID matches. SearchService can otherwise offer nearby stops.
+      for (SearchResult match : results.getMatches()) {
+        StopResult stop = (StopResult) match;
+        if (!stopId.equals(stop.getIdWithoutAgency())) {
+          continue;
+        }
+        resolvedStops++;
+        for (RouteAtStop route : stop.getRoutesAvailable()) {
+          String routeName = route.getShortName();
+          if (!request.getRoutes().isEmpty()
+              && !request.getRoutes().contains(routeName.toUpperCase(Locale.US))) {
+            continue;
+          }
+          for (RouteDirection direction : route.getDirections()) {
+            Map<Double, VehicleResult> vehicles = direction.getVehiclesByDistance();
+            if (vehicles == null) continue;
+            for (VehicleResult vehicle : vehicles.values()) {
+              Long eta = vehicle.getExpectedArrivalTime();
+              // Do not rank distance-only / stale predictions as timed arrivals.
+              if (eta != null) {
+                arrivals.add(new CombinedArrival(stopId, routeName, vehicle.getVehicleId(), eta));
+              }
+            }
+          }
+        }
+        break; // single result for this exact stop
+      }
+    }
+    if (resolvedStops == 0) return errorResponse("No valid stops found.");
+
+    Collections.sort(arrivals, new Comparator<CombinedArrival>() {
+      @Override public int compare(CombinedArrival a, CombinedArrival b) {
+        return Long.compare(a.eta, b.eta);
+      }
+    });
+
+    long now = System.currentTimeMillis();
+    Set<String> seen = new HashSet<String>();
+    StringBuilder body = new StringBuilder();
+    int shown = 0;
+    String footer = "\nR to refresh";
+    for (CombinedArrival arrival : arrivals) {
+      if (arrival.eta < now - 60000L) continue; // ignore expired arrivals
+      // De-dupe repeated SIRI observations of a bus at the same stop/route.
+      String key = arrival.stopId + "/" + arrival.route + "/" + arrival.vehicleId;
+      if (!seen.add(key)) continue;
+      long minutes = Math.max(0L, (arrival.eta - now + 30000L) / 60000L);
+      String line = arrival.stopId + " " + arrival.route + " " + minutes + "m\n";
+      if (body.length() + line.length() + footer.length() > MAX_SMS_CHARACTER_COUNT) break;
+      body.append(line);
+      if (++shown == 4) break;
+    }
+    if (shown == 0) return "No predicted arrivals for these stops/routes." + footer;
+    return body.toString().trim() + footer;
+  }
+
+  private static final class CombinedArrival {
+    final String stopId;
+    final String route;
+    final String vehicleId;
+    final long eta;
+    CombinedArrival(String stopId, String route, String vehicleId, long eta) {
+      this.stopId = stopId;
+      this.route = route;
+      this.vehicleId = vehicleId;
+      this.eta = eta;
+    }
   }
 
   /**
@@ -1222,6 +1322,13 @@ public class IndexAction extends SessionedIndexAction {
   public String getResponse() {
 
     String response = _response.trim();
+
+    // Compact multi-stop replies are deliberately one segment. Keep any pending
+    // global alert for a subsequent conventional SMS rather than exceeding 160.
+    if (_multiStopResponse) {
+      syncSession();
+      return response;
+    }
 
     if (_needsGlobalAlert != null && _needsGlobalAlert) {
       List<ServiceAlertBean> globalAlerts = _realtimeService.getServiceAlertsGlobal();

@@ -37,6 +37,7 @@ public class VehicleResult implements Serializable {
   }
 
   private String timeOrDistance;
+  private Long expectedArrivalTime;
   private String vehicleId;
   private VehicleOccupancyRecord vor;
   private OccupancyConfig occupancyConfig;
@@ -52,6 +53,14 @@ public class VehicleResult implements Serializable {
     this.vor = vor;
     this.occupancyConfig = vorConfig;
     this.isStroller = isStroller;
+  }
+
+  public void setExpectedArrivalTime(Long expectedArrivalTime) {
+    this.expectedArrivalTime = expectedArrivalTime;
+  }
+
+  public Long getExpectedArrivalTime() {
+    return expectedArrivalTime;
   }
 
   public String getTimeOrDistance() {

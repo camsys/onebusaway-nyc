@@ -54,6 +54,10 @@ public class RouteDirection implements Serializable {
     this.serviceAlerts = serviceAlerts;
   }
 
+  public HashMap<Double, VehicleResult> getVehiclesByDistance() {
+    return distanceAwaysByVehicleResult;
+  }
+
   public String getDestination() {
     return destination;
   }
