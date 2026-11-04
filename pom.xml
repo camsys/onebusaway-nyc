@@ -46,6 +46,7 @@
         <struts.version>2.5.33</struts.version>
         <xwiki.integration.version>1.0.1</xwiki.integration.version>
         <xwiki.version>2.3.1</xwiki.version>
+        <xstream.version>1.4.21</xstream.version>
     </properties>
 
     <repositories>
@@ -771,6 +772,11 @@
                 <groupId>org.onebusaway</groupId>
                 <artifactId>onebusaway-gtfs-realtime-api</artifactId>
                 <version>${gtfs-api-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.thoughtworks.xstream</groupId>
+                <artifactId>xstream</artifactId>
+                <version>${xstream.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
