@@ -772,6 +772,11 @@
                 <artifactId>onebusaway-gtfs-realtime-api</artifactId>
                 <version>${gtfs-api-version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.thoughtworks.xstream</groupId>
+                <artifactId>xstream</artifactId>
+                <version>1.4.21</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
