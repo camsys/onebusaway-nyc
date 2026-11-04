@@ -21,7 +21,7 @@
         <gtfs-realtime-bindings.version>0.0.9-cs</gtfs-realtime-bindings.version>
         <hessian.version>4.0.38</hessian.version>
         <hsqldb.version>2.7.1</hsqldb.version>
-        <jackson.version>2.13.5</jackson.version>
+        <jackson.version>2.18.11</jackson.version>
         <jakarta.xml.version>2.3.3</jakarta.xml.version>
         <jaxb-impl.version>2.3.3</jaxb-impl.version>
         <jaxb-api.version>2.3.1</jaxb-api.version>
