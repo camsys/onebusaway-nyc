@@ -175,7 +175,10 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.1.1</version>
+                <version>1.2.1</version>
+                <configuration>
+                    <longClasspath>true</longClasspath>
+                </configuration>
                 <executions>
                     <execution>
                         <id>graph-builder-execution-2017April_Prod_rt_test</id>
@@ -188,10 +191,10 @@
                             <arguments>
                                 <argument>-Xdebug</argument>
                                 <argument>-Xmx6g</argument>
-                                <argument>-classpath</argument>
-                                <classpath/>
                                 <argument>-Dlog4j.configuration=/tmp/log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath/>
                                 <argument>
                                     org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain
                                 </argument>
