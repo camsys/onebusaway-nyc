@@ -42,9 +42,6 @@
             <interceptor name="obaException" class="org.onebusaway.api.actions.api.ExceptionInterceptor" />
             <interceptor name="stack" class="org.onebusaway.presentation.impl.StackInterceptor"/>
 
-            <interceptor name="fileUploadBigger" class="org.apache.struts2.interceptor.FileUploadInterceptor">
-                <param name="maximumSize">10485760</param>
-            </interceptor>
             <interceptor-stack name="restCustomStack">
                 <interceptor-ref name="exception" />
                 <interceptor-ref name="alias" />
@@ -62,7 +59,7 @@
                     <param name="refreshModelBeforeResult">true</param>
                 </interceptor-ref>
                 <interceptor-ref name="stack"/>
-                <interceptor-ref name="fileUpload" />
+                <interceptor-ref name="actionFileUpload" />
                 <interceptor-ref name="checkbox" />
                 <interceptor-ref name="staticParams" />
                 <interceptor-ref name="params">
