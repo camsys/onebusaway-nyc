@@ -7,7 +7,6 @@
   </parent>
   <properties>
     <spring.version>5.2.20.RELEASE</spring.version>
-    <struts.version>2.5.30</struts.version>
   </properties>
   <artifactId>onebusaway-nyc-ops-api-webapp</artifactId>
   <packaging>war</packaging>
@@ -97,11 +96,6 @@
       <groupId>org.apache.struts</groupId>
       <artifactId>struts2-json-plugin</artifactId>
       <version>${struts.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.struts</groupId>
-      <artifactId>struts2-config-browser-plugin</artifactId>
-      <version>2.3.20</version>
     </dependency>
 
 
