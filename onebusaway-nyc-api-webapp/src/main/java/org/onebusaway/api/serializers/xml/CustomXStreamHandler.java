@@ -83,6 +83,7 @@ import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 import org.apache.struts2.rest.handler.XStreamHandler;
 
@@ -92,15 +93,26 @@ import java.io.Writer;
 
 public class CustomXStreamHandler extends XStreamHandler {
 
+  /**
+   * Builds the XStream used to write API XML responses.
+   *
+   * Struts 6 builds it with StaxDriver, which drops the indentation and adds an
+   * {@code <?xml ?>} header. DomDriver writes the same indented XML as Struts 2.5 did, so API
+   * responses keep their current format, and it needs no extra parser library (Struts 6 no
+   * longer brings in the xmlpull one XStream's default driver needs). Struts' default type
+   * permissions are kept; the per-action ones are skipped because no action here implements
+   * AllowedClasses.
+   */
   @Override
   protected XStream createXStream(ActionInvocation actionInvocation) {
-    XStream xstream = super.createXStream(actionInvocation);
+    XStream xstream = new XStream(new DomDriver());
+    addDefaultPermissions(actionInvocation, xstream);
     processXStreamAliases(xstream);
     return xstream;
   }
 
   protected XStream createTestXStream() {
-    XStream xstream = super.createXStream();
+    XStream xstream = new XStream(new DomDriver());
     processXStreamAliases(xstream);
     return xstream;
   }
