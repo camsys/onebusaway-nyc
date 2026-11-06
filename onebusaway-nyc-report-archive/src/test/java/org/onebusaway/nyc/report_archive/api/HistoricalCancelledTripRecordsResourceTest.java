@@ -18,8 +18,8 @@ package org.onebusaway.nyc.report_archive.api;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.ArgumentMatchers;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.onebusaway.nyc.report.api.json.LowerCaseWDashesGsonJsonTool;
 import org.onebusaway.nyc.report.impl.CcAndInferredLocationFilter;
 import org.onebusaway.nyc.report_archive.impl.CancelledTripDaoImpl;
@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonPartEquals;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
