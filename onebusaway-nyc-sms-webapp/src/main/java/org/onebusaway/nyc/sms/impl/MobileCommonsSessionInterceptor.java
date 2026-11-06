@@ -75,7 +75,7 @@ public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
     Map<String, Object> persistentSession = _sessionManager.getContext(sessionId);
 
     Map<String, Object> originalSession = context.getSession();
-    context.withSession(persistentSession);
+    context.setSession(persistentSession);
 
     XWorkRequestAttributes attributes = new XWorkRequestAttributes(context, sessionId);
     RequestAttributes originalAttributes = RequestContextHolder.getRequestAttributes();
@@ -96,7 +96,7 @@ public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
     } finally {
       _sessionManager.saveContext(sessionId);
       RequestContextHolder.setRequestAttributes(originalAttributes);
-      context.withSession(originalSession);
+      context.setSession(originalSession);
       _sessionManager.close();
     }
   }

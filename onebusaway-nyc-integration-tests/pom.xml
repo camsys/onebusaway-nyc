@@ -560,9 +560,7 @@
                         <configuration>
                             <executable>java</executable>
                             <arguments>
-                                <!-- Largest test bundle (190 MB transit graph). At 1500m it failed 2 of 3 runs
-                                     (exit 255 right after writing TransitGraph.obj, at its memory limit); 3g leaves headroom. -->
-                                <argument>-Xmx3g</argument>
+                                <argument>-Xmx1500m</argument>
                                 <argument>-classpath</argument>
                                 <classpath />
                                 <argument>-Dlog4j.configuration=log4j-stdout.xml</argument>
