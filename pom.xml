@@ -23,7 +23,7 @@
         <gtfs-realtime-bindings.version>0.0.9-cs</gtfs-realtime-bindings.version>
         <hessian.version>4.0.38</hessian.version>
         <hsqldb.version>2.7.1</hsqldb.version>
-        <jackson.version>2.13.5</jackson.version>
+        <jackson.version>2.18.12</jackson.version>
         <jakarta.xml.version>2.3.3</jakarta.xml.version>
         <jaxb-impl.version>2.3.3</jaxb-impl.version>
         <jaxb-api.version>2.3.1</jaxb-api.version>
@@ -44,7 +44,8 @@
         <onebusaway.siri.version>1.0.0</onebusaway.siri.version>
         <onebusaway.siri_2.version>1.0.3</onebusaway.siri_2.version>
         <protobuf.version>3.21.12</protobuf.version>
-        <spring.version>5.2.20.RELEASE</spring.version>
+        <spring.version>5.3.39</spring.version>
+        <spring-security.version>5.8.16</spring-security.version>
         <struts.version>2.5.33</struts.version>
         <xwiki.integration.version>1.0.1</xwiki.integration.version>
         <xwiki.version>2.3.1</xwiki.version>
@@ -476,6 +477,11 @@
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
+                <artifactId>spring-expression</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
                 <artifactId>spring-jdbc</artifactId>
                 <version>${spring.version}</version>
             </dependency>
@@ -503,6 +509,28 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-webmvc</artifactId>
                 <version>${spring.version}</version>
+            </dependency>
+
+            <!-- spring security: onebusaway-users pins 5.3.2.RELEASE, override it here -->
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-acl</artifactId>
+                <version>${spring-security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-config</artifactId>
+                <version>${spring-security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-core</artifactId>
+                <version>${spring-security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-web</artifactId>
+                <version>${spring-security.version}</version>
             </dependency>
 
       <!-- struts dependencies -->
@@ -598,33 +626,11 @@
 
             <!-- jackson -->
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.module</groupId>
-                <artifactId>jackson-module-jaxb-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                <artifactId>jackson-jaxrs-json-provider</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version> <!-- Use your target 2.18 version -->
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- jersey versions -->
