@@ -32,6 +32,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.onebusaway.nyc.integration_tests.BaselineSupport;
 import org.onebusaway.nyc.integration_tests.TraceSupport;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationListener;
@@ -165,7 +166,23 @@ public class SiriIntegrationTestBase {
 	  
 	  _log.debug(response); 
 
+	  saveObaArrivalsForBaseline(operatorId, mRef);
+
 	  return getHashMapFromJsonResponse(response);
+  }
+
+  /**
+   * When a baseline is being recorded, also saves the OBA API
+   * arrivals-and-departures response for the same stop and time as a SIRI
+   * StopMonitoring call, so both rider-facing APIs are covered.
+   */
+  private void saveObaArrivalsForBaseline(String operatorId, String mRef) throws IOException {
+    if (!BaselineSupport.isEnabled())
+      return;
+    String url = "http://localhost:" + getNycWebappPort()
+        + "/onebusaway-nyc-api-webapp/api/where/arrivals-and-departures-for-stop/"
+        + operatorId + "_" + mRef + ".json?key=TEST&time=" + _time;
+    BaselineSupport.writeResponse("oba-arrivals/" + getClass().getSimpleName(), url, getResponseForURL(url), ".json");
   }
 
   protected HashMap<String,Object> getSmV2Response(String operatorId, String mRef, String detailLevel) throws IOException, HttpException {
@@ -223,7 +240,11 @@ public class SiriIntegrationTestBase {
     GetMethod get = new GetMethod(url);
     _log.debug(url);
     client.executeMethod(get);
-    return get.getResponseBodyAsString();
+    String body = get.getResponseBodyAsString();
+    // only the SIRI calls are baseline content, not bundle or reset calls
+    if (url.contains("/api/siri/"))
+      BaselineSupport.writeResponse("siri/" + getClass().getSimpleName(), url, body, ".json");
+    return body;
   }
   private HashMap<String,Object> getHashMapFromJsonResponse (String response) throws JsonParseException, JsonMappingException, IOException{
     JsonFactory factory = new JsonFactory(); 
