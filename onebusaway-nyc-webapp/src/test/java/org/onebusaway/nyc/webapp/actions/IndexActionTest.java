@@ -44,9 +44,7 @@ public class IndexActionTest {
     Mockito.when(invocation.getProxy()).thenReturn(proxy);
 
     Map<String, Object> c = new HashMap<String, Object>();
-    ActionContext ac = new ActionContext(c);
-    ac.setActionInvocation(invocation);
-    ActionContext.setContext(ac);
+    ActionContext.of(c).withActionInvocation(invocation).bind();
 
     IndexAction action = new IndexAction();
     String response = action.execute();
@@ -64,9 +62,7 @@ public class IndexActionTest {
     Mockito.when(invocation.getProxy()).thenReturn(proxy);
 
     Map<String, Object> c = new HashMap<String, Object>();
-    ActionContext ac = new ActionContext(c);
-    ac.setActionInvocation(invocation);
-    ActionContext.setContext(ac);
+    ActionContext.of(c).withActionInvocation(invocation).bind();
 
     IndexAction action = new IndexAction();
     String response = action.execute();
