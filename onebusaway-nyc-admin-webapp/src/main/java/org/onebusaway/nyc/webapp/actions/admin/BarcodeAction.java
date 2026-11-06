@@ -18,9 +18,12 @@ package org.onebusaway.nyc.webapp.actions.admin;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
+import org.apache.struts2.action.UploadedFilesAware;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.apache.struts2.dispatcher.multipart.UploadedFile;
 import org.onebusaway.nyc.admin.service.BarcodeService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 import org.slf4j.Logger;
@@ -36,7 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
     		  "contentDisposition", "attachment;fileName=\"qrBatch.zip\"",
     		  "bufferSize", "1024"}) 
 })
-public class BarcodeAction extends OneBusAwayNYCAdminActionSupport {
+public class BarcodeAction extends OneBusAwayNYCAdminActionSupport implements UploadedFilesAware {
 	private static Logger _log = LoggerFactory.getLogger(BarcodeAction.class);
 	private static final long serialVersionUID = 1L;
 
@@ -100,10 +103,20 @@ public class BarcodeAction extends OneBusAwayNYCAdminActionSupport {
 	}
 
 	/**
-	 * @param stopIdCsvFile the stopIdCsvFile to set
+	 * Receives the batch CSV from Struts 6's ActionFileUpload interceptor.
+	 * Replaces the old setStopIdCsvFile(File) setter, which only the deprecated
+	 * FileUploadInterceptor called (CVE-2024-53677).
+	 *
+	 * @param uploadedFiles every file in the multipart request
 	 */
-	public void setStopIdCsvFile(File stopIdCsvFile) {
-		this.stopIdCsvFile = stopIdCsvFile;
+	@Override
+	public void withUploadedFiles(List<UploadedFile> uploadedFiles) {
+		for (UploadedFile uploadedFile : uploadedFiles) {
+			// only the form's <s:file name="stopIdCsvFile"> field; ignore anything else
+			if ("stopIdCsvFile".equals(uploadedFile.getInputName()) && uploadedFile.isFile()) {
+				stopIdCsvFile = (File) uploadedFile.getContent();
+			}
+		}
 	}
 
 	public String genBusStopCode() {
@@ -125,7 +138,7 @@ public class BarcodeAction extends OneBusAwayNYCAdminActionSupport {
 		try {
 			qrBatchStream = barCodeService.getQRCodesInBatch(stopIdCsvFile, batchEdgeDimension);
 		} catch (IOException e) {
-			e.printStackTrace();
+			_log.error("Failed to generate QR code batch from " + stopIdCsvFile, e);
 		}
 		
 		return "downloadZip";

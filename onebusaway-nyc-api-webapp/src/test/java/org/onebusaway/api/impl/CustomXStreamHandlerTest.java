@@ -24,7 +24,10 @@ import org.onebusaway.api.model.transit.ArrivalAndDepartureV2Bean;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.onebusaway.api.serializers.xml.CustomXStreamHandler;
+
+import com.opensymphony.xwork2.ActionInvocation;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -39,6 +42,25 @@ public class CustomXStreamHandlerTest extends CustomXStreamHandler {
 
         Writer writer = new StringWriter();
         fromObjectTest(response, "arg1", writer);
+        writer.close();
+        assertEquals(expected, writer.toString().replaceAll("\n", ""));
+
+    }
+
+    /**
+     * The XStream used for real API responses must give the same indented XML, with no
+     * {@code <?xml ?>} header, as before the Struts 6 upgrade.
+     */
+    @Test
+    public void testResponseXStreamKeepsFormat() throws IOException {
+
+        EntryWithReferencesBean<ArrivalAndDepartureV2Bean> response = new HandlerTestHelper().createTestObject();
+
+        ActionInvocation invocation = Mockito.mock(ActionInvocation.class);
+        Mockito.when(invocation.getAction()).thenReturn(new Object());
+
+        Writer writer = new StringWriter();
+        createXStream(invocation).toXML(response, writer);
         writer.close();
         assertEquals(expected, writer.toString().replaceAll("\n", ""));
 
