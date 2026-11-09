@@ -17,13 +17,13 @@
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.anyMapOf;
+import static org.mockito.Mockito.anyMap;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -42,9 +42,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.siri.support.SiriXmlSerializerV2;
@@ -70,7 +70,7 @@ import uk.org.siri.siri_2.LineDirectionStructure;
 import uk.org.siri.siri_2.NaturalLanguageStringStructure;
 import uk.org.siri.siri_2.StopPointRefStructure;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class StopPointsActionTest {
 
     private static final long serialVersionUID = 1L;
@@ -213,7 +213,7 @@ public class StopPointsActionTest {
 	  Map<Boolean, List<AnnotatedStopPointStructure>> annotatedStopPointMap = new HashMap<Boolean, List<AnnotatedStopPointStructure>>();
 	  annotatedStopPointMap.put(true, mockStopPoints);
 
-	  when(realtimeService.getAnnotatedStopPointStructures(anyListOf(String.class), anyListOf(AgencyAndId.class), any(DetailLevel.class), anyLong(), anyMapOf(Filters.class, String.class))).thenReturn(annotatedStopPointMap);
+	  when(realtimeService.getAnnotatedStopPointStructures(anyList(), anyList(), any(DetailLevel.class), anyLong(), anyMap())).thenReturn(annotatedStopPointMap);
 	    
 	  // XML Serializer
 	  SiriXmlSerializerV2 serializer = new SiriXmlSerializerV2();

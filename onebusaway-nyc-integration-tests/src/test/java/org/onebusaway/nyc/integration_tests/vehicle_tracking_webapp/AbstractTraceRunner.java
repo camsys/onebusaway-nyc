@@ -31,6 +31,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.onebusaway.nyc.integration_tests.BaselineSupport;
 import org.onebusaway.nyc.integration_tests.TraceSupport;
 import org.onebusaway.nyc.util.impl.DistanceLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
@@ -172,6 +173,11 @@ public class AbstractTraceRunner {
       }
 
       // all results are in!
+
+      // save the full inferred output; the checks below only look at a few
+      // fields loosely, so a runtime change could otherwise go unnoticed
+      BaselineSupport.write("inference", new File(_trace).getName(),
+          _traceSupport.getRecordsAsString(ourResults));
 
       // TEST: We got a response for all records.
       assertEquals(ourResults.size(), expectedResults.size());

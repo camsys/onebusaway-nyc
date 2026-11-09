@@ -17,7 +17,7 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.same;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;

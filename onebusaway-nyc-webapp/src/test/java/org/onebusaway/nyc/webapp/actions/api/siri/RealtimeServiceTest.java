@@ -17,9 +17,9 @@
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
@@ -34,7 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
@@ -66,7 +66,7 @@ import uk.org.siri.siri_2.NaturalLanguageStringStructure;
 import uk.org.siri.siri_2.StopPointRefStructure;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class RealtimeServiceTest {
 
   private static final long serialVersionUID = 1L;
@@ -326,8 +326,10 @@ public class RealtimeServiceTest {
   
   
   private boolean isEqual(AnnotatedStopPointStructure sp1, AnnotatedStopPointStructure sp2){
-	  boolean linesEq = EqualsBuilder.reflectionEquals(sp1.getLines().getLineRefOrLineDirection(), sp2.getLines().getLineRefOrLineDirection());
-	  boolean stopNameEq = EqualsBuilder.reflectionEquals(sp1.getStopName(), sp2.getStopName());
+	  // reflectionEquals on a java.util list only ever compared sizes (its elements are in a transient field),
+	  // and Java 17+ refuses that reflection, so compare the sizes directly
+	  boolean linesEq = sp1.getLines().getLineRefOrLineDirection().size() == sp2.getLines().getLineRefOrLineDirection().size();
+	  boolean stopNameEq = sp1.getStopName().size() == sp2.getStopName().size();
 	  boolean sprEq = EqualsBuilder.reflectionEquals(sp1.getStopPointRef(), sp2.getStopPointRef());
 	  boolean locationEq = EqualsBuilder.reflectionEquals(sp1.getLocation(), sp2.getLocation());
 	  boolean monEq = EqualsBuilder.reflectionEquals(sp1.isMonitored(), sp2.isMonitored());

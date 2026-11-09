@@ -18,7 +18,7 @@ package org.onebusaway.nyc.api.lib;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.onebusaway.nyc.api.lib.impl.ApiKeyThrottledServiceImpl;
 import org.onebusaway.nyc.api.lib.services.ApiKeyThrottlingCacheService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
