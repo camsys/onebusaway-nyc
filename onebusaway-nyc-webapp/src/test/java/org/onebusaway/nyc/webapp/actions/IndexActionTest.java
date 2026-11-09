@@ -19,9 +19,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.onebusaway.utility.DateLibrary;
 
-import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionProxy;
+import org.apache.struts2.ActionContext;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -44,9 +44,7 @@ public class IndexActionTest {
     Mockito.when(invocation.getProxy()).thenReturn(proxy);
 
     Map<String, Object> c = new HashMap<String, Object>();
-    ActionContext ac = new ActionContext(c);
-    ac.setActionInvocation(invocation);
-    ActionContext.setContext(ac);
+    ActionContext.of(c).withActionInvocation(invocation).bind();
 
     IndexAction action = new IndexAction();
     String response = action.execute();
@@ -64,9 +62,7 @@ public class IndexActionTest {
     Mockito.when(invocation.getProxy()).thenReturn(proxy);
 
     Map<String, Object> c = new HashMap<String, Object>();
-    ActionContext ac = new ActionContext(c);
-    ac.setActionInvocation(invocation);
-    ActionContext.setContext(ac);
+    ActionContext.of(c).withActionInvocation(invocation).bind();
 
     IndexAction action = new IndexAction();
     String response = action.execute();
