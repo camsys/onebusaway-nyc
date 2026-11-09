@@ -147,6 +147,18 @@ public class MultiCSVLogger {
     }
   }
   
+  /**
+   * Closes all open log files and forgets them, releasing the file handles
+   * (open handles prevent deleting the files on Windows).  Safe to call more
+   * than once; a header may be written again for the same file afterwards.
+   */
+  public void close() {
+    for (Log log : logs.values()) {
+      log.stream.close();
+    }
+    logs.clear();
+  }
+
   public void clear() {
     for (File file : basePath.listFiles()) {
       if (file.getName().endsWith(".csv")) {

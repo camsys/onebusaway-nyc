@@ -19,11 +19,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -36,7 +38,10 @@ public class TestStifImportTask {
 
 	StifImportTask task = new StifImportTask();
 	MultiCSVLogger csvLogger;
-	File file = new File("dsc_statistics.csv"); 
+	// private output dir per test: with the default (working dir) other tests' loggers
+	// share, and may still hold open, dsc_statistics.csv
+	File outputDir;
+	File file;
 	BufferedReader reader;
 	Map<String, List<AgencyAndId>> dscToTripMap;
 	Map<AgencyAndId, String> tripToDscMap;
@@ -47,6 +52,9 @@ public class TestStifImportTask {
 	public void initialize() throws IOException{
 		hash = new HashMap<Integer, AgencyAndId>();
 		csvLogger = new MultiCSVLogger();
+		outputDir = Files.createTempDirectory("dsc_statistics").toFile();
+		csvLogger.setBasePath(outputDir);
+		file = new File(outputDir, "dsc_statistics.csv");
 		file.delete();
 		file.createNewFile();
 		task.setCSVLogger(csvLogger);
@@ -55,6 +63,21 @@ public class TestStifImportTask {
 		dscToTripMap = new HashMap<String, List<AgencyAndId>>();
 		tripToDscMap = new HashMap<AgencyAndId, String>();
 		task.init();//post contstruct doesn't work with tests
+	}
+
+	@After
+	public void cleanup() throws IOException{
+		// release the handles first, otherwise the next @Before can't delete the file on Windows
+		// and MultiCSVLogger (append mode) adds to the stale content
+		reader.close();
+		csvLogger.close();
+		File[] outputs = outputDir.listFiles();
+		if (outputs != null) {
+			for (File output : outputs) {
+				output.delete();
+			}
+		}
+		outputDir.delete();
 	}
 
 	@Test

@@ -100,7 +100,7 @@ public class FileUtils {
 
   public String parseFileName(String urlString) {
     if (urlString == null) return null;
-    int i = urlString.lastIndexOf("/");
+    int i = getLastPathSeparatorIndex(urlString);
     if (i+1 < urlString.length()) {
       return urlString.substring(i+1, urlString.length());
     }
@@ -112,8 +112,8 @@ public class FileUtils {
 
   public String parseDirectory(String urlString) {
     if (urlString == null) return null;
-    int i = urlString.lastIndexOf("/");
-    if (i+1 < urlString.length()) {
+    int i = getLastPathSeparatorIndex(urlString);
+    if (i >= 0 && i+1 < urlString.length()) {
       return urlString.substring(0, i);
     }
     return urlString;
@@ -121,7 +121,7 @@ public class FileUtils {
 
   public String parseFileNameMinusExtension(String urlString) {
     if (urlString == null) return null;
-    int i = urlString.lastIndexOf("/");
+    int i = getLastPathSeparatorIndex(urlString);
     if (i > 0 && i+1 < urlString.length()) {
       urlString = urlString.substring(i+1, urlString.length());
     }
@@ -130,6 +130,10 @@ public class FileUtils {
       urlString = urlString.substring(0, i);
     }
     return urlString;
+  }
+
+  private int getLastPathSeparatorIndex(String path) {
+    return Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
   }
 
   public String parseBucket(String s3path) {
