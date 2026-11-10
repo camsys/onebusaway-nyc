@@ -19,9 +19,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.onebusaway.utility.DateLibrary;
 
+import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionProxy;
-import org.apache.struts2.ActionContext;
 
 import org.junit.Test;
 import org.mockito.Mockito;
