@@ -12,8 +12,6 @@
     <name>onebusaway-nyc</name>
 
     <properties>
-        <!-- extra JVM flags for surefire; empty by default, so ${argLine} always resolves -->
-        <argLine></argLine>
         <asm-version>9.10.1</asm-version>
         <aws.version>1.3.9</aws.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
