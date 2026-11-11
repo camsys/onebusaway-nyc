@@ -73,6 +73,14 @@
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-rest-plugin</artifactId>
         </dependency>
+        <!-- The Struts 6 REST plugin always creates its default Jackson XML handler at startup,
+             even though we override XML output with CustomXStreamHandler. Without this jar
+             every request to this webapp fails with NoClassDefFoundError (XmlMapper). -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-junit-plugin</artifactId>
