@@ -4,7 +4,7 @@
     <parent>
         <artifactId>onebusaway-nyc</artifactId>
         <groupId>org.onebusaway</groupId>
-        <version>2.47.6</version>
+        <version>2.47.7</version>
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-gtfsrt-integration-tests</artifactId>
@@ -175,7 +175,10 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.1.1</version>
+                <version>1.2.1</version>
+                <configuration>
+                    <longClasspath>true</longClasspath>
+                </configuration>
                 <executions>
                     <execution>
                         <id>graph-builder-execution-2017April_Prod_rt_test</id>
@@ -188,10 +191,10 @@
                             <arguments>
                                 <argument>-Xdebug</argument>
                                 <argument>-Xmx6g</argument>
-                                <argument>-classpath</argument>
-                                <classpath/>
                                 <argument>-Dlog4j.configuration=/tmp/log4j-stdout.xml</argument>
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>-classpath</argument>
+                                <classpath/>
                                 <argument>
                                     org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain
                                 </argument>
@@ -222,7 +225,7 @@
                         <append>true</append>
                         <containerId>tomcat7x</containerId>
                         <zipUrlInstaller>
-                            <url>http://developer.onebusaway.org/dist/apache-tomcat-${tomcat-version}.zip</url>
+                            <url>https://archive.apache.org/dist/tomcat/tomcat-7/v${tomcat-version}/bin/apache-tomcat-${tomcat-version}.zip</url>
                         </zipUrlInstaller>
                         <systemProperties>
                             <onebusaway_prefix>${basedir}</onebusaway_prefix>

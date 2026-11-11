@@ -27,6 +27,9 @@ import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.utility.DateLibrary;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,6 +61,7 @@ public class AbstractInputRunner {
         loadServiceAlerts(datasetId);
         verifyTU(datasetId,  bundleId, date);
         verifyVP(datasetId,  bundleId, date);
+        saveAlertsForBaseline(date);
     }
 
     private void verifyTU(String datasetId, String bundleId, String date) throws Exception {
@@ -145,12 +149,49 @@ public class AbstractInputRunner {
 
     private FeedMessage readTUUrl(Map<String, String> params) throws Exception {
         InputStream is = new WebController().get(params, "/tripUpdates");
-        return FeedMessage.parseFrom(is);
+        return writeBaseline("tripUpdates", FeedMessage.parseFrom(is));
     }
 
     private FeedMessage readVPUrl(Map<String, String> params) throws Exception {
         InputStream is = new WebController().get(params, "/vehiclePositions");
-        return FeedMessage.parseFrom(is);
+        return writeBaseline("vehiclePositions", FeedMessage.parseFrom(is));
+    }
+
+    /**
+     * When a baseline is being recorded, also saves the alerts feed at the
+     * test's time. No alerts are loaded by this test (loadServiceAlerts is
+     * empty), so this records the empty feed's shape.
+     */
+    private void saveAlertsForBaseline(String date) throws Exception {
+        if (getBaselineDir() == null)
+            return;
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("time", String.valueOf(DateLibrary.getIso8601StringAsTime(date).getTime()));
+        writeBaseline("alerts", FeedMessage.parseFrom(new WebController().get(params, "/alerts")));
+    }
+
+    /**
+     * Saves a feed as {@code <baseline.dir>/gtfsrt/<name>.pb} and a readable
+     * {@code .txt} copy when the baseline.dir system property is set, so a
+     * later run on another runtime can be diffed against it. Returns the feed
+     * unchanged.
+     */
+    private FeedMessage writeBaseline(String name, FeedMessage feed) throws IOException {
+        File dir = getBaselineDir();
+        if (dir == null)
+            return feed;
+        if (!dir.isDirectory() && !dir.mkdirs())
+            throw new IOException("could not create " + dir);
+        Files.write(new File(dir, name + ".pb").toPath(), feed.toByteArray());
+        Files.write(new File(dir, name + ".txt").toPath(),
+                feed.toString().getBytes(StandardCharsets.UTF_8));
+        System.out.println("wrote baseline feed " + name + " to " + dir);
+        return feed;
+    }
+
+    private File getBaselineDir() {
+        String dir = System.getProperty("baseline.dir");
+        return dir == null || dir.isEmpty() ? null : new File(dir, "gtfsrt");
     }
 
     private void loadInference(String datasetId) throws Exception {
