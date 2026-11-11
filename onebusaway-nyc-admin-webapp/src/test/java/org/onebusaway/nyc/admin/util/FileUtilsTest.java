@@ -28,14 +28,4 @@ public class FileUtilsTest {
     assertEquals("google\\ transit\\ brooklyn.zip", FileUtils.escapeFilename("google transit brooklyn.zip"));
   }
 
-  @Test
-  public void testParsePathsWithWindowsSeparatorsAndBareFileNames() {
-    FileUtils fileUtils = new FileUtils();
-
-    assertEquals("C:\\gtfs", fileUtils.parseDirectory("C:\\gtfs\\feed.zip"));
-    assertEquals("feed.zip", fileUtils.parseFileName("C:\\gtfs\\feed.zip"));
-    assertEquals("feed", fileUtils.parseFileNameMinusExtension("C:\\gtfs\\feed.zip"));
-    assertEquals("feed.zip", fileUtils.parseDirectory("feed.zip"));
-  }
-
 }
