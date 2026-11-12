@@ -46,11 +46,12 @@ public class StifExtractTaskTest {
     int _breakOnThisLineNumber;
     File _basePath;
     NycFederatedTransitDataBundle bundle;
+    MultiCSVLogger logger;
 
     public StifExtractTask initialize(String stifPath) throws IOException {
         StifExtractTask stifExtractTask = new StifExtractTask();
         stifExtractTask.setStifPath(new File(this.getClass().getResource(stifPath).getPath()));
-        MultiCSVLogger logger = new MultiCSVLogger();
+        logger = new MultiCSVLogger();
         _basePath = new File(getClass().getResource(stifPath).getPath()).getParentFile();
         logger.setBasePath(_basePath);
         stifExtractTask.setLogger(logger);
@@ -66,12 +67,17 @@ public class StifExtractTaskTest {
 
     @After
     public void deleteOutput(){
+        // release file handles first, otherwise the deletes silently fail on Windows
+        // and stale rows get appended to by the next run
+        if (logger != null) {
+            logger.close();
+        }
         bundle.getRemarksCsvPath().delete();
         bundle.getTripInfoCsvPath().delete();
         bundle.getTimePointsCsvPath().delete();
         bundle.getRemarksObjPath().delete();
         bundle.getTimePointsObjPath().delete();
-        bundle.getTimePointsObjPath().delete();
+        bundle.getTripInfoObjPath().delete();
     }
 
 
@@ -235,24 +241,26 @@ public class StifExtractTaskTest {
     }
 
     private ArrayList<BustrekDatum> getBustrekDataFromResourceCSV(String bustrekDataSource, Class bustrekDataType) throws IOException {
-        InputStream bustrekDataStream = this.getClass().getResourceAsStream(bustrekDataSource);
-        BufferedReader truebustrekDataReader = new BufferedReader(new InputStreamReader(bustrekDataStream));
-        int bustrekDataIndex = 0;
-        ArrayList<BustrekDatum> trueBustrekData = new ArrayList<BustrekDatum>();
-        String trueBustrekDataString = truebustrekDataReader.readLine();
-        while (trueBustrekDataString != null) {
-            BustrekDatum datum;
-            try {
-                datum = makeNewBusTrekDatum(trueBustrekDataString, bustrekDataType);
-            } catch (Throwable e){
-                _log.info("Error creating "+bustrekDataType.getName()+" on line "+bustrekDataIndex+"of file: "+bustrekDataSource);
-                throw e;
+        // try-with-resources: an unclosed reader keeps the file locked on Windows, so deleteOutput() can't delete it
+        try (InputStream bustrekDataStream = this.getClass().getResourceAsStream(bustrekDataSource);
+             BufferedReader truebustrekDataReader = new BufferedReader(new InputStreamReader(bustrekDataStream))) {
+            int bustrekDataIndex = 0;
+            ArrayList<BustrekDatum> trueBustrekData = new ArrayList<BustrekDatum>();
+            String trueBustrekDataString = truebustrekDataReader.readLine();
+            while (trueBustrekDataString != null) {
+                BustrekDatum datum;
+                try {
+                    datum = makeNewBusTrekDatum(trueBustrekDataString, bustrekDataType);
+                } catch (Throwable e){
+                    _log.info("Error creating "+bustrekDataType.getName()+" on line "+bustrekDataIndex+"of file: "+bustrekDataSource);
+                    throw e;
+                }
+                trueBustrekData.add(datum);
+                trueBustrekDataString = truebustrekDataReader.readLine();
+                bustrekDataIndex++;
             }
-            trueBustrekData.add(datum);
-            trueBustrekDataString = truebustrekDataReader.readLine();
-            bustrekDataIndex++;
+            return trueBustrekData;
         }
-        return trueBustrekData;
     }
 
     private ArrayList<BustrekDatum> getBustrekDataFromSerializedObj(File bustrekDataSource) throws IOException, ClassNotFoundException {
@@ -264,29 +272,30 @@ public class StifExtractTaskTest {
         Comparator<BustrekDatum> bustrekDatumComparator = (BustrekDatum::compareTo);
         bustrekDatumArray.sort(bustrekDatumComparator);
         long start = System.currentTimeMillis();
-        InputStream bustrekDataStream = this.getClass().getResourceAsStream(bustrekDataSource);
-        BufferedReader truebustrekDataReader = new BufferedReader(new InputStreamReader(bustrekDataStream));
         int bustrekDataIndex = 0;
-        String trueBustrekDataString = truebustrekDataReader.readLine();
-        while (trueBustrekDataString != null) {
-            BustrekDatum trueData = makeNewBusTrekDatum(trueBustrekDataString, bustrekDataType);
-            if (bustrekDataIndex == _breakOnThisLineNumber) {
-                _log.info("put testing flag here, StifExtractTaskTest.java");
-            }
-            int datumLocation = Collections.binarySearch(bustrekDatumArray,trueData,bustrekDatumComparator);
-            try {
-                assert (bustrekDatumArray.get(datumLocation).equals(trueData));
-            } catch (Throwable e) {
-                _log.info("Found error searching for " + trueData.getClass() + ": " + trueData);
-                _log.info("current index: " + bustrekDataIndex);
-                throw e;
-            }
-            trueBustrekDataString = truebustrekDataReader.readLine();
-            bustrekDataIndex++;
-            if (false) {
-                _log.info("");
-                _log.info("true data: " + trueData);
-                _log.info("match    : " + bustrekDatumArray.get(bustrekDatumArray.indexOf(trueData)));
+        try (InputStream bustrekDataStream = this.getClass().getResourceAsStream(bustrekDataSource);
+             BufferedReader truebustrekDataReader = new BufferedReader(new InputStreamReader(bustrekDataStream))) {
+            String trueBustrekDataString = truebustrekDataReader.readLine();
+            while (trueBustrekDataString != null) {
+                BustrekDatum trueData = makeNewBusTrekDatum(trueBustrekDataString, bustrekDataType);
+                if (bustrekDataIndex == _breakOnThisLineNumber) {
+                    _log.info("put testing flag here, StifExtractTaskTest.java");
+                }
+                int datumLocation = Collections.binarySearch(bustrekDatumArray,trueData,bustrekDatumComparator);
+                try {
+                    assert (bustrekDatumArray.get(datumLocation).equals(trueData));
+                } catch (Throwable e) {
+                    _log.info("Found error searching for " + trueData.getClass() + ": " + trueData);
+                    _log.info("current index: " + bustrekDataIndex);
+                    throw e;
+                }
+                trueBustrekDataString = truebustrekDataReader.readLine();
+                bustrekDataIndex++;
+                if (false) {
+                    _log.info("");
+                    _log.info("true data: " + trueData);
+                    _log.info("match    : " + bustrekDatumArray.get(bustrekDatumArray.indexOf(trueData)));
+                }
             }
         }
         assert (bustrekDatumArray.size() == bustrekDataIndex);

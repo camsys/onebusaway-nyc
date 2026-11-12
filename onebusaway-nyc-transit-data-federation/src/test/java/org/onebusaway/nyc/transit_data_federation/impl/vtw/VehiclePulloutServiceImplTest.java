@@ -121,7 +121,9 @@ public class VehiclePulloutServiceImplTest {
 
   @Test
   public void testVehiclePulloutFromXml() throws Exception {
-    Path path = Paths.get(getClass().getResource("vehicle_pipo.xml").getFile());
+    URL resource = getClass().getResource("vehicle_pipo.xml");
+    assertNotNull(resource);
+    Path path = Paths.get(resource.toURI());
     String xml = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
     ObaSchPullOutList pullOutList = tcipUtil.getFromXml(xml);
 
@@ -141,7 +143,9 @@ public class VehiclePulloutServiceImplTest {
 
   @Test
   public void testVehiclePulloutFromEmptyXml() throws Exception {
-    Path path = Paths.get(getClass().getResource("vehicle_pipo_empty.xml").getFile());
+    URL resource = getClass().getResource("vehicle_pipo_empty.xml");
+    assertNotNull(resource);
+    Path path = Paths.get(resource.toURI());
     String xml = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
     ObaSchPullOutList pullOutList = tcipUtil.getFromXml(xml);
     assertEquals("0", pullOutList.getErrorCode());

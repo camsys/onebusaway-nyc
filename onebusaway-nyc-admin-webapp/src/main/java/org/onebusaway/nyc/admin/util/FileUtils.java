@@ -38,7 +38,7 @@ import java.net.URL;
  * A collection of file handling utilities making life easier when working with
  * Java but specific to the admin module needs.  More Generic functions exist
  * in org.onebusaway.nyc.util.impl.FileUtility.
- * 
+ *
  */
 public class FileUtils {
   private static Logger _log = LoggerFactory.getLogger(FileUtils.class);
@@ -66,13 +66,13 @@ public class FileUtils {
     FileOutputStream fos = null;
     String fileName = parseFileName(urlString);
     _log.info("downloading " + urlString + " to fileName " + _workingDirectory
-        + File.separatorChar + fileName);
+            + File.separatorChar + fileName);
     try {
       url = new URL(urlString);
       is = url.openStream();
       bis = new BufferedInputStream(is);
       fos = new FileOutputStream(_workingDirectory
-          + File.separatorChar + fileName);
+              + File.separatorChar + fileName);
       IOUtils.copy(bis, fos);
     } catch (Exception any) {
       throw new RuntimeException(any);
@@ -135,7 +135,7 @@ public class FileUtils {
   public String parseBucket(String s3path) {
     if (s3path.indexOf("s3://") == -1) {
       throw new RuntimeException(
-          "Invalid s3path, missing protocol s3://; path=" + s3path);
+              "Invalid s3path, missing protocol s3://; path=" + s3path);
     }
     int start = s3path.indexOf("/", 5);
     int end = s3path.indexOf("/", start + 1);
@@ -145,7 +145,7 @@ public class FileUtils {
   public String parseKey(String s3path) {
     if (s3path.indexOf("s3://") == -1) {
       throw new RuntimeException(
-          "Invalid s3path, missing protocol s3://; path=" + s3path);
+              "Invalid s3path, missing protocol s3://; path=" + s3path);
     }
     int bucketStart = s3path.indexOf("/", 5);
     int start = s3path.indexOf("/", bucketStart + 1);
@@ -159,11 +159,11 @@ public class FileUtils {
     Process process = null;
     try {
       String[] cmds = {
-          "tar",
-          "zxC",
-          _workingDirectory,
-          "-f",
-          tarFile
+              "tar",
+              "zxC",
+              _workingDirectory,
+              "-f",
+              tarFile
       };
       debugCmds(cmds);
       process = Runtime.getRuntime().exec(cmds);
@@ -181,9 +181,9 @@ public class FileUtils {
     Process process = null;
     try {
       String[] cmds = {
-          "chmod",
-          permissions,
-          destinationFileName
+              "chmod",
+              permissions,
+              destinationFileName
       };
       debugCmds(cmds);
       process = Runtime.getRuntime().exec(cmds);
@@ -232,7 +232,7 @@ public class FileUtils {
 
   public String createTmpDirectory() {
     String tmpDir = System.getProperty("java.io.tmpdir") + File.separator
-        + "tmp" + System.currentTimeMillis();
+            + "tmp" + System.currentTimeMillis();
     boolean created = new File(tmpDir).mkdir();
     // if directory already exists, try again
     if (!created) {
@@ -253,11 +253,11 @@ public class FileUtils {
     Process process = null;
     try {
       String[] cmds = {
-          "unzip",
-          "-o",
-          zipFileName,
-          "-d",
-          outputDirectory
+              "unzip",
+              "-o",
+              zipFileName,
+              "-d",
+              outputDirectory
       };
       process = Runtime.getRuntime().exec(cmds);
       StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), "ERROR");
@@ -333,7 +333,7 @@ public class FileUtils {
   public static String escapeFilename(String s) {
     return s.replace(" ", "\\ ");
   }
-  
+
   public static void debugCmds(String[] array) {
     StringBuffer sb = new StringBuffer();
     sb.append("exec:");
@@ -350,29 +350,29 @@ public class FileUtils {
    */
   class StreamGobbler extends Thread
   {
-      InputStream is;
-      String type;
-      
-      StreamGobbler(InputStream is, String type)
+    InputStream is;
+    String type;
+
+    StreamGobbler(InputStream is, String type)
+    {
+      this.is = is;
+      this.type = type;
+    }
+
+    public void run()
+    {
+      try
       {
-          this.is = is;
-          this.type = type;
-      }
-      
-      public void run()
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line=null;
+        while ( (line = br.readLine()) != null)
+          _log.info(type + ">" + line);
+      } catch (IOException ioe)
       {
-          try
-          {
-              InputStreamReader isr = new InputStreamReader(is);
-              BufferedReader br = new BufferedReader(isr);
-              String line=null;
-              while ( (line = br.readLine()) != null)
-                _log.info(type + ">" + line);
-              } catch (IOException ioe)
-                {
-                  ioe.printStackTrace();  
-                }
+        ioe.printStackTrace();
       }
+    }
   }
-  
+
 }
