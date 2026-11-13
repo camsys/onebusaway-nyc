@@ -35,8 +35,8 @@ import javax.annotation.PreDestroy;
 
 import lrms_final_09_07.Angle;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -803,7 +803,7 @@ public class VehicleLocationInferenceServiceImpl implements
     		// discard this one
     	} catch (final Throwable ex) {
     		_log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", ex);
-            _log.error("Stack Trace: {}",ExceptionUtils.getFullStackTrace(ex));
+            _log.error("Stack Trace: {}",ExceptionUtils.getStackTrace(ex));
     		resetVehicleLocation(_vehicleId);
     		_observationCache.purge(_vehicleId);    	  
     	}

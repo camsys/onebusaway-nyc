@@ -21,7 +21,7 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.services.monitoring.CloudWatchService;
 import org.slf4j.Logger;

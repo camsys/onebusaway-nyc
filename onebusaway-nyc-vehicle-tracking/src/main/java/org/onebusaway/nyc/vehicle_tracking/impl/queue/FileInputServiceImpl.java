@@ -18,7 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.InputService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

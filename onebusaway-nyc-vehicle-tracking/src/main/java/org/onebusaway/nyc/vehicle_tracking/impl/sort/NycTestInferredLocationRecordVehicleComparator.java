@@ -17,7 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.sort;
 
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 
-import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import java.util.Comparator;
 

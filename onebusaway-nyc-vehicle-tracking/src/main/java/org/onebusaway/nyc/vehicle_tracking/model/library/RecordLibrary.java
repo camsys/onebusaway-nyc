@@ -23,7 +23,7 @@ import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import static org.onebusaway.nyc.util.impl.queue.CCLocationRecordUtil.convertSpeed;
 
