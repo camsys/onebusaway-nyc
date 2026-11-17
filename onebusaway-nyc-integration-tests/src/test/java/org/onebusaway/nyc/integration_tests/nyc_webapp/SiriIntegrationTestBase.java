@@ -24,9 +24,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -235,12 +238,13 @@ public class SiriIntegrationTestBase {
 	  }
   }
   
-  private String getResponseForURL (String url) throws HttpException, IOException{
-    HttpClient client = new HttpClient();
-    GetMethod get = new GetMethod(url);
+  private String getResponseForURL (String url) throws IOException{
     _log.debug(url);
-    client.executeMethod(get);
-    String body = get.getResponseBodyAsString();
+    String body;
+    try (CloseableHttpClient client = HttpClients.createDefault();
+        CloseableHttpResponse response = client.execute(new HttpGet(url))) {
+      body = EntityUtils.toString(response.getEntity());
+    }
     // only the SIRI calls are baseline content, not bundle or reset calls
     if (url.contains("/api/siri/"))
       BaselineSupport.writeResponse("siri/" + getClass().getSimpleName(), url, body, ".json");

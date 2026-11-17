@@ -37,6 +37,13 @@
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-gtfsrt</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <!-- commons-httpclient 3.x is end-of-life; it comes in via openid4java, which the tests don't use -->
+                <exclusion>
+                    <groupId>commons-httpclient</groupId>
+                    <artifactId>commons-httpclient</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- for nycBundle -->
         <dependency>
@@ -66,9 +73,10 @@
             <artifactId>junit</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.0.1</version>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -57,6 +57,13 @@
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <!-- aws-java-sdk 1.3.9 pins httpclient to [4.1,4.2), which would override the 4.5.x used by the tests -->
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
@@ -85,6 +92,13 @@
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-users</artifactId>
             <version>${onebusaway.app-modules.version}</version>
+            <exclusions>
+                <!-- commons-httpclient 3.x is end-of-life; it comes in via openid4java, which the tests don't use -->
+                <exclusion>
+                    <groupId>commons-httpclient</groupId>
+                    <artifactId>commons-httpclient</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.hsqldb</groupId>
@@ -92,9 +106,16 @@
             <version>${hsqldb.version}</version>
         </dependency>
         <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.0.1</version>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>4.5.14</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

@@ -26,9 +26,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.nyc.integration_tests.BaselineSupport;
@@ -81,11 +84,7 @@ public class AbstractTraceRunner {
         + "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId="
         + bundleId + "&time=" + DateLibrary.getTimeAsIso8601String(date);
 
-    HttpClient client = new HttpClient();
-    GetMethod get = new GetMethod(url);
-    client.executeMethod(get);
-
-    String response = get.getResponseBodyAsString();
+    String response = getResponseForURL(url);
     if (!response.equals("OK"))
       throw new Exception("Bundle switch failed!");
   }
@@ -104,16 +103,19 @@ public class AbstractTraceRunner {
         + "/onebusaway-nyc-vehicle-tracking-webapp/vehicle-location-simulation!set-seeds.do?factorySeed="
         + _factorySeed + "&cdfSeed=" + _cdfSeed;
 
-    HttpClient client = new HttpClient();
-    GetMethod get = new GetMethod(urlStr);
-    client.executeMethod(get);
-
-    String response = get.getResponseBodyAsString();
+    String response = getResponseForURL(urlStr);
     if (!response.equals("OK"))
       throw new Exception("Failed trying to execute:" + urlStr);
 
     System.out.println("Successfully set seeds: phase=" + _factorySeed
         + ", cdf=" + _cdfSeed);
+  }
+
+  private String getResponseForURL(String url) throws Exception {
+    try (CloseableHttpClient client = HttpClients.createDefault();
+        CloseableHttpResponse response = client.execute(new HttpGet(url))) {
+      return EntityUtils.toString(response.getEntity());
+    }
   }
 
   @Test
