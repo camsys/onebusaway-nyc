@@ -199,35 +199,43 @@ public class SearchResultFactoryV2Impl extends SearchResultFactoryImpl {
     }
 
     /**
-     * Builds the polyline list for a direction. If any diff for this direction
-     * has a shape modification, returns the four annotated segments
-     * (prefix/canonical, original/removed, replacement/detour, suffix/canonical).
-     * Otherwise wraps the stop-group polylines as canonical.
+     * Builds the polyline list for a direction. Always includes all canonical
+     * stop-group polylines. If a shape modification is present, also appends the
+     * removed and detour segments. The prefix/suffix from the modification are
+     * omitted because they are already covered by the full canonical shapes.
      */
     private List<PolylineWithStatus> buildPolylinesForDirection(StopGroupBean stopGroupBean,
                                                                 List<TripModificationDiff> directionDiffs) {
-        Optional<ShapeModificationDiff> shapeDiff = directionDiffs.stream()
+        Optional<ShapeModificationDiff> shapeDiffOpt = directionDiffs.stream()
                 .map(TripModificationDiff::getShapeDiff)
                 .filter(Objects::nonNull)
                 .findFirst();
 
-        if (shapeDiff.isPresent()) {
-            ShapeModificationDiff sd = shapeDiff.get();
-            List<PolylineWithStatus> result = new ArrayList<>();
-            if (sd.getPrefixSegmentPolyline() != null)
-                result.add(new PolylineWithStatus(sd.getPrefixSegmentPolyline(), "canonical"));
-            if (sd.getOriginalSegmentPolyline() != null)
-                result.add(new PolylineWithStatus(sd.getOriginalSegmentPolyline(), "removed"));
-            if (sd.getReplacementSegmentPolyline() != null)
-                result.add(new PolylineWithStatus(sd.getReplacementSegmentPolyline(), "detour"));
-            if (sd.getSuffixSegmentPolyline() != null)
-                result.add(new PolylineWithStatus(sd.getSuffixSegmentPolyline(), "canonical"));
-            return result;
+        if (!shapeDiffOpt.isPresent()) {
+            return stopGroupBean.getPolylines().stream()
+                    .map(p -> new PolylineWithStatus(p.getPoints(), "canonical"))
+                    .collect(Collectors.toList());
         }
 
-        return stopGroupBean.getPolylines().stream()
+        ShapeModificationDiff sd = shapeDiffOpt.get();
+        String originalShapePolyline = sd.getOriginalShapePolyline();
+
+        // Exclude the modified trip's original shape so it isn't shown as both canonical and removed
+        List<PolylineWithStatus> result = stopGroupBean.getPolylines().stream()
+                .filter(p -> originalShapePolyline == null || !p.getPoints().equals(originalShapePolyline))
                 .map(p -> new PolylineWithStatus(p.getPoints(), "canonical"))
                 .collect(Collectors.toList());
+
+        if (sd.getPrefixSegmentPolyline() != null)
+            result.add(new PolylineWithStatus(sd.getPrefixSegmentPolyline(), "canonical"));
+        if (sd.getOriginalSegmentPolyline() != null)
+            result.add(new PolylineWithStatus(sd.getOriginalSegmentPolyline(), "removed"));
+        if (sd.getReplacementSegmentPolyline() != null)
+            result.add(new PolylineWithStatus(sd.getReplacementSegmentPolyline(), "detour"));
+        if (sd.getSuffixSegmentPolyline() != null)
+            result.add(new PolylineWithStatus(sd.getSuffixSegmentPolyline(), "canonical"));
+
+        return result;
     }
 
     /**
