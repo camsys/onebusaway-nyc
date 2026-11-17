@@ -33,7 +33,7 @@ import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import uk.org.siri.siri.AffectedOperatorStructure;
 import uk.org.siri.siri.AffectedStopPointStructure;

@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.apache.commons.httpclient.HttpException;
+import org.apache.http.HttpException;
 import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Test;

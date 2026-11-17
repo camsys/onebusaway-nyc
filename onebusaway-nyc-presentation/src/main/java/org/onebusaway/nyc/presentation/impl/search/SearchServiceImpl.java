@@ -41,7 +41,7 @@ import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.util.AgencyAndIdLibrary;
 
 import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

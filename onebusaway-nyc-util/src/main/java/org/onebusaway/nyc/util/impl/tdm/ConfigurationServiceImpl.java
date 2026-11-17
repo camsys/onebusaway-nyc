@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;

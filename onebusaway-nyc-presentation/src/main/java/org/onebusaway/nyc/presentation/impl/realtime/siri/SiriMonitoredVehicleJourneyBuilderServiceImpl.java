@@ -16,7 +16,7 @@
 
 package org.onebusaway.nyc.presentation.impl.realtime.siri;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriSupportPredictionTimepointRecord;

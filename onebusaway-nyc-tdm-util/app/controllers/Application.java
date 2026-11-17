@@ -21,7 +21,7 @@ import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
 import org.onebusaway.transit_data.model.service_alerts.ESeverity;

@@ -25,7 +25,7 @@ import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyAndIdFieldMappingFactory;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.onebusaway.transit_data.model.trips.CancelledTripBean;
 
 import java.io.Serializable;

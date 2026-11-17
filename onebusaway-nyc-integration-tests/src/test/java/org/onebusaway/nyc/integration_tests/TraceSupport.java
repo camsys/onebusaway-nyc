@@ -27,15 +27,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 import org.onebusaway.csv_entities.CsvEntityReader;
 import org.onebusaway.csv_entities.CsvEntityWriterFactory;
@@ -53,29 +52,23 @@ public class TraceSupport {
   public String uploadTraceForSimulation(String fileName, InputStream in, boolean _bypassInference)
       throws IOException {
 
-    try {
-      HttpClient client = new HttpClient();
-      String url = url("/vehicle-location-simulation!upload-trace.do");
-      PostMethod post = new PostMethod(url);
+    String url = url("/vehicle-location-simulation!upload-trace.do");
+    HttpPost post = new HttpPost(url);
 
-      ByteArrayPartSource source = getResourceAsPartSource(fileName, in);
-      FilePart filePart = new FilePart("file", source);
-      StringPart returnIdParam = new StringPart("returnId", "true");
-      StringPart shiftStartTimeParam = new StringPart("shiftStartTime", "" + shiftStartTime);
-      StringPart traceTypeParam = new StringPart("traceType", "NycTestInferredLocationRecord");
-      StringPart historySize = new StringPart("historySize", "" + 0);
-      StringPart bypassInference = new StringPart("bypassInference", "false");
-      if(_bypassInference == true) {
-    	  bypassInference = new StringPart("bypassInference", "true");
-      }
-      post.setRequestEntity(new MultipartRequestEntity(new Part[] {
-          filePart, returnIdParam, shiftStartTimeParam, traceTypeParam, historySize, bypassInference},
-          new HttpMethodParams()));
-      client.executeMethod(post);
+    post.setEntity(MultipartEntityBuilder.create()
+        .addBinaryBody("file", getResourceAsBytes(in),
+            ContentType.APPLICATION_OCTET_STREAM, fileName)
+        .addTextBody("returnId", "true")
+        .addTextBody("shiftStartTime", "" + shiftStartTime)
+        .addTextBody("traceType", "NycTestInferredLocationRecord")
+        .addTextBody("historySize", "" + 0)
+        .addTextBody("bypassInference", _bypassInference ? "true" : "false")
+        .build());
 
-      return post.getResponseBodyAsString();
-
-    } catch (HttpException ex) {
+    try (CloseableHttpClient client = HttpClients.createDefault();
+        CloseableHttpResponse response = client.execute(post)) {
+      return EntityUtils.toString(response.getEntity());
+    } catch (ClientProtocolException ex) {
       throw new IllegalStateException(ex);
     }
 
@@ -123,8 +116,7 @@ public class TraceSupport {
    * 
    ****/
 
-  private ByteArrayPartSource getResourceAsPartSource(String fileName,
-      InputStream in) throws IOException {
+  private byte[] getResourceAsBytes(InputStream in) throws IOException {
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -138,7 +130,7 @@ public class TraceSupport {
     }
 
     in.close();
-    return new ByteArrayPartSource(fileName, out.toByteArray());
+    return out.toByteArray();
   }
 
   private static class EntityCollector<T> implements EntityHandler {

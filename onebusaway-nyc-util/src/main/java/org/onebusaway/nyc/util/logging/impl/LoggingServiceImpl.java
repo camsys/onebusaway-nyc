@@ -16,7 +16,7 @@
 
 package org.onebusaway.nyc.util.logging.impl;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
 import org.onebusaway.nyc.util.logging.LoggingService;

@@ -18,7 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.unassigned;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.onebusaway.container.refresh.Refreshable;

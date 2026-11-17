@@ -18,9 +18,9 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import java.util.Set;
 

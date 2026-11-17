@@ -16,16 +16,26 @@
 
 package org.onebusaway.nyc.gtfsrt.integration_tests;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.onebusaway.utility.DateLibrary;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -61,13 +71,7 @@ public class WebController {
                 + apiPathWithEncodedParams;
 
         System.out.println("url=" + url);
-        HttpClient client = new HttpClient();
-        GetMethod get = new GetMethod(url);
-        client.executeMethod(get);
-
-        validateSuccess(get);
-
-        return get.getResponseBodyAsStream();
+        return new ByteArrayInputStream(execute(new HttpGet(url)));
 
     }
 
@@ -84,16 +88,7 @@ public class WebController {
 
 
         System.out.println("url=" + url);
-        HttpClient client = new HttpClient();
-        GetMethod get = new GetMethod(url);
-        for (String key : params.keySet()) {
-            client.getParams().setParameter(key, params.get(key));
-        }
-        client.executeMethod(get);
-
-        validateSuccess(get);
-
-        return get.getResponseBodyAsStream();
+        return new ByteArrayInputStream(execute(new HttpGet(url)));
 
     }
 
@@ -104,13 +99,13 @@ public class WebController {
                 + apiPath;
 
         System.out.println("url=" + url);
-        HttpClient client = new HttpClient();
-        PostMethod postMethod = new PostMethod(url);
+        HttpPost postMethod = new HttpPost(url);
+        List<NameValuePair> form = new ArrayList<NameValuePair>();
         for (String key : params.keySet()) {
-            postMethod.addParameter(key, params.get(key));
+            form.add(new BasicNameValuePair(key, params.get(key)));
         }
-        client.executeMethod(postMethod);
-        validateSuccess(postMethod);
+        postMethod.setEntity(new UrlEncodedFormEntity(form, StandardCharsets.UTF_8));
+        execute(postMethod);
     }
 
     private void post(String apiPath, InputStream data) throws Exception {
@@ -120,21 +115,30 @@ public class WebController {
                 + apiPath;
 
         System.out.println("url=" + url);
-        HttpClient client = new HttpClient();
-        PostMethod postMethod = new PostMethod(url);
-        postMethod.setRequestEntity(new InputStreamRequestEntity(data));
-        client.executeMethod(postMethod);
-        validateSuccess(postMethod);
+        HttpPost postMethod = new HttpPost(url);
+        // buffered so the request is sent with a Content-Length, as before
+        postMethod.setEntity(new ByteArrayEntity(data.readAllBytes()));
+        execute(postMethod);
     }
 
-    private void validateSuccess(HttpMethod method) throws Exception {
-        String response = method.getResponseBodyAsString();
-        if (!response.equals("OK") && 200 != method.getStatusCode())
-            throw new Exception("Request failed! "
-                    + method.getURI()
-                    + ": (" + method.getStatusCode()
-                    + ":" + method.getStatusText() + ")");
-
+    /**
+     * Executes the request, checks it succeeded, and returns the response
+     * body. The body is read fully because the connection is closed here.
+     */
+    private byte[] execute(HttpUriRequest request) throws Exception {
+        try (CloseableHttpClient client = HttpClients.createDefault();
+             CloseableHttpResponse response = client.execute(request)) {
+            byte[] body = response.getEntity() == null
+                    ? new byte[0] : EntityUtils.toByteArray(response.getEntity());
+            int statusCode = response.getStatusLine().getStatusCode();
+            String bodyText = new String(body, StandardCharsets.ISO_8859_1);
+            if (!bodyText.equals("OK") && 200 != statusCode)
+                throw new Exception("Request failed! "
+                        + request.getURI()
+                        + ": (" + statusCode
+                        + ":" + response.getStatusLine().getReasonPhrase() + ")");
+            return body;
+        }
     }
 
     private String addParamsToPath(String path, Map<String, String> params) {

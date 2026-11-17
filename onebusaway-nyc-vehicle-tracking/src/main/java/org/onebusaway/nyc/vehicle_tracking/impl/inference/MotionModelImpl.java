@@ -20,7 +20,7 @@ import gov.sandia.cognition.math.LogMath;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.math.util.FastMath;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
@@ -50,7 +50,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Objects;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
