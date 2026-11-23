@@ -86,12 +86,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
         </dependency>
-        <!-- RMI-like service for wiring up services between VMs -->
-        <dependency>
-            <groupId>com.caucho</groupId>
-            <artifactId>resin-hessian</artifactId>
-	        <version>3.1.6</version>
-        </dependency>
         <dependency>
           <groupId>org.onebusaway</groupId>
           <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
