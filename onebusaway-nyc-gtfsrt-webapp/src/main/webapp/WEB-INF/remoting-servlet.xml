@@ -24,7 +24,12 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-	<mvc:annotation-driven />
+	<!-- Spring 5.3 stopped matching "/x.json" to "/x" by default. Turn it back on so
+	     URLs clients already use keep working (OBANYC-4240). Deprecated in 5.3,
+	     removed in Spring 6; revisit only if we move to Spring 6. -->
+	<mvc:annotation-driven>
+	    <mvc:path-matching suffix-pattern="true" />
+	</mvc:annotation-driven>
     <context:component-scan base-package="org.onebusaway.nyc.gtfsrt.controller" />
 	<mvc:interceptors>
 		<mvc:interceptor>

@@ -55,6 +55,20 @@
 			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Test: AdminUrlSecurityTest runs the real <sec:http> rules through Spring Security's filter
+		     chain with spring-test mocks (OBANYC-4240). Those need Servlet 3.1+, so tests run on javax.servlet-api 4.0.1 (what Tomcat 9
+		     provides) and surefire drops the old servlet-api 2.4 from the test classpath (see build). -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>4.0.1</version>
+			<scope>test</scope>
+		</dependency>
 
 		<!-- Logging Dependencies -->
 		<dependency>
@@ -281,6 +295,16 @@
 	<build>
 		<finalName>onebusaway-nyc-admin-webapp</finalName>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<!-- servlet-api 2.4 and javax.servlet-api 4.0.1 hold the same classes; tests use 4.0.1 -->
+					<classpathDependencyExcludes>
+						<classpathDependencyExclude>javax.servlet:servlet-api</classpathDependencyExclude>
+					</classpathDependencyExcludes>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>pl.project13.maven</groupId>
 				<artifactId>git-commit-id-plugin</artifactId>
