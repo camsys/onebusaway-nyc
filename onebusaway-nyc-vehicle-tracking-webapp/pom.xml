@@ -98,6 +98,12 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
+        <!-- Test: SuffixPatternMatchConfigTest (OBANYC-4240) -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <!-- TODO These are duplicated in several pom.xml files. Need to refactor out. -->
